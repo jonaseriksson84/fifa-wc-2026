@@ -31,10 +31,13 @@ import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 // Maximum number of plan→execute→merge cycles before stopping.
 // Raise this if your backlog is large; lower it for a quick smoke-test run.
 //
-// 10 is enough headroom for the remaining 9 slices: the dependency graph
-// resolves in ~4 rounds (round 1: #4/#5/#11; round 2: #6/#7; round 3:
-// #8/#9/#10; round 4: #12). Extra slack absorbs retries if any agent fails.
-const MAX_ITERATIONS = 10;
+// Happy-path math for the remaining 9 slices: 4 cycles finish the work
+// (round 1 #4/#5/#11, round 2 #6/#7, round 3 #8/#9/#10, round 4 #12) and
+// cycle 5 exits when the planner sees no unblocked issues. The cap only
+// matters when retries happen — a cycle drains every time an implementer
+// produces no commits. 20 leaves ~15 cycles of retry slack, which is
+// cheap insurance: when everything works the loop exits early regardless.
+const MAX_ITERATIONS = 20;
 
 // Hooks run inside the sandbox before the agent starts each iteration.
 // Conditional npm install: on the very first iteration there's no package.json
