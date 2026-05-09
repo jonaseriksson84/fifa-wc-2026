@@ -111,6 +111,40 @@
 							{#if form?.error && form?.fixtureId === f.id}
 								<p class="mt-2 text-sm text-red-600">{form.error}</p>
 							{/if}
+
+							{#if locked && f.picksByValue}
+								{@const values: ('HOME' | 'DRAW' | 'AWAY')[] = isKnockout ? ['HOME', 'AWAY'] : ['HOME', 'DRAW', 'AWAY']}
+								<div class="mt-4 border-t border-gray-100 pt-3">
+									<p class="mb-2 text-xs font-semibold text-gray-500 uppercase">Pick breakdown</p>
+									<div class="grid gap-2 {isKnockout ? 'grid-cols-2' : 'grid-cols-3'}">
+										{#each values as v}
+											{@const emails = f.picksByValue[v]}
+											<div class="rounded bg-gray-50 p-2">
+												<p class="text-xs font-medium text-gray-600">
+													{v === 'HOME' ? f.homeTeam : v === 'AWAY' ? f.awayTeam : 'Draw'}
+													<span class="text-gray-400">({emails.length})</span>
+												</p>
+												{#each emails as email}
+													<p class="truncate text-xs text-gray-700">{email}</p>
+												{/each}
+												{#if emails.length === 0}
+													<p class="text-xs italic text-gray-400">—</p>
+												{/if}
+											</div>
+										{/each}
+									</div>
+									{#if f.picksByValue.noPick.length > 0}
+										<div class="mt-2 rounded bg-red-50 p-2">
+											<p class="text-xs font-medium text-red-600">
+												No pick <span class="text-red-400">({f.picksByValue.noPick.length})</span>
+											</p>
+											{#each f.picksByValue.noPick as email}
+												<p class="truncate text-xs text-red-700">{email}</p>
+											{/each}
+										</div>
+									{/if}
+								</div>
+							{/if}
 						</li>
 					{/each}
 				</ul>

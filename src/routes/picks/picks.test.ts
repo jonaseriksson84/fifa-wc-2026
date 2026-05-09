@@ -7,6 +7,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const pageHtml = readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8');
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
+const repoTs = readFileSync(
+	resolve(__dirname, '../../lib/server/picks/pick-repository.ts'),
+	'utf-8'
+);
 
 describe('picks page content', () => {
 	it('uses domain language — Pick, Fixture, never bet/match/guess', () => {
@@ -71,6 +75,17 @@ describe('picks page content', () => {
 	});
 });
 
+describe('pick repository', () => {
+	it('exports getPicksForFixture', () => {
+		expect(repoTs).toContain('export async function getPicksForFixture');
+	});
+
+	it('getPicksForFixture joins pick with user to retrieve email', () => {
+		expect(repoTs).toContain('user');
+		expect(repoTs).toContain('email');
+	});
+});
+
 describe('picks page server', () => {
 	it('redirects to /login when not authenticated', () => {
 		expect(serverTs).toContain("redirect(302, '/login')");
@@ -102,5 +117,36 @@ describe('picks page server', () => {
 	it('uses form actions for pick submission', () => {
 		expect(serverTs).toContain('actions');
 		expect(serverTs).toContain('pick:');
+	});
+
+	it('imports getPicksForFixture from the repository', () => {
+		expect(serverTs).toContain('getPicksForFixture');
+	});
+
+	it('fetches all users to identify who did not pick', () => {
+		expect(serverTs).toContain('user');
+	});
+
+	it('only includes other users picks for locked fixtures', () => {
+		expect(serverTs).toContain('kickoff');
+		expect(serverTs).toContain('picksByValue');
+	});
+});
+
+describe('pick visibility UI', () => {
+	it('renders a pick reveal section for locked fixtures', () => {
+		expect(pageHtml).toContain('picksByValue');
+	});
+
+	it('shows user emails in the pick breakdown', () => {
+		expect(pageLower).toContain('email');
+	});
+
+	it('shows a no-pick bucket for users who did not pick', () => {
+		expect(pageHtml).toContain('noPick');
+	});
+
+	it('groups picks by value (HOME / DRAW / AWAY)', () => {
+		expect(pageHtml).toContain('picksByValue');
 	});
 });
