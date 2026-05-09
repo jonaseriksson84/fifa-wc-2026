@@ -11,6 +11,7 @@
 		<a href="/" class="font-bold">WC 2026</a>
 		<div class="flex items-center gap-4 text-sm">
 			<a href="/picks" class="font-medium text-gray-600 hover:text-gray-900">Picks</a>
+			<a href="/leaderboard" class="font-medium text-gray-600 hover:text-gray-900">Leaderboard</a>
 			<a href="/faq" class="font-medium text-gray-600 hover:text-gray-900">FAQ</a>
 			{#if data.user}
 				<span class="text-gray-600">{data.user.email}</span>

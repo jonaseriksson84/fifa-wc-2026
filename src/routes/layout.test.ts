@@ -20,4 +20,9 @@ describe('site layout', () => {
 		expect(layoutHtml).toContain('href="/picks"');
 		expect(layoutHtml.toLowerCase()).toContain('picks');
 	});
+
+	it('contains a link to the leaderboard page', () => {
+		expect(layoutHtml).toContain('href="/leaderboard"');
+		expect(layoutHtml.toLowerCase()).toContain('leaderboard');
+	});
 });
