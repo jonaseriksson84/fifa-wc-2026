@@ -49,6 +49,8 @@ Make a git commit. The commit message must:
 
 Keep it concise.
 
+**Do NOT add `Co-Authored-By: Claude` (or any AI / model) trailers to the commit message. Do NOT add a "Generated with Claude Code" footer. Commit as the human author only.**
+
 # THE ISSUE
 
 If the task is not complete, leave a comment on the issue with what was done.

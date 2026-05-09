@@ -50,6 +50,8 @@ If you find improvements to make:
 2. Run tests and type checking to ensure nothing is broken
 3. Commit describing the refinements
 
+**Do NOT add `Co-Authored-By: Claude` (or any AI / model) trailers to commit messages. Do NOT add "Generated with Claude Code" footers. Commit as the human author only.**
+
 If the code is already clean and well-structured, do nothing.
 
 Once complete, output <promise>COMPLETE</promise>.
