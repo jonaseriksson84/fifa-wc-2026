@@ -12,6 +12,12 @@
 		return new Date() >= new Date(kickoff);
 	}
 
+	function buttonLabel(value: string, fixture: Fixture): string {
+		if (value === 'HOME') return fixture.homeTeam;
+		if (value === 'AWAY') return fixture.awayTeam;
+		return 'DRAW';
+	}
+
 	type Fixture = (typeof data.fixtures)[number];
 
 	function groupByStage(fixtures: Fixture[]): [string, Fixture[]][] {
@@ -96,11 +102,7 @@
 												: 'border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100'}
 												{locked ? ' cursor-not-allowed opacity-50' : ''}"
 										>
-											{value === 'HOME'
-												? f.homeTeam
-												: value === 'AWAY'
-													? f.awayTeam
-													: 'DRAW'}
+											{buttonLabel(value, f)}
 										</button>
 									</form>
 								{/each}

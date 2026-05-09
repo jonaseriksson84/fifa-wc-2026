@@ -8,19 +8,12 @@ export async function getPicksForUser(db: Db, userId: string) {
 }
 
 export async function upsertPick(db: Db, userId: string, fixtureId: number, value: PickValue) {
+	const updatedAt = new Date().toISOString();
 	await db
 		.insert(pick)
-		.values({
-			userId,
-			fixtureId,
-			value,
-			updatedAt: new Date().toISOString()
-		})
+		.values({ userId, fixtureId, value, updatedAt })
 		.onConflictDoUpdate({
 			target: [pick.userId, pick.fixtureId],
-			set: {
-				value,
-				updatedAt: new Date().toISOString()
-			}
+			set: { value, updatedAt }
 		});
 }

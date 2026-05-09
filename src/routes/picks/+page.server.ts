@@ -55,11 +55,17 @@ export const actions: Actions = {
 		const fixtureIdStr = data.get('fixtureId');
 		const value = data.get('value');
 
-		if (!fixtureIdStr || !value || typeof value !== 'string' || !validValues.has(value)) {
+		if (
+			!fixtureIdStr ||
+			typeof fixtureIdStr !== 'string' ||
+			!value ||
+			typeof value !== 'string' ||
+			!validValues.has(value)
+		) {
 			return fail(400, { error: 'Invalid pick data', fixtureId: 0 });
 		}
 
-		const fixtureId = parseInt(fixtureIdStr.toString(), 10);
+		const fixtureId = parseInt(fixtureIdStr, 10);
 		if (isNaN(fixtureId)) {
 			return fail(400, { error: 'Invalid fixture', fixtureId: 0 });
 		}
