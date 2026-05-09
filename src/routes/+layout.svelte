@@ -1,8 +1,9 @@
 <script lang="ts">
 	import '../app.css';
+	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
-	let { data, children }: { data: LayoutData; children: any } = $props();
+	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 </script>
 
 <header class="border-b border-gray-200 px-4 py-3">
