@@ -5,30 +5,31 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const faqHtml = readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8');
+const faqLower = faqHtml.toLowerCase();
 
 describe('FAQ page content', () => {
 	it('explains magic-link sign-in', () => {
 		expect(faqHtml).toContain('magic');
-		expect(faqHtml.toLowerCase()).toContain('email');
-		expect(faqHtml.toLowerCase()).not.toMatch(/enter.*password/);
-		expect(faqHtml.toLowerCase()).not.toMatch(/create.*password/);
+		expect(faqLower).toContain('email');
+		expect(faqLower).not.toMatch(/enter.*password/);
+		expect(faqLower).not.toMatch(/create.*password/);
 	});
 
 	it('explains how picking works — HOME, DRAW, AWAY for groups; HOME or AWAY for knockouts', () => {
 		expect(faqHtml).toContain('HOME');
 		expect(faqHtml).toContain('DRAW');
 		expect(faqHtml).toContain('AWAY');
-		expect(faqHtml.toLowerCase()).toContain('knockout');
+		expect(faqLower).toContain('knockout');
 	});
 
 	it('explains picks lock at kickoff', () => {
-		expect(faqHtml.toLowerCase()).toContain('lock');
-		expect(faqHtml.toLowerCase()).toContain('kickoff');
+		expect(faqLower).toContain('lock');
+		expect(faqLower).toContain('kickoff');
 	});
 
 	it('explains pick visibility — private until kickoff, then public', () => {
-		expect(faqHtml.toLowerCase()).toContain('private');
-		expect(faqHtml.toLowerCase()).toContain('visible');
+		expect(faqLower).toContain('private');
+		expect(faqLower).toContain('visible');
 	});
 
 	it('shows correct scoring weights', () => {
@@ -36,29 +37,29 @@ describe('FAQ page content', () => {
 		expect(faqHtml).toContain('2');
 		expect(faqHtml).toContain('3');
 		expect(faqHtml).toContain('5');
-		expect(faqHtml.toLowerCase()).toContain('group');
-		expect(faqHtml.toLowerCase()).toContain('final');
-		expect(faqHtml.toLowerCase()).toContain('3rd-place');
+		expect(faqLower).toContain('group');
+		expect(faqLower).toContain('final');
+		expect(faqLower).toContain('3rd-place');
 	});
 
 	it('explains what "correct" means in knockouts — advancing team, not 90-min score', () => {
-		expect(faqHtml.toLowerCase()).toContain('advance');
-		expect(faqHtml.toLowerCase()).toContain('penalties');
+		expect(faqLower).toContain('advance');
+		expect(faqLower).toContain('penalties');
 	});
 
 	it('explains missed picks score zero', () => {
-		expect(faqHtml.toLowerCase()).toContain('missed');
-		expect(faqHtml.toLowerCase()).toContain('zero');
+		expect(faqLower).toContain('missed');
+		expect(faqLower).toContain('zero');
 	});
 
 	it('explains tie-breaker rule — none, shared rank', () => {
-		expect(faqHtml.toLowerCase()).toContain('tie');
-		expect(faqHtml.toLowerCase()).toContain('share');
+		expect(faqLower).toContain('tie');
+		expect(faqLower).toContain('share');
 	});
 
 	it('explains where results come from', () => {
-		expect(faqHtml.toLowerCase()).toContain('automatically');
-		expect(faqHtml.toLowerCase()).toContain('api');
+		expect(faqLower).toContain('automatically');
+		expect(faqLower).toContain('api');
 	});
 
 	it('uses domain language from CONTEXT.md', () => {
@@ -69,14 +70,9 @@ describe('FAQ page content', () => {
 	});
 
 	it('never uses forbidden terminology', () => {
-		const lower = faqHtml.toLowerCase();
-		const lines = lower.split('\n');
-		for (const line of lines) {
-			if (line.trim().startsWith('<!--')) continue;
-			expect(line).not.toMatch(/\bbet\b/);
-			expect(line).not.toMatch(/\bmatch\b/);
-			expect(line).not.toMatch(/\bguess\b/);
-		}
+		expect(faqLower).not.toMatch(/\bbet\b/);
+		expect(faqLower).not.toMatch(/\bmatch\b/);
+		expect(faqLower).not.toMatch(/\bguess\b/);
 	});
 });
 
