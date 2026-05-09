@@ -43,16 +43,16 @@ describe('deriveResult', () => {
 		expect(deriveResult(groupAwayWin as ApiFixtureResponse)).toBe('AWAY');
 	});
 
-	it('returns winner from goals for knockout decided in 90 minutes', () => {
+	it('returns the advancing team for knockout decided in 90 minutes', () => {
 		expect(deriveResult(knockout90min as ApiFixtureResponse)).toBe('HOME');
 	});
 
-	it('returns winner from fulltime+extratime for knockout decided in extra time', () => {
+	it('returns the advancing team for knockout decided in extra time', () => {
 		const result = deriveResult(knockoutExtraTime as ApiFixtureResponse);
 		expect(result).toBe('AWAY');
 	});
 
-	it('returns winner from penalty score for knockout decided on penalties', () => {
+	it('returns the advancing team for knockout decided on penalties', () => {
 		const result = deriveResult(knockoutPenalties as ApiFixtureResponse);
 		expect(result).toBe('HOME');
 	});

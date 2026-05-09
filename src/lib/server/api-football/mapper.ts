@@ -18,16 +18,12 @@ export function parseRound(round: string): Stage {
 	return mapped;
 }
 
-export function isKnockout(stage: Stage): boolean {
-	return stage !== 'Group';
-}
-
 export function deriveResult(entry: ApiFixtureResponse): Result | null {
 	if (!FINISHED_STATUSES.has(entry.fixture.status.short)) return null;
 
 	const stage = parseRound(entry.league.round);
 
-	if (!isKnockout(stage)) {
+	if (stage === 'Group') {
 		const home = entry.goals.home!;
 		const away = entry.goals.away!;
 		if (home > away) return 'HOME';
@@ -35,21 +31,7 @@ export function deriveResult(entry: ApiFixtureResponse): Result | null {
 		return 'DRAW';
 	}
 
-	if (entry.fixture.status.short === 'PEN') {
-		const penHome = entry.score.penalty.home!;
-		const penAway = entry.score.penalty.away!;
-		return penHome > penAway ? 'HOME' : 'AWAY';
-	}
-
-	if (entry.fixture.status.short === 'AET') {
-		const etHome = (entry.score.fulltime.home ?? 0) + (entry.score.extratime.home ?? 0);
-		const etAway = (entry.score.fulltime.away ?? 0) + (entry.score.extratime.away ?? 0);
-		return etHome > etAway ? 'HOME' : 'AWAY';
-	}
-
-	const home = entry.goals.home!;
-	const away = entry.goals.away!;
-	return home > away ? 'HOME' : 'AWAY';
+	return entry.teams.home.winner ? 'HOME' : 'AWAY';
 }
 
 export function mapFixture(entry: ApiFixtureResponse): DomainFixture {

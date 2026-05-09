@@ -56,10 +56,5 @@ export async function fetchFinishedResults(
 		opts
 	);
 
-	const results: DomainResult[] = [];
-	for (const entry of data.response) {
-		const result = mapResult(entry);
-		if (result !== null) results.push(result);
-	}
-	return results;
+	return data.response.map(mapResult).filter((r): r is DomainResult => r !== null);
 }
