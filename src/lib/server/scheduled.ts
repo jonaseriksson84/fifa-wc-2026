@@ -2,6 +2,7 @@ import { fetchFixtures, fetchFinishedResults } from './api-football';
 
 const RESULT_POLLER_CRON = '*/5 * * * *';
 const FIXTURE_REFRESHER_CRON = '0 8 * * *';
+const MATCH_BUFFER_MS = 2.5 * 60 * 60 * 1000;
 
 interface ScheduledEnv {
 	DB: D1Database;
@@ -22,13 +23,13 @@ export async function handleScheduled(event: ScheduledEvent, env: ScheduledEnv):
 }
 
 async function pollResults(env: ScheduledEnv): Promise<void> {
-	const cutoff = new Date(Date.now() - 2.5 * 60 * 60 * 1000).toISOString();
+	const cutoff = new Date(Date.now() - MATCH_BUFFER_MS).toISOString();
 
 	const { results: staleFixtures } = await env.DB.prepare(
-		'SELECT id, api_football_id FROM fixture WHERE kickoff < ? AND result IS NULL'
+		'SELECT api_football_id FROM fixture WHERE kickoff < ? AND result IS NULL'
 	)
 		.bind(cutoff)
-		.all<{ id: number; api_football_id: number }>();
+		.all<{ api_football_id: number | null }>();
 
 	if (staleFixtures.length === 0) {
 		console.log('Result poller: no stale fixtures, skipping API call');
