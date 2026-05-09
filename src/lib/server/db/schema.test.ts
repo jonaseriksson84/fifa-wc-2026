@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getTableName } from 'drizzle-orm';
-import { fixture, user, session, account, verification } from './schema';
+import { fixture, user, session, account, pick, verification } from './schema';
 
 describe('fixture schema', () => {
 	it('defines the fixture table with expected columns', () => {
@@ -75,6 +75,21 @@ describe('account schema', () => {
 
 	it('maps to the correct SQL table name', () => {
 		expect(getTableName(account)).toBe('account');
+	});
+});
+
+describe('pick schema', () => {
+	it('defines the pick table with expected columns', () => {
+		const columns = Object.keys(pick);
+		expect(columns).toContain('id');
+		expect(columns).toContain('userId');
+		expect(columns).toContain('fixtureId');
+		expect(columns).toContain('value');
+		expect(columns).toContain('updatedAt');
+	});
+
+	it('maps to the correct SQL table name', () => {
+		expect(getTableName(pick)).toBe('pick');
 	});
 });
 

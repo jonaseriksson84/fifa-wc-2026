@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const fixture = sqliteTable('fixture', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
@@ -53,6 +53,24 @@ export const account = sqliteTable('account', {
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 });
+
+export const pick = sqliteTable(
+	'pick',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id),
+		fixtureId: integer('fixture_id')
+			.notNull()
+			.references(() => fixture.id),
+		value: text('value').notNull(),
+		updatedAt: text('updated_at')
+			.notNull()
+			.$defaultFn(() => new Date().toISOString())
+	},
+	(table) => [uniqueIndex('pick_user_fixture_idx').on(table.userId, table.fixtureId)]
+);
 
 export const verification = sqliteTable('verification', {
 	id: text('id').primaryKey(),
