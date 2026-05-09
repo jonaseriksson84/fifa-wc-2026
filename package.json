@@ -27,6 +27,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260509.1",
     "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^25.6.2",
     "drizzle-kit": "^0.31.0",
     "svelte-check": "^4.0.0",
     "tailwindcss": "^4.1.0",
