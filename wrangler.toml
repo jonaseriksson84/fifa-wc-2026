@@ -1,0 +1,28 @@
+name = "fifa-wc-2026"
+compatibility_date = "2025-04-01"
+main = ".svelte-kit/cloudflare/_worker.js"
+assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
+
+[env.friends]
+name = "fifa-wc-2026-friends"
+
+[[env.friends.d1_databases]]
+binding = "DB"
+database_name = "fifa-wc-2026-friends"
+database_id = "PLACEHOLDER_FRIENDS_DB_ID"
+migrations_dir = "drizzle"
+
+[env.work]
+name = "fifa-wc-2026-work"
+
+[[env.work.d1_databases]]
+binding = "DB"
+database_name = "fifa-wc-2026-work"
+database_id = "PLACEHOLDER_WORK_DB_ID"
+migrations_dir = "drizzle"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fifa-wc-2026"
+database_id = "PLACEHOLDER_LOCAL_DB_ID"
+migrations_dir = "drizzle"
