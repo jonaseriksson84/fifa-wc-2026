@@ -15,6 +15,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		db.select({ id: user.id, name: user.name, email: user.email }).from(user)
 	]);
 
+	const fixtureById = new Map(allFixtures.map((f) => [f.id, f]));
 	const scoreMap = computeScores(allPicks, allFixtures);
 
 	const entries = allUsers.map((u) => ({
@@ -35,19 +36,13 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	});
 
 	const currentUserId = locals.user.id;
-	const currentUserPicks = allPicks
-		.filter((p) => p.userId === currentUserId)
-		.map((p) => {
-			const f = allFixtures.find((fx) => fx.id === p.fixtureId);
-			const correct = f?.result != null ? p.value === f.result : null;
-			return {
-				fixtureId: p.fixtureId,
-				value: p.value,
-				correct
-			};
-		});
-
-	const pickMap = new Map(currentUserPicks.map((p) => [p.fixtureId, p]));
+	const pickMap = new Map<number, { value: string; correct: boolean | null }>();
+	for (const p of allPicks) {
+		if (p.userId !== currentUserId) continue;
+		const f = fixtureById.get(p.fixtureId);
+		const correct = f?.result != null ? p.value === f.result : null;
+		pickMap.set(p.fixtureId, { value: p.value, correct });
+	}
 
 	const stageOrder: Record<string, number> = {
 		Group: 0,
