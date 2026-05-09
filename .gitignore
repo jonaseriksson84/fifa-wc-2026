@@ -18,13 +18,10 @@ build/
 .env.local
 .env.*.local
 
-# Sandcastle: directory is committed (prompts, Dockerfile, coding standards),
-# but local secrets and runtime state inside it are not.
+# Sandcastle: directory is committed (prompts, Dockerfile, coding standards).
+# Sandcastle's nested .sandcastle/.gitignore handles its runtime artefacts
+# (.env, logs/, worktrees/); the line below is belt-and-suspenders for secrets.
 .sandcastle/.env
-.sandcastle/.env.local
-.sandcastle/.env.*.local
-.sandcastle/state/
-.sandcastle/.cache/
 
 # Test output
 coverage/
