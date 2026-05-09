@@ -20,6 +20,7 @@ declare global {
 		interface Platform {
 			env: {
 				DB: D1Database;
+				API_FOOTBALL_KEY: string;
 				RESEND_API_KEY: string;
 				BETTER_AUTH_SECRET: string;
 				SENDER_EMAIL?: string;
