@@ -3,11 +3,11 @@
 </script>
 
 <svelte:head>
-	<title>WC 2026 Predictions</title>
+	<title>{data.poolName}</title>
 </svelte:head>
 
 <main class="mx-auto max-w-2xl px-4 py-8">
-	<h1 class="mb-6 text-3xl font-bold">WC 2026 Fixtures</h1>
+	<h1 class="mb-6 text-3xl font-bold">{data.poolName} — Fixtures</h1>
 
 	{#if data.fixtures.length === 0}
 		<p class="text-gray-500">No fixtures yet. Run <code class="rounded bg-gray-100 px-1 py-0.5 text-sm">npm run seed:fixtures</code> to add one.</p>

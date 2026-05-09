@@ -1,5 +1,9 @@
+<script lang="ts">
+	let { data } = $props();
+</script>
+
 <svelte:head>
-	<title>FAQ — WC 2026 Predictions</title>
+	<title>FAQ — {data.poolName}</title>
 </svelte:head>
 
 <main class="mx-auto max-w-2xl px-4 py-8">

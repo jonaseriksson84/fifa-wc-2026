@@ -24,6 +24,8 @@ declare global {
 				RESEND_API_KEY: string;
 				BETTER_AUTH_SECRET: string;
 				SENDER_EMAIL?: string;
+				POOL_NAME: string;
+				POOL_ACCENT_HEX: string;
 			};
 			context: {
 				waitUntil(promise: Promise<unknown>): void;

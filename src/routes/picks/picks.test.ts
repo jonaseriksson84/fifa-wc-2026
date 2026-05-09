@@ -64,9 +64,9 @@ describe('picks page content', () => {
 		expect(pageHtml).toContain('isKnockout');
 	});
 
-	it('visually selects the current pick', () => {
+	it('visually selects the current pick using the accent color', () => {
 		expect(pageHtml).toContain('currentPick');
-		expect(pageHtml).toContain('bg-blue-600');
+		expect(pageHtml).toContain('bg-[color:var(--accent)]');
 	});
 
 	it('renders validation errors inline near the fixture', () => {

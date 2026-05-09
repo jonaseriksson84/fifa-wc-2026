@@ -3,11 +3,19 @@ compatibility_date = "2025-04-01"
 main = ".svelte-kit/cloudflare/_worker.js"
 assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 
+[vars]
+POOL_NAME = "WC 2026"
+POOL_ACCENT_HEX = "#2563eb"
+
 [triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
 
 [env.friends]
 name = "fifa-wc-2026-friends"
+
+[env.friends.vars]
+POOL_NAME = "WC26 Jobbiga Bets"
+POOL_ACCENT_HEX = "#27D3F5"
 
 [env.friends.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
@@ -20,6 +28,10 @@ migrations_dir = "drizzle"
 
 [env.work]
 name = "fifa-wc-2026-work"
+
+[env.work.vars]
+POOL_NAME = "WC26 Office Picks"
+POOL_ACCENT_HEX = "#F54927"
 
 [env.work.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
