@@ -9,7 +9,7 @@ name = "fifa-wc-2026-friends"
 [[env.friends.d1_databases]]
 binding = "DB"
 database_name = "fifa-wc-2026-friends"
-database_id = "PLACEHOLDER_FRIENDS_DB_ID"
+database_id = "ca9ac350-128e-4557-b520-eb8f813e2b05"
 migrations_dir = "drizzle"
 
 [env.work]
@@ -18,11 +18,11 @@ name = "fifa-wc-2026-work"
 [[env.work.d1_databases]]
 binding = "DB"
 database_name = "fifa-wc-2026-work"
-database_id = "PLACEHOLDER_WORK_DB_ID"
+database_id = "28281aa7-de2e-4c8e-8dc3-a527615838b9"
 migrations_dir = "drizzle"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "fifa-wc-2026"
-database_id = "PLACEHOLDER_LOCAL_DB_ID"
+database_id = "ca9ac350-128e-4557-b520-eb8f813e2b05"
 migrations_dir = "drizzle"

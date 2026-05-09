@@ -31,10 +31,10 @@ import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 // Maximum number of plan→execute→merge cycles before stopping.
 // Raise this if your backlog is large; lower it for a quick smoke-test run.
 //
-// Set to 1 for the first kickoff so we can review/merge the platform
-// skeleton (#3), then push Cloudflare secrets, before letting the loop
-// run unattended on the rest of the backlog. Bump back to 10 after that.
-const MAX_ITERATIONS = 1;
+// 10 is enough headroom for the remaining 9 slices: the dependency graph
+// resolves in ~4 rounds (round 1: #4/#5/#11; round 2: #6/#7; round 3:
+// #8/#9/#10; round 4: #12). Extra slack absorbs retries if any agent fails.
+const MAX_ITERATIONS = 10;
 
 // Hooks run inside the sandbox before the agent starts each iteration.
 // Conditional npm install: on the very first iteration there's no package.json
@@ -53,9 +53,7 @@ const hooks = {
 // Copy node_modules from the host into the worktree before each sandbox
 // starts. Avoids a full npm install from scratch; the hook above handles
 // platform-specific binaries and any packages added since the last copy.
-// On the first iteration node_modules doesn't exist on the host yet — keep
-// this list empty until package.json + node_modules are in place.
-const copyToWorktree: string[] = [];
+const copyToWorktree = ["node_modules"];
 
 // ---------------------------------------------------------------------------
 // Main loop
