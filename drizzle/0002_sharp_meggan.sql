@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `fixture_api_football_id_unique` ON `fixture` (`api_football_id`);

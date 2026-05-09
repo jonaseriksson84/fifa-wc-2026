@@ -15,6 +15,13 @@
       "when": 1778366082673,
       "tag": "0001_demonic_spitfire",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778365576813,
+      "tag": "0002_sharp_meggan",
+      "breakpoints": true
     }
   ]
 }

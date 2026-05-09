@@ -1,0 +1,19 @@
+{
+  "fixture": {
+    "id": 1145590,
+    "date": "2026-07-19T20:00:00+00:00",
+    "status": { "short": "NS", "long": "Not Started" }
+  },
+  "league": { "id": 1, "name": "World Cup", "round": "Final" },
+  "teams": {
+    "home": { "id": 26, "name": "Mexico", "winner": null },
+    "away": { "id": 1, "name": "France", "winner": null }
+  },
+  "goals": { "home": null, "away": null },
+  "score": {
+    "halftime": { "home": null, "away": null },
+    "fulltime": { "home": null, "away": null },
+    "extratime": { "home": null, "away": null },
+    "penalty": { "home": null, "away": null }
+  }
+}

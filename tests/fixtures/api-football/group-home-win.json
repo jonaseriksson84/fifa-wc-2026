@@ -1,0 +1,19 @@
+{
+  "fixture": {
+    "id": 1145510,
+    "date": "2026-06-11T21:00:00+00:00",
+    "status": { "short": "FT", "long": "Match Finished" }
+  },
+  "league": { "id": 1, "name": "World Cup", "round": "Group A - 1" },
+  "teams": {
+    "home": { "id": 26, "name": "Mexico", "winner": true },
+    "away": { "id": 5529, "name": "Canada", "winner": false }
+  },
+  "goals": { "home": 2, "away": 1 },
+  "score": {
+    "halftime": { "home": 1, "away": 0 },
+    "fulltime": { "home": 2, "away": 1 },
+    "extratime": { "home": null, "away": null },
+    "penalty": { "home": null, "away": null }
+  }
+}

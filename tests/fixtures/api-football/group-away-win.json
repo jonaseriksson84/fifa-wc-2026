@@ -1,0 +1,19 @@
+{
+  "fixture": {
+    "id": 1145512,
+    "date": "2026-06-12T21:00:00+00:00",
+    "status": { "short": "FT", "long": "Match Finished" }
+  },
+  "league": { "id": 1, "name": "World Cup", "round": "Group C - 1" },
+  "teams": {
+    "home": { "id": 15, "name": "Japan", "winner": false },
+    "away": { "id": 2, "name": "Brazil", "winner": true }
+  },
+  "goals": { "home": 0, "away": 3 },
+  "score": {
+    "halftime": { "home": 0, "away": 1 },
+    "fulltime": { "home": 0, "away": 3 },
+    "extratime": { "home": null, "away": null },
+    "penalty": { "home": null, "away": null }
+  }
+}

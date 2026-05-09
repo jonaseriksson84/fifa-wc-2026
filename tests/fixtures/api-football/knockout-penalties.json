@@ -1,0 +1,19 @@
+{
+  "fixture": {
+    "id": 1145580,
+    "date": "2026-07-13T20:00:00+00:00",
+    "status": { "short": "PEN", "long": "Match Finished After Penalties" }
+  },
+  "league": { "id": 1, "name": "World Cup", "round": "Semi-finals" },
+  "teams": {
+    "home": { "id": 26, "name": "Mexico", "winner": true },
+    "away": { "id": 10, "name": "England", "winner": false }
+  },
+  "goals": { "home": 1, "away": 1 },
+  "score": {
+    "halftime": { "home": 0, "away": 1 },
+    "fulltime": { "home": 1, "away": 1 },
+    "extratime": { "home": 0, "away": 0 },
+    "penalty": { "home": 5, "away": 3 }
+  }
+}

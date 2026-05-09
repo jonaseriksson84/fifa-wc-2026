@@ -1,0 +1,19 @@
+{
+  "fixture": {
+    "id": 1145570,
+    "date": "2026-07-09T20:00:00+00:00",
+    "status": { "short": "AET", "long": "Match Finished After Extra Time" }
+  },
+  "league": { "id": 1, "name": "World Cup", "round": "Quarter-finals" },
+  "teams": {
+    "home": { "id": 2, "name": "Brazil", "winner": false },
+    "away": { "id": 1, "name": "France", "winner": true }
+  },
+  "goals": { "home": 2, "away": 3 },
+  "score": {
+    "halftime": { "home": 1, "away": 1 },
+    "fulltime": { "home": 2, "away": 2 },
+    "extratime": { "home": 0, "away": 1 },
+    "penalty": { "home": null, "away": null }
+  }
+}
