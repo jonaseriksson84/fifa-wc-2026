@@ -2,8 +2,12 @@ import { redirect, fail } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 import { createDb } from '$lib/server/db';
-import { fixture } from '$lib/server/db/schema';
-import { getPicksForUser, upsertPick } from '$lib/server/picks/pick-repository';
+import { fixture, user } from '$lib/server/db/schema';
+import {
+	getPicksForUser,
+	getPicksForFixture,
+	upsertPick
+} from '$lib/server/picks/pick-repository';
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 
 const stageOrder: Record<string, number> = {
@@ -16,25 +20,66 @@ const stageOrder: Record<string, number> = {
 	Final: 6
 };
 
+export type PicksByValue = {
+	HOME: string[];
+	DRAW: string[];
+	AWAY: string[];
+	noPick: string[];
+};
+
 export const load: PageServerLoad = async ({ locals, platform }) => {
 	if (!locals.user) throw redirect(302, '/login');
 
 	const db = createDb(platform!.env.DB);
-	const fixtures = await db.select().from(fixture);
-	const picks = await getPicksForUser(db, locals.user.id);
+	const now = new Date();
+
+	const [fixtures, picks, allUsers] = await Promise.all([
+		db.select().from(fixture),
+		getPicksForUser(db, locals.user.id),
+		db.select({ email: user.email }).from(user)
+	]);
 
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
+	const allEmails = allUsers.map((u) => u.email);
 
-	const sorted = fixtures
-		.map((f) => ({
-			...f,
-			currentPick: (pickMap.get(f.id) as PickValue) ?? null
-		}))
-		.sort((a, b) => {
-			const stageDiff = (stageOrder[a.stage] ?? 99) - (stageOrder[b.stage] ?? 99);
-			if (stageDiff !== 0) return stageDiff;
-			return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
-		});
+	const sorted = await Promise.all(
+		fixtures.map(async (f) => {
+			const locked = now.getTime() >= new Date(f.kickoff).getTime();
+			let picksByValue: PicksByValue | null = null;
+
+			if (locked) {
+				const fixturePicks = await getPicksForFixture(db, f.id);
+				const buckets: PicksByValue = { HOME: [], DRAW: [], AWAY: [], noPick: [] };
+				const pickedEmails = new Set<string>();
+
+				for (const p of fixturePicks) {
+					const key = p.value as keyof Omit<PicksByValue, 'noPick'>;
+					buckets[key]?.push(p.email);
+					pickedEmails.add(p.email);
+				}
+
+				for (const email of allEmails) {
+					if (!pickedEmails.has(email)) {
+						buckets.noPick.push(email);
+					}
+				}
+
+				picksByValue = buckets;
+			}
+
+			return {
+				...f,
+				currentPick: (pickMap.get(f.id) as PickValue) ?? null,
+				picksByValue
+			};
+		})
+	);
+
+	sorted.sort((a, b) => {
+		const stageDiff = (stageOrder[a.stage] ?? 99) - (stageOrder[b.stage] ?? 99);
+		if (stageDiff !== 0) return stageDiff;
+		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
+	});
 
 	const unpickedCount = sorted.filter((f) => f.currentPick === null).length;
 
