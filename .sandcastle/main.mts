@@ -37,15 +37,25 @@ import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 const MAX_ITERATIONS = 1;
 
 // Hooks run inside the sandbox before the agent starts each iteration.
-// npm install ensures the sandbox always has fresh dependencies.
+// Conditional npm install: on the very first iteration there's no package.json
+// yet (slice #3 creates it), so we no-op gracefully instead of erroring.
 const hooks = {
-  sandbox: { onSandboxReady: [{ command: "npm install" }] },
+  sandbox: {
+    onSandboxReady: [
+      {
+        command:
+          "sh -c 'test -f package.json && npm install || echo \"no package.json yet, skipping npm install\"'",
+      },
+    ],
+  },
 };
 
 // Copy node_modules from the host into the worktree before each sandbox
 // starts. Avoids a full npm install from scratch; the hook above handles
 // platform-specific binaries and any packages added since the last copy.
-const copyToWorktree = ["node_modules"];
+// On the first iteration node_modules doesn't exist on the host yet — keep
+// this list empty until package.json + node_modules are in place.
+const copyToWorktree: string[] = [];
 
 // ---------------------------------------------------------------------------
 // Main loop
