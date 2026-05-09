@@ -18,7 +18,9 @@
     "@sveltejs/adapter-cloudflare": "^6.0.0",
     "@sveltejs/kit": "^2.21.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
-    "drizzle-orm": "^0.44.0",
+    "better-auth": "^1.6.10",
+    "drizzle-orm": "^0.45.2",
+    "resend": "^6.12.3",
     "svelte": "^5.0.0"
   },
   "devDependencies": {
