@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
 	const allEmails = allUsers.map((u) => u.email);
 
-	const sorted = await Promise.all(
+	const enriched = await Promise.all(
 		fixtures.map(async (f) => {
 			const locked = now.getTime() >= new Date(f.kickoff).getTime();
 			let picksByValue: PicksByValue | null = null;
@@ -53,7 +53,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 				const pickedEmails = new Set<string>();
 
 				for (const p of fixturePicks) {
-					const key = p.value as keyof Omit<PicksByValue, 'noPick'>;
+					const key = p.value as PickValue;
 					buckets[key]?.push(p.email);
 					pickedEmails.add(p.email);
 				}
@@ -75,18 +75,18 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		})
 	);
 
-	sorted.sort((a, b) => {
+	enriched.sort((a, b) => {
 		const stageDiff = (stageOrder[a.stage] ?? 99) - (stageOrder[b.stage] ?? 99);
 		if (stageDiff !== 0) return stageDiff;
 		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 	});
 
-	const unpickedCount = sorted.filter((f) => f.currentPick === null).length;
+	const unpickedCount = enriched.filter((f) => f.currentPick === null).length;
 
 	return {
-		fixtures: sorted,
+		fixtures: enriched,
 		unpickedCount,
-		totalCount: sorted.length
+		totalCount: enriched.length
 	};
 };
 
