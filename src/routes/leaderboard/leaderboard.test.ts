@@ -116,7 +116,6 @@ describe('leaderboard page — guest view', () => {
 });
 
 describe('leaderboard page server', () => {
-
 	it('delegates scoring to the scoring module', () => {
 		expect(serverTs).toContain('computeScores');
 	});

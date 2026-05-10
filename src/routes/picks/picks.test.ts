@@ -213,7 +213,6 @@ describe('picks page — guest pick button redirect', () => {
 });
 
 describe('picks page server', () => {
-
 	it('sorts fixtures by stage order then kickoff', () => {
 		expect(serverTs).toContain('stageOrder');
 		expect(serverTs).toContain('Group');
