@@ -43,11 +43,17 @@ If your task changes anything the user sees (Svelte components, CSS, page layout
 
 Workflow:
 
-1. Start the dev server in the background:
+1. Start the dev server in the background, capping the wait at 60 s. The
+   sandbox's `onSandboxReady` hook already drops a `.dev.vars` with
+   boot-safe placeholder values, so the server should come up immediately.
    ```
    npm run dev > /tmp/dev.log 2>&1 &
-   until curl -fs http://localhost:5173 > /dev/null; do sleep 1; done
+   for i in $(seq 1 60); do curl -fs http://localhost:5173 > /dev/null && break; sleep 1; done
+   curl -fs http://localhost:5173 > /dev/null || { echo "dev server failed — see /tmp/dev.log"; tail -40 /tmp/dev.log; }
    ```
+   If the dev server fails to come up after 60 s, **skip visual verification**,
+   note it in the commit message, and proceed to commit. Do not retry
+   indefinitely — the unit tests and typecheck still gate correctness.
 2. If the page you're working on needs data, run the local seed scripts:
    ```
    npm run db:migrate

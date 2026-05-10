@@ -1,10 +1,14 @@
 FROM node:22-bookworm
 
-# Install system dependencies
+# Install system dependencies. `tini` is the init we use as PID 1 (see
+# ENTRYPOINT below) — without it, agent-spawned children (npm dev, vite,
+# playwright firefox) accumulate as zombies because `sleep infinity` never
+# reaps. Past runs hit 23+ defunct PIDs which correlated with hangs.
 RUN apt-get update && apt-get install -y \
   git \
   curl \
   jq \
+  tini \
   && rm -rf /var/lib/apt/lists/*
 
 # Install GitHub CLI
@@ -69,4 +73,4 @@ WORKDIR /home/agent
 # In worktree sandbox mode, Sandcastle bind-mounts the git worktree at /home/agent/workspace
 # and overrides the working directory to /home/agent/workspace at container start.
 # Structure your Dockerfile so that /home/agent/workspace can serve as the project root.
-ENTRYPOINT ["sleep", "infinity"]
+ENTRYPOINT ["/usr/bin/tini", "--", "sleep", "infinity"]

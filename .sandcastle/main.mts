@@ -42,12 +42,23 @@ const MAX_ITERATIONS = 20;
 // Hooks run inside the sandbox before the agent starts each iteration.
 // Conditional npm install: on the very first iteration there's no package.json
 // yet (slice #3 creates it), so we no-op gracefully instead of erroring.
+//
+// The second hook drops a `.dev.vars` with boot-safe placeholder secrets so
+// `npm run dev` starts cleanly for visual verification. Without this, agents
+// burn iterations rediscovering the env-var contract for every frontend task,
+// or worse: hang on the dev-server polling loop until the run dies. Real
+// secrets (Resend, api-football) aren't needed for in-sandbox UI rendering;
+// E2E_TEST=1 unlocks the helper routes the agent uses for seeding.
 const hooks = {
   sandbox: {
     onSandboxReady: [
       {
         command:
           "sh -c 'test -f package.json && npm install || echo \"no package.json yet, skipping npm install\"'",
+      },
+      {
+        command:
+          "sh -c 'test -f .dev.vars || cat > .dev.vars <<EOF\nRESEND_API_KEY=test_placeholder\nAPI_FOOTBALL_KEY=test_placeholder\nBETTER_AUTH_SECRET=sandcastle_local_dev_secret_not_for_prod_use_only\nBETTER_AUTH_URL=http://localhost:5173\nSENDER_EMAIL=onboarding@resend.dev\nE2E_TEST=1\nEOF'",
       },
     ],
   },
@@ -74,24 +85,36 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   //
   // It outputs a <plan> JSON block — we parse that to drive Phase 2.
   // -------------------------------------------------------------------------
-  const plan = await sandcastle.run({
-    hooks,
-    sandbox: docker(),
-    name: "planner",
-    // One iteration is enough: the planner just needs to read and reason,
-    // not write code.
-    maxIterations: 1,
-    // Opus for planning: dependency analysis benefits from deeper reasoning.
-    agent: sandcastle.claudeCode("claude-opus-4-6"),
-    promptFile: "./.sandcastle/plan-prompt.md",
-  });
+  // Wrap the planner in try/catch so a transient failure inside the planner
+  // sandbox (most commonly a `gh issue list` shell-expression timeout, which
+  // killed our 2026-05-10 run mid-cycle) doesn't tear down the whole script.
+  // We just skip the iteration and try again on the next cycle.
+  let plan;
+  try {
+    plan = await sandcastle.run({
+      hooks,
+      sandbox: docker(),
+      name: "planner",
+      // One iteration is enough: the planner just needs to read and reason,
+      // not write code.
+      maxIterations: 1,
+      // Opus for planning: dependency analysis benefits from deeper reasoning.
+      agent: sandcastle.claudeCode("claude-opus-4-6"),
+      promptFile: "./.sandcastle/plan-prompt.md",
+    });
+  } catch (err) {
+    console.error(`Planner crashed (skipping iteration): ${err}`);
+    continue;
+  }
 
   // Extract the <plan>…</plan> block from the agent's stdout.
   const planMatch = plan.stdout.match(/<plan>([\s\S]*?)<\/plan>/);
   if (!planMatch) {
-    throw new Error(
-      "Planning agent did not produce a <plan> tag.\n\n" + plan.stdout,
+    console.error(
+      "Planning agent did not produce a <plan> tag (skipping iteration).\n\n" +
+        plan.stdout,
     );
+    continue;
   }
 
   // The plan JSON contains an array of issues, each with id, title, branch.
