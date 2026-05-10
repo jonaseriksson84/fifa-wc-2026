@@ -113,7 +113,7 @@
 			{#each pickValues as v}
 				{@const names = picksByValue[v as keyof PicksByValue]}
 				{#each names as name}
-					<span class="chip"><strong>{buttonLabel(v)}</strong> <span class="chip-name">{name}</span></span>
+					<span class="chip"><strong>{buttonLabel(v)}</strong> {name}</span>
 				{/each}
 			{/each}
 		</div>
@@ -457,9 +457,5 @@
 	}
 	.others-picks .chip strong {
 		font-family: var(--headline);
-	}
-	.others-picks .chip .chip-name {
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 </style>

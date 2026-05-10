@@ -41,7 +41,6 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	]);
 
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
-	const userDisplayNames = new Map(allUsers.map((u) => [u.email, displayName(u)]));
 
 	const enriched = await Promise.all(
 		fixtures.map(async (f) => {
