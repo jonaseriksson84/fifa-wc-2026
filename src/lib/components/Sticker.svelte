@@ -44,6 +44,12 @@
 		return 'Draw';
 	}
 
+	function pickFlag(value: string): string {
+		if (value === 'HOME') return flagEmoji(fixture.homeTeam);
+		if (value === 'AWAY') return flagEmoji(fixture.awayTeam);
+		return '';
+	}
+
 	let pickValues = $derived(isKnockout ? ['HOME', 'AWAY'] : ['HOME', 'DRAW', 'AWAY']);
 </script>
 
@@ -118,7 +124,7 @@
 		<div class="others-picks">
 			{#each pickValues as v}
 				{@const emails = picksByValue[v as keyof PicksByValue]}
-				{@const chipFlag = v === 'HOME' ? flagEmoji(fixture.homeTeam) : v === 'AWAY' ? flagEmoji(fixture.awayTeam) : ''}
+				{@const chipFlag = pickFlag(v)}
 				{#each emails as email}
 					<span class="chip">{#if chipFlag}<span class="chip-flag">{chipFlag}</span>{/if}<strong>{buttonLabel(v)}</strong> {email.split('@')[0]}</span>
 				{/each}
