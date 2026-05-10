@@ -60,7 +60,31 @@ Workflow:
    npm run dev:reset           # clean state, 7 future fixtures
    npm run dev:fastforward     # resolves 3 group fixtures (run again to resolve more)
    ```
-3. Drive the page with `playwright-cli` (use a session name with `-s=` so subsequent commands target the same browser):
+3. If the page requires authentication (anything behind the login wall —
+   `/picks`, `/account`, also `/leaderboard` renders differently when
+   signed in), do NOT try to drive the magic-link email flow — there's no
+   inbox in the sandbox. Use the E2E test-helper route instead. With
+   `E2E_TEST=1` set in `.dev.vars` (the sandbox sets this for you), the
+   helpers at `/api/e2e/*` are unlocked. Recipe:
+   ```
+   EMAIL="agent@example.com"
+   # 1. Submit the login form — this triggers the server-side magic-link
+   #    creation but never actually sends mail (Resend key is a placeholder).
+   playwright-cli -s=dev open --browser firefox http://localhost:5173/login
+   playwright-cli -s=dev snapshot                 # find email input + submit button refs (e1, e2, …)
+   playwright-cli -s=dev fill <emailInputRef> "$EMAIL"
+   playwright-cli -s=dev click <submitButtonRef>
+   # 2. Pull the verification token straight from the DB via the helper.
+   TOKEN=$(curl -fs "http://localhost:5173/api/e2e?action=verification-token&email=$EMAIL" | jq -r .token)
+   # 3. Visit the verify endpoint *in the same browser session* so cookies stick.
+   playwright-cli -s=dev open --browser firefox \
+     "http://localhost:5173/api/auth/magic-link/verify?token=$TOKEN&callbackURL=/picks"
+   ```
+   `e2e/smoke.spec.ts` is the canonical reference. The two helper actions
+   you'll typically use are `verification-token` (above) and `reset` (POST
+   to wipe DB between trials) — read `src/routes/api/e2e/+server.ts` for
+   the full surface (seed-fixtures, set-result, etc.).
+4. Drive the page with `playwright-cli` (use a session name with `-s=` so subsequent commands target the same browser):
    - `playwright-cli -s=dev open --browser firefox http://localhost:5173/<path>`
    - `playwright-cli -s=dev screenshot --filename /tmp/page.png` then read the screenshot back to compare against the intended visual.
    - `playwright-cli -s=dev snapshot` to inspect the DOM / accessibility tree (returns numbered refs `e1`, `e2`, ... that subsequent `click`/`fill` commands target).
@@ -68,9 +92,9 @@ Workflow:
    - `playwright-cli -s=dev close` when done.
 
    Use `--browser firefox` because the sandbox is Linux ARM64 and Google Chrome has no ARM64 Linux build. Firefox is what's installed in the image.
-4. If the parent PRD references a design exploration file under `design-explorations/`, open that file too and compare the live page against it.
-5. Iterate the code → reload → screenshot loop until the live page matches the intent.
-6. Stop the dev server before committing: `kill %1` (or `pkill -f "vite dev"`).
+5. If the parent PRD references a design exploration file under `design-explorations/`, open that file too and compare the live page against it.
+6. Iterate the code → reload → screenshot loop until the live page matches the intent.
+7. Stop the dev server before committing: `kill %1` (or `pkill -f "vite dev"`).
 
 Spending several iterations on visual verification is expected for frontend work — it's the only way to catch spacing, typography, and colour mistakes that typecheck and unit tests can't see.
 
