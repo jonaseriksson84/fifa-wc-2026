@@ -32,7 +32,10 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		if (i > 0 && entry.points < entries[i - 1].points) {
 			rank = i + 1;
 		}
-		return { ...entry, rank };
+		const tied =
+			(i > 0 && entries[i - 1].points === entry.points) ||
+			(i < entries.length - 1 && entries[i + 1].points === entry.points);
+		return { ...entry, rank, tied };
 	});
 
 	const currentUserId = locals.user.id;
