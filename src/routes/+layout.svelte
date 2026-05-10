@@ -35,7 +35,12 @@
 	</div>
 
 	<nav class="tabs">
-		<a href="/picks" class="tab-pill" class:active={currentPath === '/picks'}>My Picks{#if currentPath === '/picks' && data.openCount > 0}<span class="badge">{data.openCount}</span>{/if}</a>
+		<a href="/picks" class="tab-pill" class:active={currentPath === '/picks'}>
+			My Picks
+			{#if currentPath === '/picks' && data.openCount > 0}
+				<span class="badge">{data.openCount}</span>
+			{/if}
+		</a>
 		<a href="/leaderboard" class="tab-pill" class:active={currentPath === '/leaderboard'}>Leaderboard</a>
 		<a href="/faq" class="tab-pill" class:active={currentPath === '/faq'}>FAQ</a>
 		{#if data.user}

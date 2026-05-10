@@ -6,7 +6,9 @@ import { getPicksForUser } from '$lib/server/picks/pick-repository';
 
 export const load: LayoutServerLoad = async ({ locals, platform }) => {
 	const db = createDb(platform!.env.DB);
-	const fixtures = await db.select({ id: fixture.id, kickoff: fixture.kickoff, result: fixture.result }).from(fixture);
+	const fixtures = await db
+		.select({ id: fixture.id, kickoff: fixture.kickoff, result: fixture.result })
+		.from(fixture);
 	const progress = albumProgress(fixtures);
 
 	let openCount = 0;
