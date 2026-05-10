@@ -80,6 +80,36 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		await expect(row).toContainText('1');
 	});
 
+	test('guest can view /picks without signing in', async ({ page, request }) => {
+		await request.post('/api/e2e', { data: { action: 'reset' } });
+		await request.post('/api/e2e', { data: { action: 'seed-fixtures', fixtures: FIXTURES } });
+
+		await page.goto('/picks');
+		await expect(page).toHaveURL('/picks');
+		await expect(page.locator('h1')).toContainText('My Picks');
+		await expect(page.locator('article.sticker').first()).toContainText('Sweden');
+
+		const pickButton = page.locator('a.pick-btn.guest-link').first();
+		await expect(pickButton).toBeVisible();
+		await pickButton.click();
+		await expect(page).toHaveURL(/\/login\?then=\/picks/);
+	});
+
+	test('guest can view /leaderboard without signing in', async ({ page, request }) => {
+		await request.post('/api/e2e', { data: { action: 'reset' } });
+		await request.post('/api/e2e', { data: { action: 'seed-fixtures', fixtures: FIXTURES } });
+
+		await page.goto('/leaderboard');
+		await expect(page).toHaveURL('/leaderboard');
+		await expect(page.locator('text=STANDINGS')).toBeVisible();
+		await expect(page.locator('text=Results')).not.toBeVisible();
+	});
+
+	test('guest cannot access /account', async ({ page }) => {
+		await page.goto('/account');
+		await expect(page).toHaveURL(/\/login/);
+	});
+
 	test('display name: set on account, appears on leaderboard and chips', async ({ page, request }) => {
 		const email = `dn-${Date.now()}@test.local`;
 		const displayName = 'TestNickname';

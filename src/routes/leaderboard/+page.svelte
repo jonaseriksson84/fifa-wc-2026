@@ -19,35 +19,37 @@
 		<StickerTiersLegend />
 	</div>
 
-	<h2 class="results-heading">Results &amp; My Picks</h2>
+	{#if data.currentUserId}
+		<h2 class="results-heading">Results &amp; My Picks</h2>
 
-	{#if data.fixturesWithResults.length === 0}
-		<p class="empty">No results yet.</p>
-	{:else}
-		<ul class="results-list">
-			{#each data.fixturesWithResults as f}
-				<li class="result-card">
-					<div class="result-top">
-						<div>
-							<span class="matchup">{f.homeTeam} vs {f.awayTeam}</span>
-							<span class="stage-badge">{f.stage}</span>
+		{#if data.fixturesWithResults.length === 0}
+			<p class="empty">No results yet.</p>
+		{:else}
+			<ul class="results-list">
+				{#each data.fixturesWithResults as f}
+					<li class="result-card">
+						<div class="result-top">
+							<div>
+								<span class="matchup">{f.homeTeam} vs {f.awayTeam}</span>
+								<span class="stage-badge">{f.stage}</span>
+							</div>
+							<span class="result-value">Result: {f.result}</span>
 						</div>
-						<span class="result-value">Result: {f.result}</span>
-					</div>
 
-					{#if f.myPick}
-						<div class="my-pick">
-							<span>User pick: {f.myPick}</span>
-							{#if f.correct === true}
-								<span class="verdict correct">Correct</span>
-							{:else if f.correct === false}
-								<span class="verdict wrong">Wrong</span>
-							{/if}
-						</div>
-					{/if}
-				</li>
-			{/each}
-		</ul>
+						{#if f.myPick}
+							<div class="my-pick">
+								<span>User pick: {f.myPick}</span>
+								{#if f.correct === true}
+									<span class="verdict correct">Correct</span>
+								{:else if f.correct === false}
+									<span class="verdict wrong">Wrong</span>
+								{/if}
+							</div>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	{/if}
 </div>
 

@@ -18,7 +18,8 @@
 		currentPick,
 		picksByValue,
 		locked,
-		error
+		error,
+		guest = false
 	}: {
 		fixture: { id: number; homeTeam: string; awayTeam: string; kickoff: string; stage: string; result: string | null; finalScore: string | null };
 		identifier: string;
@@ -26,6 +27,7 @@
 		picksByValue: PicksByValue | null;
 		locked: boolean;
 		error: string | null;
+		guest?: boolean;
 	} = $props();
 
 	let tier = $derived(foilTier(fixture.stage));
@@ -85,19 +87,25 @@
 	{#if !isFilled}
 		<div class="pick-row" class:knockout={isKnockout}>
 			{#each pickValues as value}
-				<form method="POST" action="?/pick" use:enhance>
-					<input type="hidden" name="fixtureId" value={fixture.id} />
-					<input type="hidden" name="value" value={value} />
-					<button
-						type="submit"
-						disabled={locked}
-						class="pick-btn"
-						class:selected={currentPick === value}
-						aria-pressed={currentPick === value}
-					>
+				{#if guest}
+					<a href="/login?then=/picks" class="pick-btn guest-link">
 						{buttonLabel(value)}
-					</button>
-				</form>
+					</a>
+				{:else}
+					<form method="POST" action="?/pick" use:enhance>
+						<input type="hidden" name="fixtureId" value={fixture.id} />
+						<input type="hidden" name="value" value={value} />
+						<button
+							type="submit"
+							disabled={locked}
+							class="pick-btn"
+							class:selected={currentPick === value}
+							aria-pressed={currentPick === value}
+						>
+							{buttonLabel(value)}
+						</button>
+					</form>
+				{/if}
 			{/each}
 		</div>
 
@@ -443,6 +451,13 @@
 	.pick-btn:disabled {
 		opacity: 0.45;
 		cursor: not-allowed;
+	}
+	a.pick-btn.guest-link {
+		text-decoration: none;
+		color: var(--ink);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	/* Error message */

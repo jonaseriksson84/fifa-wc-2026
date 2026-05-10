@@ -7,6 +7,7 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	let guest = $derived(!data.currentUserId);
 	let showUnpickedOnly = $state(false);
 
 	type Fixture = (typeof data.fixtures)[number];
@@ -148,6 +149,7 @@
 										currentPick={f.currentPick}
 										picksByValue={f.picksByValue}
 										{locked}
+										{guest}
 										error={form?.fixtureId === f.id && form?.error ? form.error : null}
 									/>
 								{/each}
@@ -163,6 +165,7 @@
 									currentPick={f.currentPick}
 									picksByValue={f.picksByValue}
 									{locked}
+									{guest}
 									error={form?.fixtureId === f.id && form?.error ? form.error : null}
 								/>
 							{/each}

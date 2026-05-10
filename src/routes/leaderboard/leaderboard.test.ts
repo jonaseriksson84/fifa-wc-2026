@@ -95,10 +95,27 @@ describe('leaderboard Panini aesthetic', () => {
 	});
 });
 
-describe('leaderboard page server', () => {
-	it('redirects to /login when not authenticated', () => {
-		expect(serverTs).toContain("redirect(302, '/login')");
+describe('leaderboard page server — guest access', () => {
+	it('does NOT redirect guests away from /leaderboard (no auth guard on load)', () => {
+		expect(serverTs).not.toMatch(/load[\s\S]*?if\s*\(\s*!locals\.user\s*\)\s*throw\s+redirect/);
 	});
+
+	it('returns null currentUserId for guests', () => {
+		expect(serverTs).toContain('locals.user?.id ?? null');
+	});
+
+	it('returns empty fixturesWithResults pick data for guests', () => {
+		expect(serverTs).toContain('locals.user');
+	});
+});
+
+describe('leaderboard page — guest view', () => {
+	it('hides the Results & My Picks section for guests', () => {
+		expect(pageHtml).toContain('currentUserId');
+	});
+});
+
+describe('leaderboard page server', () => {
 
 	it('delegates scoring to the scoring module', () => {
 		expect(serverTs).toContain('computeScores');

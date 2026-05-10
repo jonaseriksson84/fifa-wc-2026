@@ -1,4 +1,3 @@
-import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { createDb } from '$lib/server/db';
 import { fixture, pick, user } from '$lib/server/db/schema';
@@ -6,8 +5,6 @@ import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries } from '$lib/top-leaderboard';
 
 export const load: PageServerLoad = async ({ locals, platform }) => {
-	if (!locals.user) throw redirect(302, '/login');
-
 	const db = createDb(platform!.env.DB);
 
 	const [allFixtures, allPicks, allUsers] = await Promise.all([
@@ -28,13 +25,15 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	}));
 	const ranked = rankEntries(entries);
 
-	const currentUserId = locals.user.id;
+	const currentUserId = locals.user?.id ?? null;
 	const pickMap = new Map<number, { value: string; correct: boolean | null }>();
-	for (const p of allPicks) {
-		if (p.userId !== currentUserId) continue;
-		const f = fixtureById.get(p.fixtureId);
-		const correct = f?.result != null ? p.value === f.result : null;
-		pickMap.set(p.fixtureId, { value: p.value, correct });
+	if (locals.user) {
+		for (const p of allPicks) {
+			if (p.userId !== currentUserId) continue;
+			const f = fixtureById.get(p.fixtureId);
+			const correct = f?.result != null ? p.value === f.result : null;
+			pickMap.set(p.fixtureId, { value: p.value, correct });
+		}
 	}
 
 	const stageOrder: Record<string, number> = {

@@ -12,7 +12,7 @@
 
 	let { entries, currentUserId, compact = false }: {
 		entries: Entry[];
-		currentUserId: string;
+		currentUserId: string | null;
 		compact?: boolean;
 	} = $props();
 </script>

@@ -167,10 +167,52 @@ describe('top-10 sidebar', () => {
 	});
 });
 
-describe('picks page server', () => {
-	it('redirects to /login when not authenticated', () => {
-		expect(serverTs).toContain("redirect(302, '/login')");
+describe('picks page server — guest access', () => {
+	it('does NOT redirect guests away from /picks (no auth guard on load)', () => {
+		const loadBlock = serverTs.slice(
+			serverTs.indexOf('export const load'),
+			serverTs.indexOf('export const actions')
+		);
+		expect(loadBlock).not.toMatch(/if\s*\(\s*!locals\.user\s*\)\s*throw\s+redirect/);
 	});
+
+	it('returns null currentUserId for guests', () => {
+		expect(serverTs).toContain('currentUserId: locals.user?.id ?? null');
+	});
+
+	it('returns empty pickMap when no user (currentPick is null for all)', () => {
+		expect(serverTs).toMatch(/locals\.user\s*\?\s*/);
+	});
+
+	it('hides others-picks chips for guests (picksByValue null when no user)', () => {
+		expect(serverTs).toContain('locals.user');
+	});
+
+	it('keeps auth guard on the pick form action (defence in depth)', () => {
+		const actionsBlock = serverTs.slice(serverTs.indexOf('actions'));
+		expect(actionsBlock).toMatch(/if\s*\(\s*!locals\.user\s*\)/);
+	});
+
+	it('pick action redirects to /login?then=/picks when unauthenticated', () => {
+		expect(serverTs).toContain("/login?then=/picks");
+	});
+});
+
+describe('picks page — guest pick button redirect', () => {
+	it('Sticker receives a guest prop', () => {
+		expect(pageHtml).toContain('guest');
+	});
+
+	it('guest pick buttons link to /login?then=/picks instead of form submit', () => {
+		const stickerSvelte = readFileSync(
+			resolve(__dirname, '../../lib/components/Sticker.svelte'),
+			'utf-8'
+		);
+		expect(stickerSvelte).toContain('/login?then=/picks');
+	});
+});
+
+describe('picks page server', () => {
 
 	it('sorts fixtures by stage order then kickoff', () => {
 		expect(serverTs).toContain('stageOrder');

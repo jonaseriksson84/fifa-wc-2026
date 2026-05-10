@@ -31,14 +31,12 @@ export type PicksByValue = {
 };
 
 export const load: PageServerLoad = async ({ locals, platform }) => {
-	if (!locals.user) throw redirect(302, '/login');
-
 	const db = createDb(platform!.env.DB);
 	const now = new Date();
 
 	const [fixtures, picks, allUsers, allPicks] = await Promise.all([
 		db.select().from(fixture),
-		getPicksForUser(db, locals.user.id),
+		locals.user ? getPicksForUser(db, locals.user.id) : Promise.resolve([]),
 		db.select({ id: user.id, email: user.email, name: user.name, displayName: user.displayName }).from(user),
 		db.select().from(pickTable)
 	]);
@@ -50,7 +48,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 			const locked = now.getTime() >= new Date(f.kickoff).getTime();
 			let picksByValue: PicksByValue | null = null;
 
-			if (locked) {
+			if (locked && locals.user) {
 				const fixturePicks = await getPicksForFixture(db, f.id);
 				const buckets: PicksByValue = { HOME: [], DRAW: [], AWAY: [], noPick: [] };
 				const pickedEmails = new Set<string>();
@@ -105,7 +103,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		pickableCount,
 		totalCount: enriched.length,
 		topLeaderboard,
-		currentUserId: locals.user.id
+		currentUserId: locals.user?.id ?? null
 	};
 };
 
@@ -113,7 +111,7 @@ const validValues = new Set(['HOME', 'DRAW', 'AWAY']);
 
 export const actions: Actions = {
 	pick: async ({ request, locals, platform }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		if (!locals.user) throw redirect(302, '/login?then=/picks');
 
 		const data = await request.formData();
 		const fixtureIdStr = data.get('fixtureId');
