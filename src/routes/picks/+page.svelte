@@ -36,6 +36,26 @@
 		Final: 'The Final'
 	};
 
+	const stagePointHints: Record<string, string> = {
+		Group: 'paper · 1 pt each',
+		R32: 'pearl · 2 pts each',
+		R16: 'pearl · 2 pts each',
+		QF: 'holo · 2 pts each',
+		SF: 'holo · 2 pts each',
+		'3rd-place': 'gold · 3 pts',
+		Final: 'legendary · 5 pts'
+	};
+
+	const stageKickers: Record<string, string> = {
+		Group: 'Round one · Album page 01',
+		R32: 'Round two · Album page 02',
+		R16: 'Round three · Album page 03',
+		QF: 'Round four · Album page 04',
+		SF: 'Round five · Album page 05',
+		'3rd-place': 'The decider · Album page 06',
+		Final: 'The final · Album page 07'
+	};
+
 	let identifiers = $derived.by(() => {
 		const map = new Map<number, string>();
 		for (const [, stageFixtures] of groupByStage(data.fixtures)) {
@@ -56,7 +76,10 @@
 </svelte:head>
 
 <div class="picks-page">
-	<h1>My Picks</h1>
+	<div class="page-header">
+		<span class="section-kicker">Your album · {data.totalCount} stickers</span>
+		<h1 class="section-heading">My Picks</h1>
+	</div>
 
 	<div class="picks-toolbar">
 		<span class="unpicked-count">
@@ -76,7 +99,13 @@
 				<div class="stage-ornament" aria-hidden="true">★ ★ ★</div>
 			{/if}
 			<section class="stage-section">
-				<h2 class="stage-title">{stageDisplayNames[stage] ?? stage}</h2>
+				<span class="section-kicker">{stageKickers[stage] ?? ''}</span>
+				<h2 class="section-heading">{stageDisplayNames[stage] ?? stage}</h2>
+				<div class="stage-label-row">
+					<span class="stage-name">{stageDisplayNames[stage] ?? stage}</span>
+					<span class="stage-rule"></span>
+					<span class="point-hint">{stagePointHints[stage] ?? ''}</span>
+				</div>
 				<div class="sticker-grid">
 					{#each fixtures as f}
 						{@const locked = isLocked(f.kickoff)}
@@ -101,12 +130,23 @@
 		margin: 0 auto;
 		padding: 32px 24px 60px;
 	}
-	h1 {
-		font-family: var(--headline);
-		font-size: 32px;
-		letter-spacing: 0.08em;
+	.page-header {
+		margin-bottom: 8px;
+	}
+	.section-kicker {
+		font-family: var(--mono);
+		font-size: 11px;
+		letter-spacing: 0.15em;
 		text-transform: uppercase;
-		margin: 0 0 8px;
+		color: var(--red);
+		display: block;
+		margin-bottom: 4px;
+	}
+	.section-heading {
+		font-family: var(--display);
+		font-size: 28px;
+		margin: 0 0 4px;
+		line-height: 1.1;
 	}
 	.picks-toolbar {
 		display: flex;
@@ -142,14 +182,33 @@
 	.stage-section {
 		margin-bottom: 8px;
 	}
-	.stage-title {
+	.stage-label-row {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin-bottom: 18px;
+	}
+	.stage-name {
 		font-family: var(--headline);
 		font-size: 18px;
-		letter-spacing: 0.18em;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		margin: 0 0 16px;
-		padding-bottom: 8px;
-		border-bottom: 2px solid var(--ink);
+		white-space: nowrap;
+	}
+	.stage-rule {
+		flex: 1;
+		height: 0;
+		border-top: 2px dashed var(--ink);
+		opacity: 0.4;
+	}
+	.point-hint {
+		font-family: var(--mono);
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		color: var(--ink);
+		opacity: 0.7;
+		white-space: nowrap;
 	}
 	.sticker-grid {
 		display: grid;
@@ -166,8 +225,11 @@
 		.picks-page {
 			padding: 20px 16px 40px;
 		}
-		h1 {
-			font-size: 26px;
+		.section-heading {
+			font-size: 22px;
+		}
+		.stage-label-row {
+			gap: 10px;
 		}
 		.sticker-grid {
 			grid-template-columns: 1fr;

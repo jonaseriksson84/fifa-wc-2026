@@ -75,6 +75,42 @@ describe('pick repository', () => {
 	});
 });
 
+describe('section heading composition', () => {
+	it('uses section-kicker class for the red kicker line', () => {
+		expect(pageHtml).toContain('section-kicker');
+	});
+
+	it('uses section-heading class for the display heading', () => {
+		expect(pageHtml).toContain('section-heading');
+	});
+
+	it('uses stage-label-row class for the dashed-rule + point-hint row', () => {
+		expect(pageHtml).toContain('stage-label-row');
+	});
+
+	it('kicker is styled in red mono font', () => {
+		expect(pageHtml).toContain('.section-kicker');
+		const styleSection = pageHtml.slice(pageHtml.indexOf('<style'));
+		expect(styleSection).toMatch(/\.section-kicker[\s\S]*?color:.*var\(--red\)/);
+	});
+
+	it('section heading uses Bungee Shade display font', () => {
+		const styleSection = pageHtml.slice(pageHtml.indexOf('<style'));
+		expect(styleSection).toMatch(/\.section-heading[\s\S]*?font-family:.*var\(--display\)/);
+	});
+
+	it('stage-label-row has a dashed rule that fills remaining space', () => {
+		expect(pageHtml).toContain('stage-rule');
+		const styleSection = pageHtml.slice(pageHtml.indexOf('<style'));
+		expect(styleSection).toMatch(/\.stage-rule[\s\S]*?border.*dashed/);
+	});
+
+	it('includes point hint text per stage', () => {
+		expect(pageHtml).toContain('point-hint');
+		expect(pageLower).toContain('pt');
+	});
+});
+
 describe('picks page server', () => {
 	it('redirects to /login when not authenticated', () => {
 		expect(serverTs).toContain("redirect(302, '/login')");
