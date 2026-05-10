@@ -39,9 +39,7 @@
 		<a href="/leaderboard" class:active={currentPath === '/leaderboard'}>Leaderboard</a>
 		<a href="/faq" class:active={currentPath === '/faq'}>FAQ</a>
 		{#if data.user}
-			<form method="POST" action="/logout" class="tab-form">
-				<button type="submit">Sign out</button>
-			</form>
+			<a href="/account" class:active={currentPath === '/account'}>Account</a>
 		{/if}
 	</nav>
 
@@ -186,8 +184,7 @@
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
-	nav.tabs a,
-	nav.tabs .tab-form button {
+	nav.tabs a {
 		padding: 14px 22px;
 		color: var(--ink);
 		text-decoration: none;
@@ -203,9 +200,6 @@
 	nav.tabs a.active {
 		border-bottom: 2px solid var(--accent);
 		margin-bottom: -2px;
-	}
-	nav.tabs .tab-form {
-		display: contents;
 	}
 
 	/* Footer */
@@ -248,8 +242,7 @@
 			padding: 0 16px;
 			overflow-x: auto;
 		}
-		nav.tabs a,
-		nav.tabs .tab-form button {
+		nav.tabs a {
 			padding: 12px 14px;
 			font-size: 13px;
 		}
