@@ -106,11 +106,7 @@ describe('leaderboard page server', () => {
 		expect(serverTs).toContain('fixture');
 	});
 
-	it('computes shared ranks for tied users', () => {
-		expect(serverTs).toContain('rank');
-	});
-
-	it('computes a tied flag for entries sharing a rank', () => {
-		expect(serverTs).toContain('tied');
+	it('delegates ranking and tie detection to the shared rankEntries utility', () => {
+		expect(serverTs).toContain('rankEntries');
 	});
 });

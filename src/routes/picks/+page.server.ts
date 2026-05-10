@@ -11,7 +11,7 @@ import {
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 import { displayName } from '$lib/display-name';
 import { computeScores } from '$lib/server/scoring/score';
-import { topN } from '$lib/top-leaderboard';
+import { rankEntries, topN } from '$lib/top-leaderboard';
 
 const stageOrder: Record<string, number> = {
 	Group: 0,
@@ -94,19 +94,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		displayName: u.displayName,
 		points: scoreMap.get(u.id) ?? 0
 	}));
-	entries.sort((a, b) => b.points - a.points);
-
-	let rank = 1;
-	const ranked = entries.map((entry, i) => {
-		if (i > 0 && entry.points < entries[i - 1].points) {
-			rank = i + 1;
-		}
-		const tied =
-			(i > 0 && entries[i - 1].points === entry.points) ||
-			(i < entries.length - 1 && entries[i + 1].points === entry.points);
-		return { ...entry, rank, tied };
-	});
-
+	const ranked = rankEntries(entries);
 	const topLeaderboard = topN(ranked, 10);
 
 	return {

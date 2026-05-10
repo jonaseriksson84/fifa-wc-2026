@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { createDb } from '$lib/server/db';
 import { fixture, pick, user } from '$lib/server/db/schema';
 import { computeScores } from '$lib/server/scoring/score';
+import { rankEntries } from '$lib/top-leaderboard';
 
 export const load: PageServerLoad = async ({ locals, platform }) => {
 	if (!locals.user) throw redirect(302, '/login');
@@ -25,19 +26,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		displayName: u.displayName,
 		points: scoreMap.get(u.id) ?? 0
 	}));
-
-	entries.sort((a, b) => b.points - a.points);
-
-	let rank = 1;
-	const ranked = entries.map((entry, i) => {
-		if (i > 0 && entry.points < entries[i - 1].points) {
-			rank = i + 1;
-		}
-		const tied =
-			(i > 0 && entries[i - 1].points === entry.points) ||
-			(i < entries.length - 1 && entries[i + 1].points === entry.points);
-		return { ...entry, rank, tied };
-	});
+	const ranked = rankEntries(entries);
 
 	const currentUserId = locals.user.id;
 	const pickMap = new Map<number, { value: string; correct: boolean | null }>();

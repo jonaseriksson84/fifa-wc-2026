@@ -1,11 +1,55 @@
 import { describe, it, expect } from 'vitest';
-import { topN } from './top-leaderboard';
+import { rankEntries, topN } from './top-leaderboard';
 
 type Entry = { userId: string; points: number; rank: number };
 
 function makeEntry(id: string, points: number, rank: number): Entry {
 	return { userId: id, points, rank };
 }
+
+describe('rankEntries', () => {
+	it('sorts by descending points and assigns sequential ranks', () => {
+		const result = rankEntries([{ points: 3 }, { points: 10 }, { points: 7 }]);
+		expect(result.map((e) => e.points)).toEqual([10, 7, 3]);
+		expect(result.map((e) => e.rank)).toEqual([1, 2, 3]);
+	});
+
+	it('gives tied entries the same rank and skips subsequent ranks', () => {
+		const result = rankEntries([
+			{ points: 10 },
+			{ points: 7 },
+			{ points: 7 },
+			{ points: 3 }
+		]);
+		expect(result.map((e) => e.rank)).toEqual([1, 2, 2, 4]);
+	});
+
+	it('marks tied entries with tied=true', () => {
+		const result = rankEntries([
+			{ points: 10 },
+			{ points: 7 },
+			{ points: 7 },
+			{ points: 3 }
+		]);
+		expect(result.map((e) => e.tied)).toEqual([false, true, true, false]);
+	});
+
+	it('returns empty array for empty input', () => {
+		expect(rankEntries([])).toEqual([]);
+	});
+
+	it('does not mutate the original array', () => {
+		const entries = [{ points: 3 }, { points: 10 }];
+		const copy = [{ points: 3 }, { points: 10 }];
+		rankEntries(entries);
+		expect(entries).toEqual(copy);
+	});
+
+	it('preserves extra properties on entries', () => {
+		const result = rankEntries([{ points: 5, name: 'alice' }]);
+		expect(result[0].name).toBe('alice');
+	});
+});
 
 describe('topN', () => {
 	it('returns exactly N entries when there are more than N with no ties at the boundary', () => {
