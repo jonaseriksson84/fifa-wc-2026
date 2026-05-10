@@ -56,9 +56,10 @@ Hardcoded in the scoring module, derived from `Stage`:
 | Stage | Weight |
 |---|---|
 | Group | 1 |
-| R32, R16, QF, SF | 2 |
-| 3rd-place playoff | 3 |
-| Final | 5 |
+| R32, R16 | 2 |
+| QF, SF | 3 |
+| 3rd-place playoff | 4 |
+| Final | 6 |
 
 The 3rd-place bump above semi-finals is intentional — see `CONTEXT.md` and the PRD's "Further Notes". Do not "fix" it.
 
