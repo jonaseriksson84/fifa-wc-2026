@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WC26 Jobbiga Bets — Panini, in-between</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Anton&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,700;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:        #f1e6cb;
+  --paper-deep:   #e8dcb8;
+  --paper-card:   #fbf3dd;
+  --ink:          #181410;
+  --ink-mute:     #5b5247;
+  --red:          #b51e26;
+  --red-soft:     rgba(181, 30, 38, 0.12);
+  --green:        #1d6d4d;
+  --rule:         rgba(24, 20, 16, 0.18);
+
+  --display: "Bungee Shade", system-ui;
+  --headline: "Anton", system-ui;
+  --body: "Newsreader", Georgia, serif;
+  --mono: "Space Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-variation-settings: "opsz" 18;
+  font-size: 17px;
+  line-height: 1.55;
+  background-image:
+    radial-gradient(rgba(24, 20, 16, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: 11px 11px;
+  min-height: 100vh;
+  position: relative;
+}
+/* Subtle paper grain — much lighter than v1 */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' /><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.04 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+  opacity: 1;
+  mix-blend-mode: multiply;
+  z-index: 100;
+}
+
+/* ============ MASTHEAD ============ */
+header.masthead {
+  border-bottom: 1px solid var(--ink);
+  padding: 36px 48px 22px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 48px;
+  max-width: 1240px;
+  margin: 0 auto;
+  position: relative;
+}
+.title-block { display: flex; align-items: center; gap: 22px; }
+.crest {
+  width: 60px; height: 60px;
+  background: var(--ink);
+  color: var(--paper);
+  display: grid; place-items: center;
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  box-shadow: 4px 4px 0 var(--red);
+}
+.brand h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 38px;
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+}
+.brand .tagline {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-mute);
+  margin-top: 4px;
+}
+.user-pill {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 6px;
+  white-space: nowrap;
+}
+
+/* ============ TABS ============ */
+nav.tabs {
+  border-bottom: 1px solid var(--ink);
+  padding: 0 48px;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  gap: 28px;
+  font-family: var(--headline);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+nav.tabs a {
+  padding: 14px 0;
+  color: var(--ink-mute);
+  text-decoration: none;
+  display: inline-flex; gap: 8px; align-items: baseline;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+nav.tabs a.active { color: var(--ink); border-bottom-color: var(--red); }
+nav.tabs a .badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 1px 6px;
+  letter-spacing: 0.05em;
+}
+
+/* ============ MAIN ============ */
+main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 56px 48px 48px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 60px;
+}
+@media (max-width: 980px) { main { grid-template-columns: 1fr; gap: 36px; } }
+
+section h2.section-title {
+  font-family: var(--headline);
+  font-size: 38px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+  line-height: 1;
+}
+section h2.section-title .small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--red);
+  margin-bottom: 10px;
+}
+section .lead {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink-mute);
+  margin: 0 0 44px;
+  max-width: 50ch;
+}
+
+/* Tiny ornament */
+.ornament {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  margin: 14px 0 28px;
+  color: var(--red);
+  font-family: var(--headline);
+  letter-spacing: 0.4em;
+  font-size: 12px;
+}
+.ornament::before, .ornament::after {
+  content: "";
+  flex: 1; height: 0;
+  border-top: 1px solid var(--rule);
+}
+
+/* ============ STAGE ============ */
+.stage { margin-bottom: 52px; }
+.stage-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 10px;
+}
+.stage-head h3 {
+  font-family: var(--headline);
+  font-size: 26px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.stage-head h3 .first {
+  color: var(--red);
+}
+.stage-head .meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* ============ FIXTURE CARD ============ */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 22px;
+}
+.card {
+  background: var(--paper-card);
+  border: 1.5px solid var(--ink);
+  border-top: 4px solid var(--red);
+  padding: 20px 18px 16px;
+  position: relative;
+  transition: transform 0.18s, box-shadow 0.18s;
+  box-shadow:
+    0 1px 0 rgba(24, 20, 16, 0.05),
+    0 8px 18px -10px rgba(24, 20, 16, 0.22);
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(24, 20, 16, 0.05),
+    0 16px 28px -14px rgba(24, 20, 16, 0.28);
+}
+.card.locked {
+  background: var(--paper-deep);
+  border-top-color: var(--ink);
+}
+.card.locked.win  { border-top-color: var(--green); }
+.card.locked.miss { border-top-color: var(--ink-mute); }
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.card-head .num {
+  color: var(--ink);
+  font-weight: 700;
+}
+.card-head .status { color: var(--ink); }
+.card-head .status.locked { color: var(--ink-mute); }
+
+.matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.team {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--headline);
+  font-size: 19px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.team:last-child { text-align: right; }
+.team .flag {
+  font-size: 28px;
+  line-height: 1;
+}
+.team:last-child .flag { align-self: flex-end; }
+.versus {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-mute);
+  font-variation-settings: "opsz" 14;
+}
+
+/* ============ PICK BUTTONS ============ */
+.pick-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.pick-row.knockout { grid-template-columns: repeat(2, 1fr); }
+.pick-btn {
+  font-family: var(--headline);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  padding: 10px 6px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background 0.12s, color 0.12s, transform 0.12s;
+}
+.pick-btn:hover { background: var(--ink); color: var(--paper); }
+.pick-btn.selected {
+  background: var(--ink);
+  color: var(--paper);
+}
+.pick-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pick-btn:disabled:hover { background: transparent; color: var(--ink); }
+
+/* ============ RESULT STAMP — the signature moment ============ */
+.result-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.result-line .picked {
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.result-line .picked .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: block;
+  margin-bottom: 4px;
+}
+.result-line .picked strong {
+  font-family: var(--headline);
+  font-weight: normal;
+  font-size: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2.5px solid var(--red);
+  color: var(--red);
+  padding: 6px 14px 4px;
+  transform: rotate(-3.5deg);
+  background: var(--paper-card);
+  box-shadow: 0 0 0 1px var(--paper-card), 2px 2px 0 -1px rgba(181, 30, 38, 0.25);
+}
+.stamp .ft {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  margin-bottom: 1px;
+  text-transform: uppercase;
+}
+.stamp .score {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  line-height: 0.9;
+}
+.stamp.dim {
+  color: var(--ink);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--paper-card), 2px 2px 0 -1px rgba(24, 20, 16, 0.25);
+}
+
+.verdict {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  display: flex; justify-content: space-between;
+}
+.verdict .pts.win { color: var(--green); }
+.verdict .pts.miss { color: var(--ink-mute); }
+
+/* Other users' picks */
+.others {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--ink-mute);
+}
+.others span strong {
+  font-family: var(--headline);
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+/* ============ STANDINGS ============ */
+aside.standings {
+  position: sticky;
+  top: 30px;
+  align-self: start;
+}
+aside.standings .panel {
+  background: var(--paper-card);
+  border: 1.5px solid var(--ink);
+  border-top: 4px solid var(--red);
+  padding: 22px 22px 26px;
+  box-shadow:
+    0 1px 0 rgba(24, 20, 16, 0.05),
+    0 12px 24px -12px rgba(24, 20, 16, 0.22);
+}
+aside.standings h3 {
+  font-family: var(--headline);
+  font-size: 22px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+}
+aside.standings h3 small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--red);
+  margin-bottom: 8px;
+}
+aside.standings ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+aside.standings li {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+aside.standings li:last-child { border-bottom: 0; }
+aside.standings li.you {
+  background: var(--red-soft);
+  margin: 0 -14px;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+aside.standings li .rank {
+  font-family: var(--headline);
+  font-size: 22px;
+  color: var(--ink);
+}
+aside.standings li.gold .rank { color: var(--red); }
+aside.standings li .who {
+  font-family: var(--body);
+  font-size: 17px;
+  font-weight: 500;
+}
+aside.standings li .who small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--ink-mute);
+  margin-top: 2px;
+}
+aside.standings li .pts {
+  font-family: var(--headline);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--red);
+}
+
+aside.standings .scoring {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ink);
+}
+aside.standings .scoring h4 {
+  font-family: var(--headline);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+aside.standings .scoring dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-mute);
+}
+aside.standings .scoring dt { }
+aside.standings .scoring dd {
+  margin: 0;
+  font-family: var(--headline);
+  font-size: 14px;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+/* ============ FOOTER ============ */
+footer {
+  border-top: 1px solid var(--ink);
+  margin-top: 60px;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 22px 48px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: flex;
+  justify-content: space-between;
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="title-block">
+    <div class="crest">26</div>
+    <div class="brand">
+      <h1>WC26 Jobbiga Bets</h1>
+      <div class="tagline">Friends edition</div>
+    </div>
+  </div>
+  <div class="user-pill">jonaseriksson84+jonas@gmail.com</div>
+</header>
+
+<nav class="tabs">
+  <a href="#" class="active">My Picks <span class="badge">4</span></a>
+  <a href="#">Standings</a>
+  <a href="#">Rules</a>
+  <a href="#">Sign out</a>
+</nav>
+
+<main>
+  <section>
+    <h2 class="section-title">
+      <span class="small">Round one · Album page 01</span>
+      Stick your picks
+    </h2>
+    <p class="lead">Tap a side. Change your mind any time before kickoff.</p>
+
+    <!-- GROUP STAGE -->
+    <div class="stage">
+      <div class="stage-head">
+        <h3><span class="first">G</span>roup stage</h3>
+        <span class="meta">1 pt · 6 fixtures</span>
+      </div>
+
+      <div class="cards">
+
+        <!-- Past correct -->
+        <article class="card locked win">
+          <div class="card-head">
+            <span><span class="num">M.01</span> · Wed · 18:00</span>
+            <span class="status locked">Final</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇸🇪</span>Sweden</div>
+            <div class="versus">vs</div>
+            <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+          </div>
+          <div class="result-line">
+            <span class="picked">
+              <span class="label">You picked</span>
+              <strong>Sweden</strong>
+            </span>
+            <span class="stamp">
+              <span class="ft">Full time</span>
+              <span class="score">1–0</span>
+            </span>
+          </div>
+          <div class="verdict">
+            <span>You got it</span>
+            <span class="pts win">+1 pt</span>
+          </div>
+          <div class="others">
+            <span><strong>alice</strong> SWE</span>
+            <span><strong>bob</strong> X</span>
+            <span><strong>carol</strong> SWE</span>
+          </div>
+        </article>
+
+        <!-- Past wrong -->
+        <article class="card locked miss">
+          <div class="card-head">
+            <span><span class="num">M.02</span> · Thu · 20:00</span>
+            <span class="status locked">Final</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇩🇪</span>Germany</div>
+            <div class="versus">vs</div>
+            <div class="team"><span class="flag">🇯🇵</span>Japan</div>
+          </div>
+          <div class="result-line">
+            <span class="picked">
+              <span class="label">You picked</span>
+              <strong>Germany</strong>
+            </span>
+            <span class="stamp dim">
+              <span class="ft">Full time</span>
+              <span class="score">0–2</span>
+            </span>
+          </div>
+          <div class="verdict">
+            <span>Missed</span>
+            <span class="pts miss">0 pts</span>
+          </div>
+          <div class="others">
+            <span><strong>alice</strong> JPN</span>
+            <span><strong>bob</strong> GER</span>
+            <span><strong>carol</strong> GER</span>
+          </div>
+        </article>
+
+        <!-- Past correct draw -->
+        <article class="card locked win">
+          <div class="card-head">
+            <span><span class="num">M.03</span> · Fri · 16:00</span>
+            <span class="status locked">Final</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇦🇷</span>Argentina</div>
+            <div class="versus">vs</div>
+            <div class="team"><span class="flag">🇲🇽</span>Mexico</div>
+          </div>
+          <div class="result-line">
+            <span class="picked">
+              <span class="label">You picked</span>
+              <strong>Draw</strong>
+            </span>
+            <span class="stamp">
+              <span class="ft">Full time</span>
+              <span class="score">1–1</span>
+            </span>
+          </div>
+          <div class="verdict">
+            <span>You got it</span>
+            <span class="pts win">+1 pt</span>
+          </div>
+          <div class="others">
+            <span><strong>alice</strong> X</span>
+            <span><strong>bob</strong> ARG</span>
+            <span><strong>carol</strong> MEX</span>
+          </div>
+        </article>
+
+        <!-- Future, picked -->
+        <article class="card">
+          <div class="card-head">
+            <span><span class="num">M.04</span> · Mon · 18:00</span>
+            <span class="status">Open</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇫🇷</span>France</div>
+            <div class="versus">vs</div>
+            <div class="team"><span class="flag">🇩🇰</span>Denmark</div>
+          </div>
+          <div class="pick-row">
+            <button class="pick-btn selected">France</button>
+            <button class="pick-btn">Draw</button>
+            <button class="pick-btn">Denmark</button>
+          </div>
+        </article>
+
+        <!-- Future, no pick -->
+        <article class="card">
+          <div class="card-head">
+            <span><span class="num">M.05</span> · Tue · 20:00</span>
+            <span class="status">Open</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>England</div>
+            <div class="versus">vs</div>
+            <div class="team"><span class="flag">🇺🇸</span>USA</div>
+          </div>
+          <div class="pick-row">
+            <button class="pick-btn">England</button>
+            <button class="pick-btn">Draw</button>
+            <button class="pick-btn">USA</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <span><span class="num">M.06</span> · Wed · 16:00</span>
+            <span class="status">Open</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇪🇸</span>Spain</div>
+            <div class="versus">vs</div>
+            <div class="team"><span class="flag">🇨🇷</span>Costa Rica</div>
+          </div>
+          <div class="pick-row">
+            <button class="pick-btn">Spain</button>
+            <button class="pick-btn">Draw</button>
+            <button class="pick-btn">Costa Rica</button>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <div class="ornament">★&nbsp;&nbsp;★&nbsp;&nbsp;★</div>
+
+    <!-- KNOCKOUT STAGE -->
+    <div class="stage">
+      <div class="stage-head">
+        <h3><span class="first">Q</span>uarter‑finals</h3>
+        <span class="meta">2 pts · winner only</span>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <div class="card-head">
+            <span><span class="num">QF.01</span> · Sat · 21:00</span>
+            <span class="status">Open</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+            <div class="versus">vs</div>
+            <div class="team"><span class="flag">🇭🇷</span>Croatia</div>
+          </div>
+          <div class="pick-row knockout">
+            <button class="pick-btn">Brazil</button>
+            <button class="pick-btn">Croatia</button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <aside class="standings">
+    <div class="panel">
+      <h3><small>The pyramid</small>Standings</h3>
+      <ol>
+        <li class="gold">
+          <span class="rank">1</span>
+          <span class="who">alice<small>+alice</small></span>
+          <span class="pts">3</span>
+        </li>
+        <li class="you">
+          <span class="rank">2</span>
+          <span class="who">jonas (you)<small>+jonas</small></span>
+          <span class="pts">2</span>
+        </li>
+        <li>
+          <span class="rank">3</span>
+          <span class="who">carol<small>+carol</small></span>
+          <span class="pts">1</span>
+        </li>
+        <li>
+          <span class="rank">4</span>
+          <span class="who">bob<small>+bob</small></span>
+          <span class="pts">0</span>
+        </li>
+      </ol>
+
+      <div class="scoring">
+        <h4>How points work</h4>
+        <dl>
+          <dt>Group match</dt><dd>1 pt</dd>
+          <dt>R32 → SF</dt><dd>2 pts</dd>
+          <dt>3rd-place</dt><dd>3 pts</dd>
+          <dt>The Final</dt><dd>5 pts</dd>
+        </dl>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <span>WC26 · Jobbiga Bets · No prize, only honour</span>
+  <span>Round one of seven</span>
+</footer>
+
+</body>
+</html>

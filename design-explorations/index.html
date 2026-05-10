@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WC26 — Design Explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #181614;
+  --paper: #f6f2eb;
+  --rule: rgba(0,0,0,0.12);
+  --body: "Fraunces", Georgia, serif;
+  --mono: "DM Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.5;
+  padding: 60px 40px 100px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+h1 {
+  font-family: var(--body);
+  font-weight: 700;
+  font-variation-settings: "opsz" 144;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+}
+.kicker { font-family: var(--mono); font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.65; margin-bottom: 8px; }
+.lede { font-size: 22px; line-height: 1.4; max-width: 56ch; margin-bottom: 50px; opacity: 0.85; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; }
+.card {
+  border-top: 1px solid var(--rule);
+  padding-top: 22px;
+  display: flex; flex-direction: column;
+}
+.card .num { font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em; opacity: 0.5; margin-bottom: 8px; }
+.card h2 { font-family: var(--body); font-weight: 700; font-size: 28px; line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 6px; }
+.card p { margin: 0 0 18px; opacity: 0.85; flex: 1; }
+.card a {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  border-bottom: 2px solid var(--ink);
+  padding: 4px 0;
+  text-decoration: none;
+  text-transform: uppercase;
+  align-self: flex-start;
+  transition: padding-right 0.15s;
+}
+.card a:hover { padding-right: 14px; }
+.card a::after { content: " →"; }
+
+aside.notes {
+  margin-top: 72px;
+  border-top: 4px double var(--rule);
+  padding-top: 36px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  opacity: 0.75;
+  max-width: 60ch;
+}
+aside.notes strong { font-family: var(--body); font-weight: 700; font-style: normal; }
+</style>
+</head>
+<body>
+
+<div class="kicker">WC26 · design exploration</div>
+<h1>Three flavours.</h1>
+<p class="lede">
+Three completely different aesthetic directions for the same picks page,
+leaderboard, and pool branding. Same data; same information architecture;
+totally different feeling. Click to view, then send back the one you want
+us to actually build (or pieces from each).
+</p>
+
+<div class="cards">
+  <article class="card">
+    <div class="num">01</div>
+    <h2>Panini sticker album</h2>
+    <p>Vintage sports nostalgia. Cream paper grain, hand-rotated cards, ink stamps, condensed sports headlines. Feels like flipping through a tournament wall chart.</p>
+    <a href="01-panini-sticker-album.html">Open</a>
+  </article>
+
+  <article class="card">
+    <div class="num">01b</div>
+    <h2>Panini, restrained</h2>
+    <p>Same soul as 01 but quieter. No noise overlay, no card rotations, two accent colours instead of four, the ink-stamp result kept as the single signature moment. More editorial-magazine.</p>
+    <a href="01b-panini-restrained.html">Open</a>
+  </article>
+
+  <article class="card">
+    <div class="num">01c</div>
+    <h2>Panini, in-between</h2>
+    <p>The middle ground. v1b's discipline plus a faint paper grain, soft drop-shadows so cards float, a red ribbon at the top of every card, a bigger two-line ink stamp (FULL TIME · 1–0), and tiny ★★★ ornaments between stages.</p>
+    <a href="01c-panini-inbetween.html">Open</a>
+  </article>
+
+  <article class="card">
+    <div class="num">01d</div>
+    <h2>Panini, the album fills up</h2>
+    <p>v1's full maximalism plus the metaphor doing real work: future fixtures are dashed empty slots with "?" placeholders, past fixtures are stamped/stuck stickers. Knockouts foil-up by tier — pearl → holo → gold → ★ Legendary ★ Final with an animated rainbow shine. Album progress bar at the top.</p>
+    <a href="01d-panini-album-progression.html">Open</a>
+  </article>
+
+  <article class="card">
+    <div class="num">02</div>
+    <h2>Stadium scoreboard</h2>
+    <p>Pitch-black arcade. CRT scanlines, dot-matrix amber digits, neon cyan, "PRESS START" energy. Picks feel like punching a vending-machine button.</p>
+    <a href="02-arcade-scoreboard.html">Open</a>
+  </article>
+
+  <article class="card">
+    <div class="num">03</div>
+    <h2>Carnival / tropicalia</h2>
+    <p>Hot-pink street parade. Caprasimo display + handwritten ribbons, falling confetti, oversized buttons that bounce on click. Joyful, loud, samba-coded.</p>
+    <a href="03-carnival-tropicalia.html">Open</a>
+  </article>
+</div>
+
+<aside class="notes">
+  <strong>Notes for review.</strong> Each mockup is a single self-contained HTML
+  file with Google Fonts and inline CSS. None of these are wired up yet
+  — they're frozen mock data so you can compare aesthetics side by side.
+  When you've picked a direction (or want a fourth, or a Frankenstein of
+  pieces), I'll port it onto the real SvelteKit + Tailwind app and we'll
+  swap the live one in.
+</aside>
+
+</body>
+</html>

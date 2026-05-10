@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WC26 Jobbiga Bets — Carnival</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Yellowtail&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink: #ff3d8a;
+  --pink-deep: #d61770;
+  --yellow: #ffd400;
+  --teal: #00b3a4;
+  --teal-deep: #008b80;
+  --orange: #ff7e1d;
+  --cream: #fff5e3;
+  --cream-deep: #ffe7c1;
+  --ink: #1a0d2e;
+  --ink-soft: #3a224f;
+
+  --display: "Caprasimo", system-ui;
+  --script: "Yellowtail", cursive;
+  --body: "Fraunces", "Times New Roman", serif;
+  --mono: "DM Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--cream);
+  background-image:
+    radial-gradient(circle at 18% 20%, rgba(255,212,0,0.18) 0%, transparent 35%),
+    radial-gradient(circle at 78% 12%, rgba(255,61,138,0.14) 0%, transparent 32%),
+    radial-gradient(circle at 90% 76%, rgba(0,179,164,0.18) 0%, transparent 38%),
+    radial-gradient(circle at 8% 90%, rgba(255,126,29,0.15) 0%, transparent 35%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Confetti */
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.confetti span {
+  position: absolute;
+  width: 14px; height: 18px;
+  display: block;
+  animation: fall linear infinite;
+  border-radius: 2px;
+}
+.confetti span:nth-child(1)  { left: 6%;  background: var(--pink);   animation-duration: 14s; animation-delay: -2s;  transform: rotate(12deg); }
+.confetti span:nth-child(2)  { left: 14%; background: var(--yellow); animation-duration: 11s; animation-delay: -4s;  transform: rotate(-8deg); width: 10px; height: 10px; border-radius: 50%; }
+.confetti span:nth-child(3)  { left: 22%; background: var(--teal);   animation-duration: 16s; animation-delay: -1s;  transform: rotate(20deg); }
+.confetti span:nth-child(4)  { left: 32%; background: var(--orange); animation-duration: 13s; animation-delay: -7s;  width: 8px; height: 16px; }
+.confetti span:nth-child(5)  { left: 41%; background: var(--pink);   animation-duration: 15s; animation-delay: -3s;  width: 6px; height: 6px; border-radius: 50%; }
+.confetti span:nth-child(6)  { left: 53%; background: var(--yellow); animation-duration: 12s; animation-delay: -8s;  transform: rotate(-12deg); }
+.confetti span:nth-child(7)  { left: 64%; background: var(--teal);   animation-duration: 17s; animation-delay: -5s;  width: 12px; height: 8px; }
+.confetti span:nth-child(8)  { left: 73%; background: var(--orange); animation-duration: 14s; animation-delay: -9s;  border-radius: 50%; width: 8px; height: 8px; }
+.confetti span:nth-child(9)  { left: 82%; background: var(--pink);   animation-duration: 11s; animation-delay: -2.5s; transform: rotate(35deg); }
+.confetti span:nth-child(10) { left: 91%; background: var(--yellow); animation-duration: 18s; animation-delay: -6s;  width: 16px; height: 4px; }
+@keyframes fall {
+  0% { transform: translateY(-30px) rotate(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+
+/* ============ HEADER ============ */
+.parade {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 30px 36px 38px;
+  position: relative;
+  overflow: hidden;
+}
+.parade::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 22px;
+  background-image: linear-gradient(135deg, var(--cream) 25%, transparent 25%),
+                     linear-gradient(225deg, var(--cream) 25%, transparent 25%);
+  background-size: 28px 22px;
+  background-position: 0 0;
+}
+.parade-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 28px; max-width: 1200px; margin: 0 auto;
+  position: relative;
+}
+.brand {
+  display: flex; align-items: center; gap: 22px;
+}
+.medallion {
+  width: 80px; height: 80px;
+  background: var(--yellow);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  position: relative;
+  box-shadow: 0 0 0 6px var(--ink), 0 0 0 8px var(--pink), 0 8px 0 -2px var(--pink-deep);
+  transform: rotate(-7deg);
+}
+.medallion::before {
+  content: "26";
+  font-family: var(--display);
+  font-size: 30px;
+  color: var(--ink);
+}
+.medallion::after {
+  content: "★";
+  position: absolute;
+  top: -10px; right: -8px;
+  font-size: 28px;
+  color: var(--pink);
+}
+.brand-text h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 44px;
+  line-height: 0.92;
+  color: var(--cream);
+  letter-spacing: -0.01em;
+}
+.brand-text h1 .pink { color: var(--pink); }
+.brand-text h1 .yellow { color: var(--yellow); }
+.brand-text .ribbon {
+  font-family: var(--script);
+  font-size: 28px;
+  color: var(--teal);
+  margin-top: -2px;
+  display: inline-block;
+  transform: rotate(-3deg);
+}
+
+.welcome-card {
+  background: var(--cream);
+  color: var(--ink);
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 13px;
+  position: relative;
+  box-shadow: 0 6px 0 var(--pink-deep);
+  white-space: nowrap;
+}
+.welcome-card .star { color: var(--orange); margin-right: 8px; }
+
+/* ============ NAV ============ */
+.tabs {
+  background: var(--cream);
+  padding: 18px 36px 0;
+  display: flex; gap: 4px;
+  max-width: 1200px; margin: 0 auto;
+  position: relative; z-index: 2;
+}
+.tabs a {
+  display: inline-block;
+  padding: 12px 24px 14px;
+  background: var(--cream-deep);
+  color: var(--ink);
+  text-decoration: none;
+  font-family: var(--display);
+  font-size: 18px;
+  border-radius: 14px 14px 0 0;
+  border: 3px solid var(--ink);
+  border-bottom: none;
+  position: relative;
+  margin-right: -10px;
+}
+.tabs a:nth-child(2) { background: var(--yellow); }
+.tabs a:nth-child(3) { background: var(--teal); color: var(--cream); }
+.tabs a:nth-child(4) { background: var(--pink); color: var(--cream); }
+.tabs a.active {
+  background: var(--cream);
+  z-index: 5;
+  transform: translateY(-4px);
+  box-shadow: 0 -4px 0 var(--ink);
+}
+
+/* ============ MAIN ============ */
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 36px 60px;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+}
+@media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+
+.spotlight {
+  margin: 28px 0 36px;
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  padding: 20px 26px;
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 18px;
+  box-shadow: 6px 6px 0 var(--ink);
+  position: relative;
+}
+.spotlight h2 {
+  font-family: var(--display);
+  font-size: 26px;
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.05;
+}
+.spotlight h2 small {
+  display: block;
+  font-family: var(--script);
+  font-size: 22px;
+  color: var(--pink-deep);
+  margin-bottom: 4px;
+  font-weight: normal;
+}
+.spotlight .filters {
+  display: flex; gap: 6px;
+}
+.spotlight .filters button {
+  background: var(--cream);
+  border: 2.5px solid var(--ink);
+  font-family: var(--display);
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.spotlight .filters button.active { background: var(--pink); color: var(--cream); }
+
+/* ============ STAGE BANNER ============ */
+.stage-banner {
+  margin: 36px 0 18px;
+  display: flex; align-items: center; gap: 14px;
+}
+.stage-banner h3 {
+  font-family: var(--display);
+  font-size: 32px;
+  margin: 0;
+  color: var(--ink);
+}
+.stage-banner h3 .swirl {
+  font-family: var(--script);
+  font-size: 24px;
+  color: var(--teal);
+  font-weight: normal;
+}
+.stage-banner .points-badge {
+  background: var(--pink);
+  color: var(--cream);
+  font-family: var(--display);
+  font-size: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2.5px solid var(--ink);
+  transform: rotate(-3deg);
+}
+
+/* ============ FIXTURE FLOAT ============ */
+.float-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 24px;
+}
+.float {
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  position: relative;
+  box-shadow: 7px 7px 0 var(--ink);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.float:hover { transform: translate(-2px,-2px); box-shadow: 9px 9px 0 var(--ink); }
+.float.locked { background: var(--cream-deep); }
+.float.locked.win { background: linear-gradient(180deg, var(--cream) 0%, #d3f5e9 100%); }
+.float.locked.miss { background: linear-gradient(180deg, var(--cream) 0%, #ffe2e2 100%); }
+
+.float .stamp {
+  position: absolute;
+  top: -16px; right: 12px;
+  background: var(--ink);
+  color: var(--yellow);
+  font-family: var(--display);
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  transform: rotate(4deg);
+}
+.float.future .stamp { background: var(--teal); color: var(--cream); }
+.float.locked.win .stamp { background: var(--teal-deep); color: var(--cream); }
+.float.locked.miss .stamp { background: var(--pink-deep); color: var(--cream); }
+
+.float-time {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.float-match {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.float-match .team {
+  font-family: var(--display);
+  font-size: 22px;
+  line-height: 1;
+}
+.float-match .team .flag {
+  display: block;
+  font-size: 30px;
+  margin-bottom: 6px;
+}
+.float-match .team:last-child {
+  text-align: right;
+}
+.float-match .vs {
+  font-family: var(--script);
+  font-size: 28px;
+  color: var(--pink);
+  transform: rotate(-8deg);
+  white-space: nowrap;
+}
+.float-match .vs.scored {
+  font-family: var(--display);
+  font-size: 26px;
+  color: var(--ink);
+  transform: rotate(0);
+  background: var(--yellow);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 2.5px solid var(--ink);
+}
+
+/* Pick buttons */
+.float-picks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.float-picks.knockout { grid-template-columns: repeat(2, 1fr); }
+.float-picks button {
+  font-family: var(--display);
+  font-size: 14px;
+  padding: 10px 6px;
+  border: 2.5px solid var(--ink);
+  background: var(--cream);
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: all 0.12s;
+}
+.float-picks button:hover { background: var(--yellow); transform: translateY(-2px); }
+.float-picks button.selected {
+  background: var(--pink);
+  color: var(--cream);
+  box-shadow: 0 4px 0 var(--pink-deep);
+  transform: translateY(-2px);
+}
+.float-picks button.selected::after { content: " 🎉"; }
+
+.float-result {
+  margin-top: 10px;
+  display: flex; gap: 10px; align-items: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--ink);
+  color: var(--cream);
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+.float-result .your-pick { font-family: var(--display); }
+.float-result .verdict {
+  margin-left: auto;
+  font-family: var(--display);
+  font-size: 13px;
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.float-result.miss .verdict { background: var(--pink); color: var(--cream); }
+
+.float-others {
+  margin-top: 12px;
+  display: flex; gap: 6px; flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.float-others .chip {
+  background: var(--cream-deep);
+  border: 2px solid var(--ink);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.float-others .chip strong { font-family: var(--display); margin-right: 4px; }
+
+/* ============ STANDINGS ============ */
+aside.standings {
+  position: sticky; top: 20px; align-self: start;
+  background: var(--ink);
+  color: var(--cream);
+  padding: 28px 24px 26px;
+  border-radius: 26px;
+  position: relative;
+  box-shadow: 7px 7px 0 var(--pink);
+  margin-top: 28px;
+}
+aside.standings::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 3px solid var(--ink);
+  border-radius: 26px;
+  pointer-events: none;
+}
+aside.standings h2 {
+  font-family: var(--display);
+  font-size: 28px;
+  margin: 0 0 4px;
+  color: var(--yellow);
+}
+aside.standings .h-script {
+  font-family: var(--script);
+  font-size: 24px;
+  color: var(--pink);
+  display: block;
+  margin-bottom: 18px;
+}
+aside.standings .row {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px dashed rgba(255,245,227,0.18);
+}
+aside.standings .row:last-child { border-bottom: 0; }
+aside.standings .row .rank {
+  font-family: var(--display);
+  font-size: 26px;
+  color: var(--yellow);
+}
+aside.standings .row.gold .rank { color: var(--yellow); }
+aside.standings .row.you {
+  background: rgba(0,179,164,0.18);
+  margin: 0 -24px; padding: 12px 24px;
+}
+aside.standings .row .name {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 0.01em;
+}
+aside.standings .row .name small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: rgba(255,245,227,0.45);
+  margin-top: 3px;
+}
+aside.standings .row .pts {
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--pink);
+}
+aside.standings .row.gold .pts { color: var(--yellow); }
+
+aside.standings .scoring {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(255,245,227,0.25);
+}
+aside.standings .scoring h4 {
+  font-family: var(--display);
+  font-size: 18px;
+  margin: 0 0 10px;
+  color: var(--teal);
+}
+aside.standings .scoring .row {
+  border: none;
+  padding: 4px 0;
+  grid-template-columns: 1fr auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--cream);
+}
+aside.standings .scoring .row .pts {
+  font-family: var(--display);
+  font-size: 16px;
+  color: var(--yellow);
+}
+
+/* ============ FOOTER ============ */
+footer {
+  background: var(--pink);
+  color: var(--cream);
+  padding: 20px 36px;
+  margin-top: 70px;
+  font-family: var(--display);
+  font-size: 16px;
+  display: flex; justify-content: space-between;
+  position: relative;
+}
+footer::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 12px;
+  background-image: linear-gradient(45deg, var(--cream) 25%, transparent 25%),
+                     linear-gradient(-45deg, var(--cream) 25%, transparent 25%);
+  background-size: 22px 12px;
+  background-position: 0 0;
+}
+footer .tag {
+  font-family: var(--script);
+  font-size: 22px;
+  color: var(--yellow);
+}
+</style>
+</head>
+<body>
+
+<div class="confetti">
+  <span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<header class="parade">
+  <div class="parade-inner">
+    <div class="brand">
+      <div class="medallion"></div>
+      <div class="brand-text">
+        <h1><span class="pink">Jobbiga</span> <span class="yellow">Bets</span></h1>
+        <span class="ribbon">~ a friends-only world cup carnival ~</span>
+      </div>
+    </div>
+    <div class="welcome-card">
+      <span class="star">★</span>jonas · 4 picks waiting for you
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <a href="#" class="active">My Picks</a>
+  <a href="#">Standings</a>
+  <a href="#">Rules</a>
+  <a href="#">Sign out</a>
+</nav>
+
+<main>
+  <section>
+    <div class="spotlight">
+      <h2>
+        <small>Round one</small>
+        Stick your flags on the float
+      </h2>
+      <div class="filters">
+        <button class="active">All</button>
+        <button>Unpicked · 4</button>
+      </div>
+    </div>
+
+    <div class="stage-banner">
+      <h3>Group stage <span class="swirl">~ pick anything ~</span></h3>
+      <span class="points-badge">1 pt each</span>
+    </div>
+
+    <div class="float-grid">
+
+      <article class="float locked win">
+        <span class="stamp">FT</span>
+        <div class="float-time">Wed · 18:00 · Nazionale Fiume</div>
+        <div class="float-match">
+          <div class="team"><span class="flag">🇸🇪</span>Sweden</div>
+          <div class="vs scored">1 — 0</div>
+          <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+        </div>
+        <div class="float-result">
+          <span class="your-pick">You: Sweden</span>
+          <span class="verdict">+1 pt 🎉</span>
+        </div>
+        <div class="float-others">
+          <span class="chip"><strong>alice</strong> SWE</span>
+          <span class="chip"><strong>bob</strong> draw</span>
+          <span class="chip"><strong>carol</strong> SWE</span>
+        </div>
+      </article>
+
+      <article class="float locked miss">
+        <span class="stamp">FT</span>
+        <div class="float-time">Thu · 20:00 · Tokyo Bay</div>
+        <div class="float-match">
+          <div class="team"><span class="flag">🇩🇪</span>Germany</div>
+          <div class="vs scored">0 — 2</div>
+          <div class="team"><span class="flag">🇯🇵</span>Japan</div>
+        </div>
+        <div class="float-result miss">
+          <span class="your-pick">You: Germany</span>
+          <span class="verdict">missed</span>
+        </div>
+        <div class="float-others">
+          <span class="chip"><strong>alice</strong> JPN</span>
+          <span class="chip"><strong>bob</strong> GER</span>
+          <span class="chip"><strong>carol</strong> GER</span>
+        </div>
+      </article>
+
+      <article class="float locked win">
+        <span class="stamp">FT</span>
+        <div class="float-time">Fri · 16:00 · Estadio Centenario</div>
+        <div class="float-match">
+          <div class="team"><span class="flag">🇦🇷</span>Argentina</div>
+          <div class="vs scored">1 — 1</div>
+          <div class="team"><span class="flag">🇲🇽</span>Mexico</div>
+        </div>
+        <div class="float-result">
+          <span class="your-pick">You: Draw</span>
+          <span class="verdict">+1 pt 🎉</span>
+        </div>
+        <div class="float-others">
+          <span class="chip"><strong>alice</strong> draw</span>
+          <span class="chip"><strong>bob</strong> ARG</span>
+          <span class="chip"><strong>carol</strong> MEX</span>
+        </div>
+      </article>
+
+      <article class="float future">
+        <span class="stamp">picks open</span>
+        <div class="float-time">Mon · 18:00</div>
+        <div class="float-match">
+          <div class="team"><span class="flag">🇫🇷</span>France</div>
+          <div class="vs">vs</div>
+          <div class="team"><span class="flag">🇩🇰</span>Denmark</div>
+        </div>
+        <div class="float-picks">
+          <button class="selected">France</button>
+          <button>Draw</button>
+          <button>Denmark</button>
+        </div>
+      </article>
+
+      <article class="float future">
+        <span class="stamp">picks open</span>
+        <div class="float-time">Tue · 20:00</div>
+        <div class="float-match">
+          <div class="team"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>England</div>
+          <div class="vs">vs</div>
+          <div class="team"><span class="flag">🇺🇸</span>USA</div>
+        </div>
+        <div class="float-picks">
+          <button>England</button>
+          <button>Draw</button>
+          <button>USA</button>
+        </div>
+      </article>
+
+      <article class="float future">
+        <span class="stamp">picks open</span>
+        <div class="float-time">Wed · 16:00</div>
+        <div class="float-match">
+          <div class="team"><span class="flag">🇪🇸</span>Spain</div>
+          <div class="vs">vs</div>
+          <div class="team"><span class="flag">🇨🇷</span>Costa Rica</div>
+        </div>
+        <div class="float-picks">
+          <button>Spain</button>
+          <button>Draw</button>
+          <button>Costa Rica</button>
+        </div>
+      </article>
+    </div>
+
+    <div class="stage-banner">
+      <h3>Quarter-finals <span class="swirl">~ winner takes all ~</span></h3>
+      <span class="points-badge">2 pts each</span>
+    </div>
+
+    <div class="float-grid">
+      <article class="float future">
+        <span class="stamp">picks open</span>
+        <div class="float-time">Sat · 21:00</div>
+        <div class="float-match">
+          <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+          <div class="vs">vs</div>
+          <div class="team"><span class="flag">🇭🇷</span>Croatia</div>
+        </div>
+        <div class="float-picks knockout">
+          <button>Brazil</button>
+          <button>Croatia</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <aside class="standings">
+    <h2>The pyramid</h2>
+    <span class="h-script">~ everyone is watching ~</span>
+
+    <div class="row gold">
+      <span class="rank">1</span>
+      <span class="name">alice<small>+alice</small></span>
+      <span class="pts">3</span>
+    </div>
+    <div class="row you">
+      <span class="rank">2</span>
+      <span class="name">jonas (you)<small>+jonas</small></span>
+      <span class="pts">2</span>
+    </div>
+    <div class="row">
+      <span class="rank">3</span>
+      <span class="name">carol<small>+carol</small></span>
+      <span class="pts">1</span>
+    </div>
+    <div class="row">
+      <span class="rank">4</span>
+      <span class="name">bob<small>+bob</small></span>
+      <span class="pts">0</span>
+    </div>
+
+    <div class="scoring">
+      <h4>Points</h4>
+      <div class="row"><span>Group</span><span class="pts">1</span></div>
+      <div class="row"><span>R32 → SF</span><span class="pts">2</span></div>
+      <div class="row"><span>3rd-place</span><span class="pts">3</span></div>
+      <div class="row"><span>The Final</span><span class="pts">5</span></div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <span>WC26 · Carnival Edition</span>
+  <span class="tag">~ no prize, only honour ~</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WC26 Jobbiga Bets — The Album Fills Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Anton&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f1e6cb;
+  --paper-deep: #e6d8b5;
+  --paper-empty: #ebdfba;
+  --ink: #18140d;
+  --ink-mute: #6c604c;
+  --red: #c8242c;
+  --green: #1d6d4d;
+  --gold: #c79321;
+  --shadow: 4px 4px 0 var(--ink);
+  --display: "Bungee Shade", system-ui;
+  --headline: "Anton", system-ui;
+  --body: "Newsreader", Georgia, serif;
+  --mono: "Space Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.5;
+  background-image:
+    radial-gradient(rgba(24,20,13,0.05) 1px, transparent 1px),
+    radial-gradient(rgba(24,20,13,0.04) 1px, transparent 1px);
+  background-size: 4px 4px, 23px 23px;
+  background-position: 0 0, 11px 11px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.07 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  z-index: 100;
+}
+
+/* ============ HEADER ============ */
+.masthead {
+  border-bottom: 4px double var(--ink);
+  padding: 24px 40px 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 40px;
+  position: relative;
+}
+.masthead::before {
+  content: "EST. 2026 · ALBUM IN PROGRESS";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--ink);
+  opacity: 0.7;
+}
+.title-block { display: flex; align-items: center; gap: 18px; }
+.crest {
+  width: 60px; height: 60px;
+  background: var(--red);
+  border: 3px solid var(--ink);
+  display: grid; place-items: center;
+  transform: rotate(-3deg);
+  box-shadow: var(--shadow);
+}
+.crest::before {
+  content: "★";
+  font-size: 32px;
+  color: var(--paper);
+}
+.title {
+  font-family: var(--display);
+  font-size: 46px;
+  line-height: 0.9;
+}
+.title em { color: var(--red); font-style: normal; }
+.tagline {
+  font-family: var(--headline);
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  opacity: 0.75;
+}
+.user-pill {
+  font-family: var(--mono);
+  font-size: 12px;
+  border: 2px solid var(--ink);
+  padding: 8px 14px;
+  background: var(--paper-deep);
+  transform: rotate(1.5deg);
+}
+.user-pill::before { content: "◀ "; color: var(--red); }
+
+/* ============ ALBUM PROGRESS BAR ============ */
+.progress-strip {
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper-deep);
+  padding: 14px 40px;
+  display: flex; align-items: center; gap: 22px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+.progress-strip .label {
+  font-family: var(--headline);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.progress-strip .bar {
+  flex: 1;
+  height: 18px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+.progress-strip .bar .fill {
+  height: 100%;
+  width: 33%;
+  background:
+    repeating-linear-gradient(45deg, var(--red) 0 6px, #a51d24 6px 12px);
+}
+.progress-strip .pct {
+  font-family: var(--display);
+  font-size: 18px;
+  color: var(--red);
+}
+.progress-strip .stat {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* ============ NAV ============ */
+nav.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--ink);
+  padding: 0 40px;
+  font-family: var(--headline);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+nav.tabs a {
+  padding: 14px 22px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  border-right: 1px solid rgba(24,20,13,0.2);
+}
+nav.tabs a.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+nav.tabs a .badge {
+  background: var(--red);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  vertical-align: 2px;
+}
+
+/* ============ MAIN ============ */
+main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 48px;
+}
+@media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+
+section h2.section-title {
+  font-family: var(--display);
+  font-size: 28px;
+  margin: 0 0 4px;
+}
+section h2.section-title small {
+  font-family: var(--headline);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: block;
+  color: var(--red);
+  margin-bottom: 4px;
+}
+
+/* ============ STAGE ============ */
+.stage { margin-bottom: 36px; }
+.stage-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.stage-banner h3 {
+  font-family: var(--headline);
+  font-size: 28px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.stage-banner .rule {
+  flex: 1;
+  height: 0;
+  border-top: 2px dashed var(--ink);
+  opacity: 0.4;
+}
+.stage-banner .meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+  opacity: 0.7;
+}
+.stage-banner .foil-tag {
+  font-family: var(--display);
+  font-size: 13px;
+  padding: 4px 10px;
+  border: 2px solid var(--ink);
+  background: linear-gradient(135deg, #ffd980, #ff9bb0 30%, #b1d4ff 60%, #c8ffd9 90%);
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transform: rotate(-2deg);
+}
+.stage-banner .foil-tag.legendary {
+  background:
+    conic-gradient(from 0deg,
+      #ffd166, #ef476f, #b388ff, #06d6a0, #fff79a, #ffd166);
+  border: 2.5px solid var(--ink);
+  box-shadow: 0 0 0 2px var(--paper), 3px 3px 0 var(--ink);
+  animation: spin 8s linear infinite;
+}
+@keyframes spin { to { filter: hue-rotate(360deg); } }
+
+/* ============ STICKERS ============ */
+.stickers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+.sticker {
+  background: #fdf6e3;
+  border: 3px solid var(--ink);
+  padding: 16px 16px 14px;
+  position: relative;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s cubic-bezier(.25,.95,.45,1.4), box-shadow 0.2s;
+}
+.sticker:nth-child(2n) { transform: rotate(-1deg); }
+.sticker:nth-child(3n) { transform: rotate(1.3deg); }
+.sticker:nth-child(5n) { transform: rotate(-0.6deg); }
+.sticker:hover {
+  transform: rotate(0deg) translateY(-3px) scale(1.02);
+  box-shadow: 8px 8px 0 var(--ink);
+  z-index: 5;
+}
+
+/* ====== FILLED (past with result) ====== */
+.sticker.filled {
+  background: var(--paper-deep);
+}
+.sticker .corner {
+  position: absolute;
+  top: -10px; right: -10px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  letter-spacing: 0.12em;
+  transform: rotate(8deg);
+}
+.sticker.filled .corner { background: var(--gold); color: var(--ink); }
+
+/* ====== EMPTY (future, awaiting result) ====== */
+.sticker.empty {
+  background:
+    repeating-linear-gradient(45deg,
+      transparent 0 8px,
+      rgba(24,20,13,0.04) 8px 16px),
+    var(--paper-empty);
+  border: 3px dashed var(--ink);
+  box-shadow:
+    inset 4px 4px 0 rgba(24,20,13,0.04),
+    inset -4px -4px 0 rgba(255,255,255,0.18),
+    2px 2px 0 rgba(24,20,13,0.18);
+}
+.sticker.empty:hover {
+  box-shadow:
+    inset 4px 4px 0 rgba(24,20,13,0.04),
+    inset -4px -4px 0 rgba(255,255,255,0.18),
+    6px 6px 0 rgba(24,20,13,0.32);
+}
+.sticker.empty .corner {
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px dashed var(--ink);
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 7px;
+}
+
+/* ====== FOIL TIERS (cumulative — applied alongside .empty/.filled) ====== */
+.sticker.foil-1 {
+  background-image:
+    linear-gradient(135deg,
+      rgba(255, 230, 150, 0.20) 0%,
+      rgba(220, 180, 240, 0.14) 50%,
+      rgba(150, 220, 230, 0.20) 100%),
+    repeating-linear-gradient(45deg,
+      transparent 0 8px,
+      rgba(24,20,13,0.04) 8px 16px);
+  background-color: var(--paper-empty);
+}
+.sticker.foil-2 {
+  background-image:
+    linear-gradient(135deg,
+      rgba(255, 200, 130, 0.32) 0%,
+      rgba(255, 150, 200, 0.26) 35%,
+      rgba(180, 200, 255, 0.30) 70%,
+      rgba(160, 240, 200, 0.30) 100%),
+    repeating-linear-gradient(45deg,
+      transparent 0 8px,
+      rgba(24,20,13,0.03) 8px 16px);
+  background-color: var(--paper-empty);
+}
+.sticker.foil-3 {
+  background-image:
+    linear-gradient(135deg,
+      rgba(255, 215, 100, 0.55) 0%,
+      rgba(255, 165, 70, 0.45) 50%,
+      rgba(255, 215, 100, 0.55) 100%),
+    repeating-linear-gradient(45deg,
+      transparent 0 8px,
+      rgba(24,20,13,0.04) 8px 16px);
+  background-color: #f8e0a0;
+  border-color: #6b3d0e;
+}
+
+/* ====== LEGENDARY (Final) ====== */
+.sticker.foil-final {
+  background:
+    conic-gradient(from 45deg,
+      rgba(255, 209, 102, 0.55),
+      rgba(239, 71, 111, 0.50),
+      rgba(179, 136, 255, 0.55),
+      rgba(6, 214, 160, 0.50),
+      rgba(255, 247, 154, 0.50),
+      rgba(255, 209, 102, 0.55));
+  background-color: var(--paper-empty);
+  border: 4px solid var(--ink);
+  box-shadow:
+    0 0 0 3px var(--paper),
+    0 0 0 5px var(--ink),
+    6px 6px 0 var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+.sticker.foil-final::before {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(60deg,
+    transparent 35%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 65%);
+  animation: shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+@keyframes shine {
+  0%   { transform: translate(-40%, -40%); }
+  50%  { transform: translate(20%, 20%); }
+  100% { transform: translate(-40%, -40%); }
+}
+.sticker.foil-final .corner {
+  background: var(--ink);
+  color: #ffd166;
+  font-family: var(--display);
+  font-size: 11px;
+  padding: 5px 10px;
+  border: 2px solid #ffd166;
+  letter-spacing: 0.06em;
+  transform: rotate(8deg);
+}
+
+/* ====== INNER CARD CONTENT ====== */
+.sticker-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  position: relative; z-index: 1;
+}
+.matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0 14px;
+  position: relative; z-index: 1;
+}
+.team {
+  font-family: var(--headline);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.team:last-child { text-align: right; }
+.team .flag {
+  font-size: 28px;
+  line-height: 1;
+}
+.team:last-child .flag { align-self: flex-end; }
+.versus {
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--red);
+}
+.sticker.foil-final .versus { color: var(--ink); }
+
+/* ====== PICK BUTTONS ====== */
+.pick-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+  position: relative; z-index: 1;
+}
+.pick-row.knockout { grid-template-columns: repeat(2, 1fr); }
+.pick-btn {
+  font-family: var(--headline);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  padding: 9px 6px;
+  cursor: pointer;
+  transition: all 0.12s;
+  position: relative;
+}
+.pick-btn:hover { background: var(--ink); color: var(--paper); }
+.pick-btn.selected {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--ink);
+}
+.pick-btn.selected::after {
+  content: "★";
+  position: absolute;
+  top: -8px; right: -8px;
+  background: var(--red);
+  color: var(--paper);
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  font-size: 11px;
+  display: grid; place-items: center;
+  border: 2px solid var(--ink);
+}
+.pick-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ====== "TO COME" PLACEHOLDER (the empty result slot) ====== */
+.to-come {
+  margin-top: 12px;
+  padding: 14px 12px;
+  border: 2px dashed var(--ink);
+  background: rgba(24,20,13,0.04);
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  position: relative; z-index: 1;
+}
+.to-come .qmark {
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--ink);
+  opacity: 0.5;
+  line-height: 1;
+}
+.to-come .label-stack { display: flex; flex-direction: column; gap: 2px; }
+.to-come .label-stack .a { color: var(--ink); }
+.to-come .label-stack .b { color: var(--ink-mute); font-size: 10px; }
+
+/* ====== RESULT STAMP (filled) ====== */
+.result-stamp {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+.result-stamp .stamped-pick {
+  font-family: var(--headline);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.result-stamp .result-tag {
+  font-family: var(--display);
+  font-size: 18px;
+  color: var(--green);
+  transform: rotate(-3deg);
+}
+.result-stamp.wrong .result-tag { color: var(--red); }
+.result-stamp .verdict {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  padding: 3px 7px;
+  background: var(--green);
+  color: var(--paper);
+  text-transform: uppercase;
+}
+.result-stamp.wrong .verdict { background: var(--red); }
+
+/* Other users' picks */
+.others-picks {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+.others-picks .chip {
+  border: 1.5px solid var(--ink);
+  padding: 2px 7px;
+  background: var(--paper-deep);
+}
+.others-picks .chip strong { font-family: var(--headline); }
+
+/* ============ SIDEBAR ============ */
+aside.standings {
+  position: sticky;
+  top: 30px;
+  align-self: start;
+}
+aside.standings .panel {
+  background: var(--paper-deep);
+  border: 3px solid var(--ink);
+  box-shadow: var(--shadow);
+  padding: 22px 22px 26px;
+  position: relative;
+}
+aside.standings .panel::before {
+  content: "STANDINGS";
+  position: absolute;
+  top: -14px; left: 16px;
+  background: var(--red);
+  color: var(--paper);
+  font-family: var(--display);
+  font-size: 18px;
+  padding: 4px 14px;
+  letter-spacing: 0.04em;
+  border: 3px solid var(--ink);
+}
+aside.standings ol {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+aside.standings li {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(24,20,13,0.3);
+}
+aside.standings li:last-child { border-bottom: 0; }
+aside.standings li .rank {
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--ink);
+}
+aside.standings li.you { background: rgba(199, 147, 33, 0.18); margin: 0 -22px; padding-left: 22px; padding-right: 22px; }
+aside.standings li .who {
+  font-family: var(--headline);
+  font-size: 18px;
+  letter-spacing: 0.03em;
+}
+aside.standings li .who small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: normal;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+aside.standings li .pts {
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--red);
+}
+
+aside.standings .scoring {
+  margin-top: 22px;
+  border-top: 2px solid var(--ink);
+  padding-top: 16px;
+  font-size: 14px;
+}
+aside.standings .scoring h4 {
+  font-family: var(--headline);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+aside.standings .scoring dl { margin: 0; display: grid; grid-template-columns: 1fr auto 12px; gap: 4px 12px; font-family: var(--mono); font-size: 12px; align-items: baseline; }
+aside.standings .scoring dt { opacity: 0.85; }
+aside.standings .scoring dd { margin: 0; font-weight: bold; color: var(--red); }
+aside.standings .scoring .swatch {
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--ink);
+  display: inline-block;
+}
+aside.standings .scoring .swatch.s0 { background: #fdf6e3; }
+aside.standings .scoring .swatch.s1 { background: linear-gradient(135deg, #ffe696, #b1d4ff); }
+aside.standings .scoring .swatch.s2 { background: linear-gradient(135deg, #ffc882, #ff96c8 50%, #b4c8ff); }
+aside.standings .scoring .swatch.s3 { background: linear-gradient(135deg, #ffd764, #ffa946); }
+aside.standings .scoring .swatch.sf { background: conic-gradient(from 45deg, #ffd166, #ef476f, #b388ff, #06d6a0, #fff79a, #ffd166); }
+
+/* ============ FOOTER ============ */
+footer {
+  border-top: 4px double var(--ink);
+  margin-top: 60px;
+  padding: 24px 40px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  opacity: 0.65;
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="title-block">
+    <div class="crest"></div>
+    <div>
+      <h1 class="title">WC26 <em>Jobbiga</em> Bets</h1>
+      <div class="tagline">Friends edition · 2026</div>
+    </div>
+  </div>
+  <div class="user-pill">jonaseriksson84+jonas@gmail.com</div>
+</header>
+
+<div class="progress-strip">
+  <span class="label">Album</span>
+  <div class="bar"><div class="fill"></div></div>
+  <span class="pct">3 / 9</span>
+  <span class="stat">stickers earned · 6 to come</span>
+</div>
+
+<nav class="tabs">
+  <a href="#" class="active">My Picks <span class="badge">6</span></a>
+  <a href="#">Standings</a>
+  <a href="#">Rules</a>
+  <a href="#">Sign out</a>
+</nav>
+
+<main>
+  <section>
+    <h2 class="section-title"><small>Round one · Album page 01</small>The album so far</h2>
+
+    <!-- GROUP STAGE -->
+    <div class="stage">
+      <div class="stage-banner">
+        <h3>Group stage</h3>
+        <span class="rule"></span>
+        <span class="meta">paper · 1 pt each</span>
+      </div>
+
+      <div class="stickers">
+
+        <!-- Past, filled, correct -->
+        <article class="sticker filled">
+          <span class="corner">FT · STUCK</span>
+          <div class="sticker-head"><span>M.01</span><span>Wed · 18:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇸🇪</span>Sweden</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+          </div>
+          <div class="result-stamp">
+            <span class="stamped-pick">Picked: Sweden</span>
+            <span class="result-tag">1–0</span>
+            <span class="verdict">Correct</span>
+          </div>
+          <div class="others-picks">
+            <span class="chip"><strong>alice</strong> SWE</span>
+            <span class="chip"><strong>bob</strong> X</span>
+            <span class="chip"><strong>carol</strong> SWE</span>
+          </div>
+        </article>
+
+        <!-- Past, filled, wrong -->
+        <article class="sticker filled">
+          <span class="corner">FT · STUCK</span>
+          <div class="sticker-head"><span>M.02</span><span>Thu · 20:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇩🇪</span>Germany</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇯🇵</span>Japan</div>
+          </div>
+          <div class="result-stamp wrong">
+            <span class="stamped-pick">Picked: Germany</span>
+            <span class="result-tag">0–2</span>
+            <span class="verdict">Missed</span>
+          </div>
+          <div class="others-picks">
+            <span class="chip"><strong>alice</strong> JPN</span>
+            <span class="chip"><strong>bob</strong> GER</span>
+            <span class="chip"><strong>carol</strong> GER</span>
+          </div>
+        </article>
+
+        <!-- Past, filled, draw correct -->
+        <article class="sticker filled">
+          <span class="corner">FT · STUCK</span>
+          <div class="sticker-head"><span>M.03</span><span>Fri · 16:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇦🇷</span>Argentina</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇲🇽</span>Mexico</div>
+          </div>
+          <div class="result-stamp">
+            <span class="stamped-pick">Picked: Draw</span>
+            <span class="result-tag">1–1</span>
+            <span class="verdict">Correct</span>
+          </div>
+          <div class="others-picks">
+            <span class="chip"><strong>alice</strong> X</span>
+            <span class="chip"><strong>bob</strong> ARG</span>
+            <span class="chip"><strong>carol</strong> MEX</span>
+          </div>
+        </article>
+
+        <!-- Future, empty, picked -->
+        <article class="sticker empty">
+          <span class="corner">EMPTY SLOT</span>
+          <div class="sticker-head"><span>M.04</span><span>Mon · 18:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇫🇷</span>France</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇩🇰</span>Denmark</div>
+          </div>
+          <div class="pick-row">
+            <button class="pick-btn selected">France</button>
+            <button class="pick-btn">Draw</button>
+            <button class="pick-btn">Denmark</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Sticker to come</span>
+              <span class="b">arrives at full time</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Future, empty, no pick -->
+        <article class="sticker empty">
+          <span class="corner">EMPTY SLOT</span>
+          <div class="sticker-head"><span>M.05</span><span>Tue · 20:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>England</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇺🇸</span>USA</div>
+          </div>
+          <div class="pick-row">
+            <button class="pick-btn">England</button>
+            <button class="pick-btn">Draw</button>
+            <button class="pick-btn">USA</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Sticker to come</span>
+              <span class="b">arrives at full time</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="sticker empty">
+          <span class="corner">EMPTY SLOT</span>
+          <div class="sticker-head"><span>M.06</span><span>Wed · 16:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇪🇸</span>Spain</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇨🇷</span>Costa Rica</div>
+          </div>
+          <div class="pick-row">
+            <button class="pick-btn">Spain</button>
+            <button class="pick-btn">Draw</button>
+            <button class="pick-btn">Costa Rica</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Sticker to come</span>
+              <span class="b">arrives at full time</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- ROUND OF 16 — light foil -->
+    <div class="stage">
+      <div class="stage-banner">
+        <h3>Round of 16</h3>
+        <span class="rule"></span>
+        <span class="meta">2 pts · winner only</span>
+        <span class="foil-tag">Pearl</span>
+      </div>
+      <div class="stickers">
+        <article class="sticker empty foil-1">
+          <span class="corner">EMPTY · FOIL</span>
+          <div class="sticker-head"><span>R16.01</span><span>Sat · 20:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇵🇹</span>Portugal</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇲🇦</span>Morocco</div>
+          </div>
+          <div class="pick-row knockout">
+            <button class="pick-btn">Portugal</button>
+            <button class="pick-btn">Morocco</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Foil sticker pending</span>
+              <span class="b">winner advances</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- QUARTER-FINALS — medium foil -->
+    <div class="stage">
+      <div class="stage-banner">
+        <h3>Quarter‑finals</h3>
+        <span class="rule"></span>
+        <span class="meta">2 pts · winner only</span>
+        <span class="foil-tag">Holo</span>
+      </div>
+      <div class="stickers">
+        <article class="sticker empty foil-2">
+          <span class="corner">EMPTY · HOLO</span>
+          <div class="sticker-head"><span>QF.01</span><span>Sat · 21:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇭🇷</span>Croatia</div>
+          </div>
+          <div class="pick-row knockout">
+            <button class="pick-btn">Brazil</button>
+            <button class="pick-btn">Croatia</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Holo sticker pending</span>
+              <span class="b">winner advances</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- SEMI-FINALS — stronger foil (also holo tier) -->
+    <div class="stage">
+      <div class="stage-banner">
+        <h3>Semi‑finals</h3>
+        <span class="rule"></span>
+        <span class="meta">2 pts · winner only</span>
+        <span class="foil-tag">Holo</span>
+      </div>
+      <div class="stickers">
+        <article class="sticker empty foil-2">
+          <span class="corner">EMPTY · HOLO</span>
+          <div class="sticker-head"><span>SF.01</span><span>Tue · 21:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇫🇷</span>France</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+          </div>
+          <div class="pick-row knockout">
+            <button class="pick-btn">France</button>
+            <button class="pick-btn">Brazil</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Holo sticker pending</span>
+              <span class="b">winner advances</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- 3RD-PLACE — gold foil -->
+    <div class="stage">
+      <div class="stage-banner">
+        <h3>Third‑place playoff</h3>
+        <span class="rule"></span>
+        <span class="meta">3 pts · catch-up bonus</span>
+        <span class="foil-tag" style="background: linear-gradient(135deg,#ffd764,#ffa946)">Gold</span>
+      </div>
+      <div class="stickers">
+        <article class="sticker empty foil-3">
+          <span class="corner">EMPTY · GOLD</span>
+          <div class="sticker-head"><span>3PP</span><span>Fri · 21:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇧🇷</span>Brazil</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇪🇸</span>Spain</div>
+          </div>
+          <div class="pick-row knockout">
+            <button class="pick-btn">Brazil</button>
+            <button class="pick-btn">Spain</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Gold sticker pending</span>
+              <span class="b">last chance to climb</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- THE FINAL — legendary -->
+    <div class="stage">
+      <div class="stage-banner">
+        <h3>The Final</h3>
+        <span class="rule"></span>
+        <span class="meta">5 pts · the big one</span>
+        <span class="foil-tag legendary">★ Legendary ★</span>
+      </div>
+      <div class="stickers">
+        <article class="sticker empty foil-final">
+          <span class="corner">★ LEGENDARY ★</span>
+          <div class="sticker-head"><span>FNL</span><span>Sun · 21:00</span></div>
+          <div class="matchup">
+            <div class="team"><span class="flag">🇫🇷</span>France</div>
+            <div class="versus">×</div>
+            <div class="team"><span class="flag">🇦🇷</span>Argentina</div>
+          </div>
+          <div class="pick-row knockout">
+            <button class="pick-btn">France</button>
+            <button class="pick-btn">Argentina</button>
+          </div>
+          <div class="to-come">
+            <span class="qmark">?</span>
+            <div class="label-stack">
+              <span class="a">Legendary sticker pending</span>
+              <span class="b">history is written here</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+  </section>
+
+  <aside class="standings">
+    <div class="panel">
+      <ol>
+        <li>
+          <span class="rank">1</span>
+          <span class="who">alice<small>+alice</small></span>
+          <span class="pts">3</span>
+        </li>
+        <li class="you">
+          <span class="rank">2</span>
+          <span class="who">jonas (you)<small>+jonas</small></span>
+          <span class="pts">2</span>
+        </li>
+        <li>
+          <span class="rank">3</span>
+          <span class="who">carol<small>+carol</small></span>
+          <span class="pts">1</span>
+        </li>
+        <li>
+          <span class="rank">4</span>
+          <span class="who">bob<small>+bob</small></span>
+          <span class="pts">0</span>
+        </li>
+      </ol>
+
+      <div class="scoring">
+        <h4>Sticker tiers</h4>
+        <dl>
+          <dt>Group · paper</dt>           <dd>1 pt</dd> <span class="swatch s0"></span>
+          <dt>R32 / R16 · pearl</dt>       <dd>2 pts</dd><span class="swatch s1"></span>
+          <dt>QF / SF · holo</dt>          <dd>2 pts</dd><span class="swatch s2"></span>
+          <dt>3rd-place · gold</dt>        <dd>3 pts</dd><span class="swatch s3"></span>
+          <dt>The Final · legendary</dt>   <dd>5 pts</dd><span class="swatch sf"></span>
+        </dl>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <span>WC26 · Jobbiga Bets · No prize, only honour</span>
+  <span>Album · 3 / 9 stuck · 67% to fill</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WC26 Jobbiga Bets — Stadium Scoreboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050811;
+  --bg-2: #0a1124;
+  --grid: rgba(0,229,255,0.06);
+  --amber: #ffb000;
+  --amber-glow: rgba(255,176,0,0.55);
+  --cyan: #00e5ff;
+  --cyan-glow: rgba(0,229,255,0.45);
+  --magenta: #ff2fa8;
+  --green: #76ff5a;
+  --red: #ff3535;
+  --dim: #4a5670;
+  --text: #d8e3ff;
+
+  --display: "Press Start 2P", monospace;
+  --sub: "Silkscreen", monospace;
+  --body: "VT323", monospace;
+  --mono: "JetBrains Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 22px;
+  line-height: 1.25;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    radial-gradient(ellipse at top, #0c1530 0%, var(--bg) 70%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+
+/* CRT scanlines + vignette */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,0.04) 0px,
+    rgba(255,255,255,0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 200;
+}
+body::after {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.55) 100%);
+  z-index: 199;
+}
+
+/* ============ HEADER ============ */
+.scoreboard-frame {
+  border-bottom: 4px solid var(--amber);
+  padding: 18px 32px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  background: linear-gradient(180deg, #0c1632 0%, transparent 100%);
+  position: relative;
+}
+.scoreboard-frame::before, .scoreboard-frame::after {
+  content: ""; position: absolute; bottom: -4px; width: 22px; height: 14px;
+  background: var(--amber);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.scoreboard-frame::before { left: 30%; }
+.scoreboard-frame::after { right: 30%; }
+
+.brand { display: flex; gap: 18px; align-items: center; }
+.brand-logo {
+  width: 52px; height: 52px;
+  background: var(--amber);
+  display: grid; place-items: center;
+  color: var(--bg);
+  font-family: var(--display);
+  font-size: 18px;
+  box-shadow: 0 0 20px var(--amber-glow);
+}
+.brand h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 18px;
+  color: var(--amber);
+  text-shadow: 0 0 8px var(--amber-glow);
+  letter-spacing: 0.04em;
+}
+.brand .sub {
+  font-family: var(--sub);
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 0.18em;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.live-tag {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--sub); font-size: 12px;
+  color: var(--green);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.live-tag::before {
+  content: "";
+  width: 10px; height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--green);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: 0.3; transform: scale(0.7); } }
+
+.user-block {
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.user-block .label { color: var(--dim); letter-spacing: 0.2em; text-transform: uppercase; font-size: 10px; }
+.user-block .value { color: var(--cyan); }
+
+/* ============ MAIN ============ */
+main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 30px 32px 80px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 36px;
+}
+@media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+
+/* ============ STAGE ============ */
+.stage { margin-bottom: 36px; }
+.stage-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--dim);
+}
+.stage-row h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 14px;
+  color: var(--cyan);
+  letter-spacing: 0.06em;
+}
+.stage-row .info {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--amber);
+  letter-spacing: 0.1em;
+}
+
+/* Filter / counter */
+.cabinet-bar {
+  background: linear-gradient(180deg, #0e1936, #060a1c);
+  border: 2px solid var(--cyan);
+  padding: 14px 18px;
+  margin-bottom: 30px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--sub);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--text);
+  box-shadow: 0 0 24px rgba(0,229,255,0.18) inset;
+}
+.cabinet-bar .insert-coin {
+  font-family: var(--display); font-size: 12px; color: var(--amber);
+  text-shadow: 0 0 10px var(--amber-glow);
+  animation: flick 1.2s steps(2) infinite;
+}
+@keyframes flick { 50% { opacity: 0.25; } }
+.cabinet-bar .filter {
+  display: flex; gap: 6px;
+}
+.cabinet-bar .filter button {
+  background: transparent; border: 1px solid var(--cyan);
+  color: var(--cyan); padding: 5px 10px;
+  font-family: var(--sub); font-size: 11px;
+  cursor: pointer; letter-spacing: 0.12em;
+}
+.cabinet-bar .filter button.on { background: var(--cyan); color: var(--bg); }
+
+/* ============ FIXTURE ROWS ============ */
+.fixture {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr 1fr 130px;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 18px;
+  margin-bottom: 10px;
+  background: linear-gradient(180deg, rgba(14,25,54,0.6), rgba(6,10,28,0.6));
+  border: 1px solid var(--dim);
+  border-left: 4px solid var(--cyan);
+  font-family: var(--body);
+  position: relative;
+}
+.fixture.locked { border-left-color: var(--amber); }
+.fixture.you-correct { border-left-color: var(--green); box-shadow: 0 0 18px rgba(118,255,90,0.18); }
+.fixture.you-wrong { border-left-color: var(--red); }
+
+.fixture .when {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--amber);
+  text-align: center;
+}
+.fixture .when .day { display: block; font-size: 10px; color: var(--dim); letter-spacing: 0.18em; }
+
+.fixture .team {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 26px;
+  font-family: var(--body);
+  color: var(--text);
+}
+.fixture .team .flag { font-size: 28px; }
+.fixture .team.away { justify-content: flex-end; }
+.fixture .team.away .flag { order: 2; }
+.fixture .vs {
+  font-family: var(--display);
+  font-size: 14px;
+  color: var(--magenta);
+  text-align: center;
+  text-shadow: 0 0 8px rgba(255,47,168,0.6);
+}
+.fixture .vs.scored {
+  font-family: var(--mono);
+  font-size: 24px;
+  color: var(--amber);
+  text-shadow: 0 0 6px var(--amber-glow);
+  letter-spacing: 0.1em;
+}
+
+/* Pick controls */
+.fixture .picks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.fixture .picks.knockout { grid-template-columns: repeat(2, 1fr); }
+.fixture .picks button {
+  font-family: var(--sub);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  background: transparent;
+  border: 1.5px solid var(--cyan);
+  color: var(--cyan);
+  padding: 8px 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.1s;
+}
+.fixture .picks button:hover {
+  background: var(--cyan);
+  color: var(--bg);
+  box-shadow: 0 0 14px var(--cyan-glow);
+}
+.fixture .picks button.selected {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--bg);
+  box-shadow: 0 0 14px var(--amber-glow);
+}
+.fixture .picks button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: var(--dim);
+  color: var(--dim);
+}
+
+/* Locked verdict */
+.verdict {
+  font-family: var(--display);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 6px 10px;
+  text-align: center;
+  color: var(--bg);
+}
+.verdict.win { background: var(--green); box-shadow: 0 0 14px rgba(118,255,90,0.5); }
+.verdict.miss { background: var(--red); }
+.verdict.you-picked { font-family: var(--mono); font-size: 11px; color: var(--text); background: transparent; letter-spacing: 0.06em; text-align: right; }
+
+.others-strip {
+  grid-column: 1 / -1;
+  display: flex; gap: 14px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--dim);
+}
+.others-strip .pick-chip {
+  padding: 2px 9px;
+  border: 1px solid var(--dim);
+  letter-spacing: 0.1em;
+}
+.others-strip .pick-chip.home { color: var(--cyan); border-color: var(--cyan); }
+.others-strip .pick-chip.draw { color: var(--magenta); border-color: var(--magenta); }
+.others-strip .pick-chip.away { color: var(--amber); border-color: var(--amber); }
+
+/* ============ STANDINGS ============ */
+aside {
+  position: sticky; top: 20px; align-self: start;
+  border: 2px solid var(--amber);
+  background: linear-gradient(180deg, #100c20, #050811);
+  padding: 22px;
+  box-shadow: 0 0 28px rgba(255,176,0,0.12);
+}
+aside h2 {
+  font-family: var(--display);
+  font-size: 14px;
+  color: var(--amber);
+  margin: 0 0 18px;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 10px var(--amber-glow);
+}
+aside .leaderboard-row {
+  display: grid;
+  grid-template-columns: 30px 1fr 60px;
+  gap: 12px; align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(74,86,112,0.5);
+  font-family: var(--mono);
+}
+aside .leaderboard-row:last-child { border-bottom: 0; }
+aside .leaderboard-row.you {
+  background: rgba(0,229,255,0.08);
+  margin: 0 -22px; padding-left: 22px; padding-right: 22px;
+}
+aside .leaderboard-row .rank {
+  font-family: var(--display);
+  font-size: 14px;
+  color: var(--cyan);
+}
+aside .leaderboard-row.tied .rank { color: var(--magenta); }
+aside .leaderboard-row .name {
+  font-family: var(--body);
+  font-size: 22px;
+  color: var(--text);
+}
+aside .leaderboard-row .score {
+  font-family: var(--display);
+  font-size: 18px;
+  color: var(--amber);
+  text-align: right;
+  text-shadow: 0 0 8px var(--amber-glow);
+}
+
+aside .scoring-key {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--dim);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+aside .scoring-key h3 {
+  font-family: var(--sub);
+  font-size: 11px;
+  color: var(--magenta);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+aside .scoring-key .row {
+  display: flex; justify-content: space-between;
+  padding: 3px 0;
+  color: var(--text);
+}
+aside .scoring-key .row span:last-child {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+/* ============ FOOTER ============ */
+footer {
+  margin: 40px 0 0;
+  padding: 20px 32px;
+  border-top: 2px solid var(--cyan);
+  font-family: var(--sub);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: var(--dim);
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(0,229,255,0.03);
+}
+footer .credits { color: var(--cyan); }
+footer .blink { animation: flick 1s steps(2) infinite; color: var(--amber); }
+</style>
+</head>
+<body>
+
+<header class="scoreboard-frame">
+  <div class="brand">
+    <div class="brand-logo">26</div>
+    <div>
+      <h1>WC26 JOBBIGA BETS</h1>
+      <div class="sub">► Friends High Score Table ◄</div>
+    </div>
+  </div>
+  <div class="live-tag">3 fixtures live · this hour</div>
+  <div class="user-block">
+    <div class="label">Player 01</div>
+    <div class="value">JONAS_84</div>
+  </div>
+</header>
+
+<main>
+  <section>
+
+    <div class="cabinet-bar">
+      <span><span class="insert-coin">► </span>4 picks remaining · cabinet open until kickoff</span>
+      <div class="filter">
+        <button class="on">All</button>
+        <button>Unpicked</button>
+        <button>My picks</button>
+      </div>
+    </div>
+
+    <!-- GROUP -->
+    <div class="stage">
+      <div class="stage-row">
+        <h2>Group stage</h2>
+        <div class="info">1 PT · 6 fixtures</div>
+      </div>
+
+      <!-- Past correct -->
+      <div class="fixture locked you-correct">
+        <div class="when">18:00<span class="day">WED</span></div>
+        <div class="team home"><span class="flag">🇸🇪</span>Sweden</div>
+        <div class="vs scored">1 — 0</div>
+        <div class="team away">Brazil<span class="flag">🇧🇷</span></div>
+        <div class="verdict win">+1 PT</div>
+        <div class="others-strip">
+          <span class="verdict you-picked">Picked: SWEDEN</span>
+          <span class="pick-chip home">alice → SWE</span>
+          <span class="pick-chip draw">bob → X</span>
+          <span class="pick-chip home">carol → SWE</span>
+        </div>
+      </div>
+
+      <!-- Past wrong -->
+      <div class="fixture locked you-wrong">
+        <div class="when">20:00<span class="day">THU</span></div>
+        <div class="team home"><span class="flag">🇩🇪</span>Germany</div>
+        <div class="vs scored">0 — 2</div>
+        <div class="team away">Japan<span class="flag">🇯🇵</span></div>
+        <div class="verdict miss">MISS</div>
+        <div class="others-strip">
+          <span class="verdict you-picked">Picked: GERMANY</span>
+          <span class="pick-chip away">alice → JPN</span>
+          <span class="pick-chip home">bob → GER</span>
+          <span class="pick-chip home">carol → GER</span>
+        </div>
+      </div>
+
+      <!-- Past correct draw -->
+      <div class="fixture locked you-correct">
+        <div class="when">16:00<span class="day">FRI</span></div>
+        <div class="team home"><span class="flag">🇦🇷</span>Argentina</div>
+        <div class="vs scored">1 — 1</div>
+        <div class="team away">Mexico<span class="flag">🇲🇽</span></div>
+        <div class="verdict win">+1 PT</div>
+        <div class="others-strip">
+          <span class="verdict you-picked">Picked: DRAW</span>
+          <span class="pick-chip draw">alice → X</span>
+          <span class="pick-chip home">bob → ARG</span>
+          <span class="pick-chip away">carol → MEX</span>
+        </div>
+      </div>
+
+      <!-- Future with pick -->
+      <div class="fixture">
+        <div class="when">18:00<span class="day">MON</span></div>
+        <div class="team home"><span class="flag">🇫🇷</span>France</div>
+        <div class="vs">VS</div>
+        <div class="team away">Denmark<span class="flag">🇩🇰</span></div>
+        <div class="picks">
+          <button class="selected">FRA</button>
+          <button>X</button>
+          <button>DEN</button>
+        </div>
+      </div>
+
+      <!-- Future no pick -->
+      <div class="fixture">
+        <div class="when">20:00<span class="day">TUE</span></div>
+        <div class="team home"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>England</div>
+        <div class="vs">VS</div>
+        <div class="team away">USA<span class="flag">🇺🇸</span></div>
+        <div class="picks">
+          <button>ENG</button>
+          <button>X</button>
+          <button>USA</button>
+        </div>
+      </div>
+
+      <div class="fixture">
+        <div class="when">16:00<span class="day">WED</span></div>
+        <div class="team home"><span class="flag">🇪🇸</span>Spain</div>
+        <div class="vs">VS</div>
+        <div class="team away">Costa Rica<span class="flag">🇨🇷</span></div>
+        <div class="picks">
+          <button>ESP</button>
+          <button>X</button>
+          <button>CRC</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KNOCKOUT -->
+    <div class="stage">
+      <div class="stage-row">
+        <h2>Quarter-finals</h2>
+        <div class="info">2 PTS · winner only</div>
+      </div>
+      <div class="fixture">
+        <div class="when">21:00<span class="day">SAT</span></div>
+        <div class="team home"><span class="flag">🇧🇷</span>Brazil</div>
+        <div class="vs">VS</div>
+        <div class="team away">Croatia<span class="flag">🇭🇷</span></div>
+        <div class="picks knockout">
+          <button>BRA</button>
+          <button>CRO</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <aside>
+    <h2>► HIGH SCORES ◄</h2>
+
+    <div class="leaderboard-row">
+      <span class="rank">#1</span>
+      <span class="name">alice</span>
+      <span class="score">003</span>
+    </div>
+    <div class="leaderboard-row you">
+      <span class="rank">#2</span>
+      <span class="name">jonas (you)</span>
+      <span class="score">002</span>
+    </div>
+    <div class="leaderboard-row">
+      <span class="rank">#3</span>
+      <span class="name">carol</span>
+      <span class="score">001</span>
+    </div>
+    <div class="leaderboard-row">
+      <span class="rank">#4</span>
+      <span class="name">bob</span>
+      <span class="score">000</span>
+    </div>
+
+    <div class="scoring-key">
+      <h3>POINTS TABLE</h3>
+      <div class="row"><span>Group</span><span>1</span></div>
+      <div class="row"><span>R32 / R16 / QF / SF</span><span>2</span></div>
+      <div class="row"><span>3rd-place</span><span>3</span></div>
+      <div class="row"><span>The final</span><span>5</span></div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <span class="credits">2026 © Stadium Mode · Push Start</span>
+  <span class="blink">► Insert pick to play ◄</span>
+</footer>
+
+</body>
+</html>
