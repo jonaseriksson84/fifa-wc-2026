@@ -41,7 +41,7 @@
 </script>
 
 <svelte:head>
-	<title>My Picks — WC 2026</title>
+	<title>My Picks — {data.poolName}</title>
 </svelte:head>
 
 <div class="mx-auto max-w-2xl px-4 py-8">
@@ -98,7 +98,7 @@
 											disabled={locked}
 											class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors
 												{f.currentPick === value
-												? 'border-blue-600 bg-blue-600 text-white'
+												? 'border-[color:var(--accent)] bg-[color:var(--accent)] text-white'
 												: 'border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100'}
 												{locked ? ' cursor-not-allowed opacity-50' : ''}"
 										>

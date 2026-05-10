@@ -20,7 +20,7 @@ export function createAuth(env: App.Platform['env']) {
 					await resend.emails.send({
 						from: env.SENDER_EMAIL ?? 'onboarding@resend.dev',
 						to: email,
-						subject: 'Sign in to WC 2026',
+						subject: `Sign in to ${env.POOL_NAME}`,
 						html: `<a href="${url}">Click here to sign in</a>`
 					});
 				}

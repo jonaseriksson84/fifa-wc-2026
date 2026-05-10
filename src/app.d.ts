@@ -25,6 +25,8 @@ declare global {
 				BETTER_AUTH_SECRET: string;
 				BETTER_AUTH_URL?: string;
 				SENDER_EMAIL?: string;
+				POOL_NAME: string;
+				POOL_ACCENT_HEX: string;
 			};
 			context: {
 				waitUntil(promise: Promise<unknown>): void;

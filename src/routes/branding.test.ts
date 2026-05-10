@@ -1,0 +1,118 @@
+import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = resolve(__dirname, '../..');
+
+const wranglerToml = readFileSync(resolve(root, 'wrangler.toml'), 'utf-8');
+const appDts = readFileSync(resolve(root, 'src/app.d.ts'), 'utf-8');
+const layoutServerTs = readFileSync(resolve(__dirname, '+layout.server.ts'), 'utf-8');
+const layoutSvelte = readFileSync(resolve(__dirname, '+layout.svelte'), 'utf-8');
+const authTs = readFileSync(resolve(root, 'src/lib/server/auth.ts'), 'utf-8');
+
+const svelteFiles = [
+	{ name: '+layout.svelte', content: layoutSvelte },
+	{
+		name: '+page.svelte',
+		content: readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8')
+	},
+	{
+		name: 'picks/+page.svelte',
+		content: readFileSync(resolve(__dirname, 'picks/+page.svelte'), 'utf-8')
+	},
+	{
+		name: 'leaderboard/+page.svelte',
+		content: readFileSync(resolve(__dirname, 'leaderboard/+page.svelte'), 'utf-8')
+	},
+	{
+		name: 'faq/+page.svelte',
+		content: readFileSync(resolve(__dirname, 'faq/+page.svelte'), 'utf-8')
+	}
+];
+
+describe('per-deployment branding: wrangler.toml', () => {
+	it('defines POOL_NAME in env.friends.vars', () => {
+		const friendsIdx = wranglerToml.indexOf('[env.friends');
+		const workIdx = wranglerToml.indexOf('[env.work');
+		const poolNameIdx = wranglerToml.indexOf('POOL_NAME', friendsIdx);
+		expect(poolNameIdx).toBeGreaterThan(friendsIdx);
+		expect(poolNameIdx).toBeLessThan(workIdx);
+	});
+
+	it('defines POOL_ACCENT_HEX in env.friends.vars', () => {
+		const friendsIdx = wranglerToml.indexOf('[env.friends');
+		const workIdx = wranglerToml.indexOf('[env.work');
+		const accentIdx = wranglerToml.indexOf('POOL_ACCENT_HEX', friendsIdx);
+		expect(accentIdx).toBeGreaterThan(friendsIdx);
+		expect(accentIdx).toBeLessThan(workIdx);
+	});
+
+	it('defines POOL_NAME in env.work.vars', () => {
+		const workIdx = wranglerToml.indexOf('[env.work');
+		const poolNameIdx = wranglerToml.indexOf('POOL_NAME', workIdx);
+		expect(poolNameIdx).toBeGreaterThan(workIdx);
+	});
+
+	it('defines POOL_ACCENT_HEX in env.work.vars', () => {
+		const workIdx = wranglerToml.indexOf('[env.work');
+		const accentIdx = wranglerToml.indexOf('POOL_ACCENT_HEX', workIdx);
+		expect(accentIdx).toBeGreaterThan(workIdx);
+	});
+
+	it('uses operator-chosen values from issue #2', () => {
+		expect(wranglerToml).toContain('WC26 Jobbiga Bets');
+		expect(wranglerToml).toContain('#27D3F5');
+		expect(wranglerToml).toContain('WC26 Office Picks');
+		expect(wranglerToml).toContain('#F54927');
+	});
+});
+
+describe('per-deployment branding: types', () => {
+	it('declares POOL_NAME in App.Platform.env', () => {
+		expect(appDts).toContain('POOL_NAME');
+	});
+
+	it('declares POOL_ACCENT_HEX in App.Platform.env', () => {
+		expect(appDts).toContain('POOL_ACCENT_HEX');
+	});
+});
+
+describe('per-deployment branding: server-side', () => {
+	it('layout server exposes poolName from env', () => {
+		expect(layoutServerTs).toContain('poolName');
+		expect(layoutServerTs).toContain('POOL_NAME');
+	});
+
+	it('layout server exposes poolAccentHex from env', () => {
+		expect(layoutServerTs).toContain('poolAccentHex');
+		expect(layoutServerTs).toContain('POOL_ACCENT_HEX');
+	});
+
+	it('auth email subject uses pool name from env, not hardcoded', () => {
+		expect(authTs).toContain('POOL_NAME');
+		expect(authTs).not.toContain("'Sign in to WC 2026'");
+	});
+});
+
+describe('per-deployment branding: UI', () => {
+	it('layout header renders pool name from data', () => {
+		expect(layoutSvelte).toContain('data.poolName');
+	});
+
+	it('layout sets --accent CSS variable from data', () => {
+		expect(layoutSvelte).toContain('--accent');
+		expect(layoutSvelte).toContain('poolAccentHex');
+	});
+
+	it('no hardcoded deployment-specific pool name in any svelte file', () => {
+		for (const { name, content } of svelteFiles) {
+			expect(content, `${name} contains hardcoded "WC 2026"`).not.toContain('WC 2026');
+		}
+	});
+
+	it('accent elements use var(--accent) instead of hardcoded color', () => {
+		expect(layoutSvelte).toContain('var(--accent)');
+	});
+});
