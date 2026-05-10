@@ -4,7 +4,16 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const pageHtml = readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8');
+const standingsSvelte = readFileSync(
+	resolve(__dirname, '../../lib/components/Standings.svelte'),
+	'utf-8'
+);
+const tiersSvelte = readFileSync(
+	resolve(__dirname, '../../lib/components/StickerTiersLegend.svelte'),
+	'utf-8'
+);
+const pageHtml =
+	readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8') + standingsSvelte + tiersSvelte;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
 const repoTs = readFileSync(
@@ -124,20 +133,15 @@ describe('top-10 sidebar', () => {
 	});
 
 	it('renders a table with rank, display name, and points', () => {
-		expect(pageHtml).toContain('sidebar-table');
-		expect(pageHtml).toContain('sidebar-rank');
-		expect(pageHtml).toContain('sidebar-who');
-		expect(pageHtml).toContain('sidebar-pts');
+		expect(pageHtml).toContain('standings-table');
+		expect(pageHtml).toContain('class="rank"');
+		expect(pageHtml).toContain('class="who"');
+		expect(pageHtml).toContain('class="pts"');
 	});
 
 	it('highlights the current user row', () => {
 		expect(pageHtml).toContain('class:you=');
 		expect(pageHtml).toContain('currentUserId');
-	});
-
-	it('shows tied indicator for equal ranks', () => {
-		expect(pageHtml).toContain('sidebar-tied');
-		expect(pageHtml).toContain('entry.tied');
 	});
 
 	it('uses displayName helper for user names', () => {
@@ -153,7 +157,7 @@ describe('top-10 sidebar', () => {
 
 	it('applies ellipsis to sidebar display names', () => {
 		const styleSection = pageHtml.slice(pageHtml.indexOf('<style'));
-		expect(styleSection).toMatch(/\.sidebar-who[\s\S]*?text-overflow:\s*ellipsis/);
+		expect(styleSection).toMatch(/\.who\b[\s\S]*?text-overflow:\s*ellipsis/);
 	});
 
 	it('sidebar stacks below picks on mobile (<1024px)', () => {

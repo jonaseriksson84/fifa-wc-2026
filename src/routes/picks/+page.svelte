@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Sticker from '$lib/components/Sticker.svelte';
+	import Standings from '$lib/components/Standings.svelte';
+	import StickerTiersLegend from '$lib/components/StickerTiersLegend.svelte';
 	import { fixtureIdentifier } from '$lib/fixture-identifier';
-	import { displayName } from '$lib/display-name';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -27,6 +28,23 @@
 		return Array.from(groups.entries());
 	}
 
+	// Group-stage fixtures are subdivided by matchday (1, 2, 3). The album
+	// metaphor: each matchday is a page within the group section.
+	function groupByMatchday(fixtures: Fixture[]): [number | null, Fixture[]][] {
+		const days = new Map<number | null, Fixture[]>();
+		for (const f of fixtures) {
+			const md = f.matchday ?? null;
+			const existing = days.get(md);
+			if (existing) existing.push(f);
+			else days.set(md, [f]);
+		}
+		return Array.from(days.entries()).sort(([a], [b]) => {
+			if (a === null) return 1;
+			if (b === null) return -1;
+			return a - b;
+		});
+	}
+
 	const stageDisplayNames: Record<string, string> = {
 		Group: 'Group Stage',
 		R32: 'Round of 32',
@@ -41,10 +59,10 @@
 		Group: 'paper · 1 pt each',
 		R32: 'pearl · 2 pts each',
 		R16: 'pearl · 2 pts each',
-		QF: 'holo · 2 pts each',
-		SF: 'holo · 2 pts each',
-		'3rd-place': 'gold · 3 pts',
-		Final: 'legendary · 5 pts'
+		QF: 'holo · 3 pts each',
+		SF: 'holo · 3 pts each',
+		'3rd-place': 'gold · 4 pts',
+		Final: 'legendary · 6 pts'
 	};
 
 	const stageKickers: Record<string, string> = {
@@ -66,7 +84,9 @@
 	});
 
 	let visibleFixtures = $derived(
-		showUnpickedOnly ? data.fixtures.filter((f) => f.currentPick === null) : data.fixtures
+		showUnpickedOnly
+			? data.fixtures.filter((f) => f.currentPick === null && !isLocked(f.kickoff))
+			: data.fixtures
 	);
 
 	let groupedFixtures = $derived(groupByStage(visibleFixtures));
@@ -85,7 +105,7 @@
 
 		<div class="picks-toolbar">
 			<span class="unpicked-count">
-				{data.unpickedCount} of {data.totalCount} unpicked
+				{data.unpickedCount} of {data.pickableCount} unpicked
 			</span>
 			<label class="filter-toggle">
 				<input type="checkbox" bind:checked={showUnpickedOnly} />
@@ -108,19 +128,46 @@
 						<span class="stage-rule"></span>
 						<span class="point-hint">{stagePointHints[stage] ?? ''}</span>
 					</div>
-					<div class="sticker-grid">
-						{#each fixtures as f}
-							{@const locked = isLocked(f.kickoff)}
-							<Sticker
-								fixture={f}
-								identifier={identifiers.get(f.id) ?? ''}
-								currentPick={f.currentPick}
-								picksByValue={f.picksByValue}
-								{locked}
-								error={form?.fixtureId === f.id && form?.error ? form.error : null}
-							/>
+					{#if stage === 'Group'}
+						{#each groupByMatchday(fixtures) as [matchday, mdFixtures], mdIdx}
+							{#if mdIdx > 0}
+								<div class="matchday-divider" aria-hidden="true">
+									<span class="matchday-rule"></span>
+									<span class="matchday-label">Matchday {matchday}</span>
+									<span class="matchday-rule"></span>
+								</div>
+							{:else if matchday !== null}
+								<div class="matchday-label-top">Matchday {matchday}</div>
+							{/if}
+							<div class="sticker-grid">
+								{#each mdFixtures as f}
+									{@const locked = isLocked(f.kickoff)}
+									<Sticker
+										fixture={f}
+										identifier={identifiers.get(f.id) ?? ''}
+										currentPick={f.currentPick}
+										picksByValue={f.picksByValue}
+										{locked}
+										error={form?.fixtureId === f.id && form?.error ? form.error : null}
+									/>
+								{/each}
+							</div>
 						{/each}
-					</div>
+					{:else}
+						<div class="sticker-grid">
+							{#each fixtures as f}
+								{@const locked = isLocked(f.kickoff)}
+								<Sticker
+									fixture={f}
+									identifier={identifiers.get(f.id) ?? ''}
+									currentPick={f.currentPick}
+									picksByValue={f.picksByValue}
+									{locked}
+									error={form?.fixtureId === f.id && form?.error ? form.error : null}
+								/>
+							{/each}
+						</div>
+					{/if}
 				</section>
 			{/each}
 		{/if}
@@ -129,30 +176,9 @@
 	<aside class="top10-sidebar" aria-label="Top 10 standings">
 		<div class="sidebar-panel">
 			<span class="sidebar-overhang">TOP 10</span>
-			{#if data.topLeaderboard.length === 0}
-				<p class="sidebar-empty">No standings yet.</p>
-			{:else}
-				<table class="sidebar-table">
-					<tbody>
-						{#each data.topLeaderboard as entry}
-							{@const isYou = entry.userId === data.currentUserId}
-							<tr class:you={isYou}>
-								<td class="sidebar-rank-cell">
-									<span class="sidebar-rank">{entry.rank}</span>
-									{#if entry.tied}<span class="sidebar-tied">=</span>{/if}
-								</td>
-								<td class="sidebar-who-cell">
-									<span class="sidebar-who">{displayName(entry)}</span>
-								</td>
-								<td class="sidebar-pts-cell">
-									<span class="sidebar-pts">{entry.points}</span>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			{/if}
+			<Standings entries={data.topLeaderboard} currentUserId={data.currentUserId} compact />
 			<a class="sidebar-link" href="/leaderboard">See full leaderboard &rarr;</a>
+			<StickerTiersLegend compact />
 		</div>
 	</aside>
 </div>
@@ -217,6 +243,32 @@
 		letter-spacing: 0.4em;
 		margin: 36px 0;
 		opacity: 0.7;
+	}
+	.matchday-label-top {
+		font-family: var(--headline);
+		font-size: 12px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--ink-mute);
+		margin: 8px 0 14px;
+	}
+	.matchday-divider {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin: 28px 0 18px;
+	}
+	.matchday-rule {
+		flex: 1;
+		border-top: 1px dashed rgba(24, 20, 13, 0.4);
+	}
+	.matchday-label {
+		font-family: var(--headline);
+		font-size: 12px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--ink-mute);
+		white-space: nowrap;
 	}
 	.stage-section {
 		margin-bottom: 8px;
@@ -288,60 +340,6 @@
 		letter-spacing: 0.04em;
 		border: 1.5px solid var(--ink);
 	}
-	.sidebar-table {
-		width: 100%;
-		border-collapse: collapse;
-		margin-top: 4px;
-	}
-	.sidebar-table tr {
-		border-bottom: 1px dashed rgba(24, 20, 13, 0.3);
-	}
-	.sidebar-table tr:last-child {
-		border-bottom: none;
-	}
-	.sidebar-table tr.you {
-		background: rgba(199, 147, 33, 0.18);
-		box-shadow: -16px 0 0 rgba(199, 147, 33, 0.18), 16px 0 0 rgba(199, 147, 33, 0.18);
-	}
-	.sidebar-table td {
-		padding: 7px 0;
-		vertical-align: baseline;
-	}
-	.sidebar-rank-cell {
-		width: 30px;
-	}
-	.sidebar-rank {
-		font-family: var(--display);
-		font-size: 18px;
-		color: var(--ink);
-	}
-	.sidebar-tied {
-		font-family: var(--mono);
-		font-size: 10px;
-		margin-left: 1px;
-		opacity: 0.6;
-	}
-	.sidebar-who-cell {
-		max-width: 0;
-		overflow: hidden;
-	}
-	.sidebar-who {
-		font-family: var(--headline);
-		font-size: 14px;
-		letter-spacing: 0.03em;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		display: block;
-	}
-	.sidebar-pts-cell {
-		text-align: right;
-	}
-	.sidebar-pts {
-		font-family: var(--display);
-		font-size: 16px;
-		color: var(--accent);
-	}
 	.sidebar-link {
 		display: block;
 		margin-top: 14px;
@@ -356,12 +354,6 @@
 	}
 	.sidebar-link:hover {
 		text-decoration: underline;
-	}
-	.sidebar-empty {
-		font-family: var(--mono);
-		font-size: 12px;
-		opacity: 0.6;
-		letter-spacing: 0.06em;
 	}
 
 	@media (max-width: 1023px) {

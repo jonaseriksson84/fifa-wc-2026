@@ -198,7 +198,6 @@
 			0 0 0 3px var(--paper),
 			0 0 0 5px var(--ink),
 			6px 6px 0 var(--ink);
-		overflow: hidden;
 	}
 
 	/* Empty */
@@ -297,27 +296,24 @@
 			0 0 0 3px var(--paper),
 			0 0 0 5px var(--ink),
 			6px 6px 0 var(--ink);
-		overflow: hidden;
 	}
 	.sticker.foil-legendary::before {
 		content: "";
 		position: absolute;
-		top: -50%;
-		left: -50%;
-		width: 200%;
-		height: 200%;
+		inset: 0;
 		background: linear-gradient(60deg,
 			transparent 35%,
 			rgba(255, 255, 255, 0.55) 50%,
 			transparent 65%);
+		background-size: 250% 250%;
 		animation: shine 4.5s ease-in-out infinite;
 		pointer-events: none;
 		mix-blend-mode: overlay;
 	}
 	@keyframes shine {
-		0% { transform: translate(-40%, -40%); }
-		50% { transform: translate(20%, 20%); }
-		100% { transform: translate(-40%, -40%); }
+		0% { background-position: 100% 100%; }
+		50% { background-position: 0% 0%; }
+		100% { background-position: 100% 100%; }
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.sticker.foil-legendary::before {
@@ -429,17 +425,20 @@
 	.pick-btn.selected::after {
 		content: "★";
 		position: absolute;
-		top: -8px;
-		right: -8px;
+		top: -9px;
+		right: -9px;
 		background: var(--accent);
 		color: var(--paper);
-		width: 18px;
-		height: 18px;
+		width: 20px;
+		height: 20px;
 		border-radius: 50%;
-		font-size: 11px;
-		display: grid;
-		place-items: center;
+		font-size: 10px;
+		line-height: 1;
 		border: 2px solid var(--ink);
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	.pick-btn:disabled {
 		opacity: 0.45;

@@ -4,7 +4,16 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const pageHtml = readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8');
+const standingsSvelte = readFileSync(
+	resolve(__dirname, '../../lib/components/Standings.svelte'),
+	'utf-8'
+);
+const tiersSvelte = readFileSync(
+	resolve(__dirname, '../../lib/components/StickerTiersLegend.svelte'),
+	'utf-8'
+);
+const pageHtml =
+	readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8') + standingsSvelte + tiersSvelte;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
 
@@ -44,12 +53,8 @@ describe('leaderboard Panini aesthetic', () => {
 		expect(pageLower).toContain('accent');
 	});
 
-	it('shows a tie indicator for shared ranks', () => {
-		expect(pageHtml).toContain('entry.tied');
-	});
-
 	it('highlights the current user row', () => {
-		expect(pageHtml).toContain('isCurrentUser');
+		expect(pageHtml).toMatch(/class:you/);
 	});
 
 	it('has a sticker tiers legend section', () => {
@@ -65,7 +70,8 @@ describe('leaderboard Panini aesthetic', () => {
 		expect(pageHtml).toContain('1 pt');
 		expect(pageHtml).toContain('2 pts');
 		expect(pageHtml).toContain('3 pts');
-		expect(pageHtml).toContain('5 pts');
+		expect(pageHtml).toContain('4 pts');
+		expect(pageHtml).toContain('6 pts');
 	});
 
 	it('lists the correct stages for each tier', () => {

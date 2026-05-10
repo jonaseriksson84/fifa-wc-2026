@@ -1,14 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { displayName } from '$lib/display-name';
+	import Standings from '$lib/components/Standings.svelte';
+	import StickerTiersLegend from '$lib/components/StickerTiersLegend.svelte';
 
 	let { data }: { data: PageData } = $props();
-
-	function emailSuffix(email: string): string {
-		const local = email.split('@')[0];
-		const plusIdx = local.indexOf('+');
-		return plusIdx >= 0 ? local.slice(plusIdx) : email;
-	}
 </script>
 
 <svelte:head>
@@ -19,55 +14,9 @@
 	<div class="panel">
 		<span class="overhang">STANDINGS</span>
 
-		{#if data.leaderboard.length === 0}
-			<p class="empty">No users yet.</p>
-		{:else}
-			<table class="standings-table">
-				<tbody>
-					{#each data.leaderboard as entry}
-						{@const isCurrentUser = entry.userId === data.currentUserId}
-						<tr class:you={isCurrentUser}>
-							<td class="rank-cell">
-								<span class="rank">{entry.rank}</span>
-								{#if entry.tied}<span class="tied">=</span>{/if}
-							</td>
-							<td class="who-cell">
-								<span class="who">{displayName(entry)}</span>
-								<small class="suffix">{emailSuffix(entry.email)}</small>
-							</td>
-							<td class="pts-cell">
-								<span class="pts">{entry.points}</span>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{/if}
+		<Standings entries={data.leaderboard} currentUserId={data.currentUserId} />
 
-		<div class="scoring">
-			<h4>Sticker tiers</h4>
-			<dl>
-				<dt>Group · paper</dt>
-				<dd>1 pt</dd>
-				<span class="swatch swatch-paper"></span>
-
-				<dt>R32 / R16 · pearl</dt>
-				<dd>2 pts</dd>
-				<span class="swatch swatch-pearl"></span>
-
-				<dt>QF / SF · holo</dt>
-				<dd>2 pts</dd>
-				<span class="swatch swatch-holo"></span>
-
-				<dt>3rd-place · gold</dt>
-				<dd>3 pts</dd>
-				<span class="swatch swatch-gold"></span>
-
-				<dt>The Final · legendary</dt>
-				<dd>5 pts</dd>
-				<span class="swatch swatch-legendary"></span>
-			</dl>
-		</div>
+		<StickerTiersLegend />
 	</div>
 
 	<h2 class="results-heading">Results &amp; My Picks</h2>
@@ -131,131 +80,6 @@
 		padding: 4px 14px;
 		letter-spacing: 0.04em;
 		border: 1.5px solid var(--ink);
-	}
-
-	/* Standings table */
-	.standings-table {
-		width: 100%;
-		border-collapse: collapse;
-		margin-top: 8px;
-	}
-	.standings-table tr {
-		border-bottom: 1px dashed rgba(24, 20, 13, 0.3);
-	}
-	.standings-table tr:last-child {
-		border-bottom: none;
-	}
-	.standings-table tr.you {
-		background: rgba(199, 147, 33, 0.18);
-		box-shadow: -22px 0 0 rgba(199, 147, 33, 0.18), 22px 0 0 rgba(199, 147, 33, 0.18);
-	}
-	.standings-table td {
-		padding: 10px 0;
-		vertical-align: baseline;
-	}
-
-	/* Rank */
-	.rank-cell {
-		width: 38px;
-	}
-	.rank {
-		font-family: var(--display);
-		font-size: 24px;
-		color: var(--ink);
-	}
-	.tied {
-		font-family: var(--mono);
-		font-size: 12px;
-		margin-left: 2px;
-		opacity: 0.6;
-	}
-
-	/* User identity */
-	.who-cell {
-		max-width: 0;
-		overflow: hidden;
-	}
-	.who {
-		font-family: var(--headline);
-		font-size: 18px;
-		letter-spacing: 0.03em;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		display: block;
-	}
-	.suffix {
-		display: block;
-		font-family: var(--mono);
-		font-size: 10px;
-		font-weight: normal;
-		letter-spacing: 0.1em;
-		opacity: 0.6;
-		margin-top: 2px;
-	}
-
-	/* Points */
-	.pts-cell {
-		text-align: right;
-	}
-	.pts {
-		font-family: var(--display);
-		font-size: 22px;
-		color: var(--accent);
-	}
-
-	/* Scoring legend */
-	.scoring {
-		margin-top: 22px;
-		border-top: 2px solid var(--ink);
-		padding-top: 16px;
-	}
-	.scoring h4 {
-		font-family: var(--headline);
-		font-size: 13px;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		margin: 0 0 10px;
-	}
-	.scoring dl {
-		margin: 0;
-		display: grid;
-		grid-template-columns: 1fr auto 14px;
-		gap: 4px 12px;
-		font-family: var(--mono);
-		font-size: 12px;
-		align-items: center;
-	}
-	.scoring dt {
-		opacity: 0.85;
-	}
-	.scoring dd {
-		margin: 0;
-		font-weight: bold;
-		color: var(--accent);
-	}
-
-	/* Foil swatches */
-	.swatch {
-		width: 14px;
-		height: 14px;
-		border: 1.5px solid var(--ink);
-		display: inline-block;
-	}
-	.swatch-paper {
-		background: var(--paper-card);
-	}
-	.swatch-pearl {
-		background: linear-gradient(135deg, #ffe696, #b1d4ff);
-	}
-	.swatch-holo {
-		background: linear-gradient(135deg, #ffc882, #ff96c8 50%, #b4c8ff);
-	}
-	.swatch-gold {
-		background: linear-gradient(135deg, #ffd764, #ffa946);
-	}
-	.swatch-legendary {
-		background: conic-gradient(from 45deg, #ffd166, #ef476f, #b388ff, #06d6a0, #fff79a, #ffd166);
 	}
 
 	/* Results section */
@@ -349,18 +173,6 @@
 		}
 		.panel {
 			padding: 24px 16px 22px;
-		}
-		.standings-table tr.you {
-			margin: 0 -16px;
-		}
-		.rank {
-			font-size: 20px;
-		}
-		.who {
-			font-size: 16px;
-		}
-		.pts {
-			font-size: 18px;
 		}
 	}
 </style>

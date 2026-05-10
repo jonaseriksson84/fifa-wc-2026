@@ -84,7 +84,9 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 	});
 
-	const unpickedCount = enriched.filter((f) => f.currentPick === null).length;
+	const pickable = enriched.filter((f) => new Date(f.kickoff) > now);
+	const unpickedCount = pickable.filter((f) => f.currentPick === null).length;
+	const pickableCount = pickable.length;
 
 	const scoreMap = computeScores(allPicks, fixtures);
 	const entries = allUsers.map((u) => ({
@@ -100,6 +102,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	return {
 		fixtures: enriched,
 		unpickedCount,
+		pickableCount,
 		totalCount: enriched.length,
 		topLeaderboard,
 		currentUserId: locals.user.id

@@ -1,10 +1,19 @@
--- Fast-forward 3 unresolved group fixtures: shift their kickoff to the past
--- and set results to HOME / AWAY / DRAW (one of each, for variety).
+-- Fast-forward unresolved fixtures: shift kickoff to the past, set result and
+-- final_score, so the picks page renders filled stickers and the leaderboard
+-- shows points.
 -- Run via: npm run dev:fastforward
 --
--- Idempotent: only operates on fixtures that are still unresolved (result IS NULL).
--- Run repeatedly until all 6 group fixtures are done. The knockout fixture is
--- left alone (DRAW isn't a valid knockout result; resolve manually if needed).
+-- Idempotent: only operates on fixtures still unresolved (result IS NULL).
+--
+-- Behaviour per run:
+--   - Resolves the 3 oldest unresolved Group fixtures (HOME, AWAY, DRAW
+--     for variety). Run repeatedly to drain all 6 Group fixtures.
+--   - Resolves ALL unresolved knockout fixtures in one go so every foil
+--     tier is awarded after the first run: pearl (R32, R16), holo (QF, SF),
+--     gold (3rd-place), legendary (Final). Includes a regulation, an a.e.t.,
+--     and a penalties-decided final_score for ResultStamp coverage.
+
+-- ============= Group stage (3 oldest, one of each result) =============
 
 UPDATE fixture
 SET kickoff = datetime('now', '-3 hour'),
@@ -38,3 +47,53 @@ WHERE id = (
   WHERE result IS NULL AND stage = 'Group'
   ORDER BY kickoff ASC LIMIT 1
 );
+
+-- ============= Knockouts (all unresolved, one shot) =============
+
+-- R32 — pearl, 2pt — regulation HOME win
+UPDATE fixture
+SET kickoff = datetime('now', '-6 hour'),
+    result = 'HOME',
+    final_score = '3-1',
+    updated_at = datetime('now')
+WHERE result IS NULL AND stage = 'R32';
+
+-- R16 — pearl, 2pt — penalty shootout, AWAY survives
+UPDATE fixture
+SET kickoff = datetime('now', '-5 hour'),
+    result = 'AWAY',
+    final_score = '1-1 (3-5 pen.)',
+    updated_at = datetime('now')
+WHERE result IS NULL AND stage = 'R16';
+
+-- QF — holo, 3pt — extra time HOME win
+UPDATE fixture
+SET kickoff = datetime('now', '-4 hour'),
+    result = 'HOME',
+    final_score = '2-1 a.e.t.',
+    updated_at = datetime('now')
+WHERE result IS NULL AND stage = 'QF';
+
+-- SF — holo, 3pt — clean sweep
+UPDATE fixture
+SET kickoff = datetime('now', '-90 minute'),
+    result = 'AWAY',
+    final_score = '0-3',
+    updated_at = datetime('now')
+WHERE result IS NULL AND stage = 'SF';
+
+-- 3rd-place — gold, 4pt — narrow regulation
+UPDATE fixture
+SET kickoff = datetime('now', '-60 minute'),
+    result = 'HOME',
+    final_score = '2-1',
+    updated_at = datetime('now')
+WHERE result IS NULL AND stage = '3rd-place';
+
+-- Final — legendary, 6pt — penalty drama, HOME wins
+UPDATE fixture
+SET kickoff = datetime('now', '-30 minute'),
+    result = 'HOME',
+    final_score = '2-2 (5-3 pen.)',
+    updated_at = datetime('now')
+WHERE result IS NULL AND stage = 'Final';
