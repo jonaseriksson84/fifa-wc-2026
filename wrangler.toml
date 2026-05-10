@@ -16,6 +16,7 @@ name = "fifa-wc-2026-friends"
 [env.friends.vars]
 POOL_NAME = "WC26 Jobbiga Bets"
 POOL_ACCENT_HEX = "#27D3F5"
+SENDER_EMAIL = "noreply@mynameisjonas.dev"
 
 [env.friends.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
@@ -32,6 +33,7 @@ name = "fifa-wc-2026-work"
 [env.work.vars]
 POOL_NAME = "WC26 Office Picks"
 POOL_ACCENT_HEX = "#F54927"
+SENDER_EMAIL = "noreply@mynameisjonas.dev"
 
 [env.work.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
