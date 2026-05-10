@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { parseRound, deriveResult, deriveScoreShape, mapFixture, mapResult } from './mapper';
+import {
+	parseRound,
+	parseMatchday,
+	deriveResult,
+	deriveScoreShape,
+	mapFixture,
+	mapResult
+} from './mapper';
 import type { ApiFixtureResponse } from './types';
 
 import groupHomeWin from '../../../../tests/fixtures/api-football/group-home-win.json';
@@ -27,6 +34,23 @@ describe('parseRound', () => {
 
 	it('throws on unknown round', () => {
 		expect(() => parseRound('Unknown Round')).toThrow('Unknown round');
+	});
+});
+
+describe('parseMatchday', () => {
+	it('extracts the matchday number from group rounds', () => {
+		expect(parseMatchday('Group A - 1')).toBe(1);
+		expect(parseMatchday('Group F - 3')).toBe(3);
+		expect(parseMatchday('Group L - 2')).toBe(2);
+	});
+
+	it('returns null for knockout rounds', () => {
+		expect(parseMatchday('Round of 32')).toBeNull();
+		expect(parseMatchday('Round of 16')).toBeNull();
+		expect(parseMatchday('Quarter-finals')).toBeNull();
+		expect(parseMatchday('Semi-finals')).toBeNull();
+		expect(parseMatchday('3rd Place')).toBeNull();
+		expect(parseMatchday('Final')).toBeNull();
 	});
 });
 
@@ -70,7 +94,8 @@ describe('mapFixture', () => {
 			homeTeam: 'Mexico',
 			awayTeam: 'Canada',
 			kickoff: '2026-06-11T21:00:00.000Z',
-			stage: 'Group'
+			stage: 'Group',
+			matchday: 1
 		});
 	});
 

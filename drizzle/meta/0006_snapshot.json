@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "80e4961a-2da3-490b-9724-626fdf224e27",
-  "prevId": "e34791c9-6a3f-405d-b89b-eff40f967720",
+  "id": "13e7ec38-dd1e-4a83-8052-68540039f5f9",
+  "prevId": "80e4961a-2da3-490b-9724-626fdf224e27",
   "tables": {
     "account": {
       "name": "account",
@@ -155,6 +155,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "matchday": {
+          "name": "matchday",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "result": {

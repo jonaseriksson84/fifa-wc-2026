@@ -76,22 +76,24 @@ async function refreshFixtures(env: ScheduledEnv): Promise<void> {
 	const now = new Date().toISOString();
 	const batch = fixtures.map((f) =>
 		env.DB.prepare(
-			`INSERT INTO fixture (home_team, away_team, kickoff, stage, api_football_id, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)
+			`INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (api_football_id) DO UPDATE SET
          home_team = excluded.home_team,
          away_team = excluded.away_team,
          kickoff = excluded.kickoff,
          stage = excluded.stage,
+         matchday = excluded.matchday,
          updated_at = CASE
            WHEN fixture.home_team != excluded.home_team
              OR fixture.away_team != excluded.away_team
              OR fixture.kickoff != excluded.kickoff
              OR fixture.stage != excluded.stage
+             OR fixture.matchday IS NOT excluded.matchday
            THEN excluded.updated_at
            ELSE fixture.updated_at
          END`
-		).bind(f.homeTeam, f.awayTeam, f.kickoff, f.stage, f.apiFootballId, now)
+		).bind(f.homeTeam, f.awayTeam, f.kickoff, f.stage, f.matchday, f.apiFootballId, now)
 	);
 	await env.DB.batch(batch);
 

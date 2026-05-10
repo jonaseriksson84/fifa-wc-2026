@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "80e4961a-2da3-490b-9724-626fdf224e27",
+  "id": "e34791c9-6a3f-405d-b89b-eff40f967720",
   "prevId": "731fd365-08f0-4c7a-b11e-675f9abc6e6b",
   "tables": {
     "account": {
@@ -159,13 +159,6 @@
         },
         "result": {
           "name": "result",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "final_score": {
-          "name": "final_score",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -403,6 +396,13 @@
         },
         "image": {
           "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

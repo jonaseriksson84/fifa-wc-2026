@@ -7,6 +7,7 @@ export interface DomainFixture {
 	awayTeam: string;
 	kickoff: string;
 	stage: Stage;
+	matchday: number | null;
 }
 
 export interface DomainResult {

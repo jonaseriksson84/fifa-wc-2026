@@ -20,6 +20,15 @@ export function parseRound(round: string): Stage {
 	return mapped;
 }
 
+// Group-stage matchday. api-football's round string for group fixtures has
+// the shape "Group <letter> - <N>" (e.g. "Group A - 1"), where N is the
+// matchday. Returns null for non-group rounds.
+export function parseMatchday(round: string): number | null {
+	if (!round.startsWith('Group')) return null;
+	const match = round.match(/-\s*(\d+)\s*$/);
+	return match ? parseInt(match[1]!, 10) : null;
+}
+
 export function deriveResult(entry: ApiFixtureResponse): Result | null {
 	if (!FINISHED_STATUSES.has(entry.fixture.status.short)) return null;
 
@@ -42,7 +51,8 @@ export function mapFixture(entry: ApiFixtureResponse): DomainFixture {
 		homeTeam: entry.teams.home.name,
 		awayTeam: entry.teams.away.name,
 		kickoff: new Date(entry.fixture.date).toISOString(),
-		stage: parseRound(entry.league.round)
+		stage: parseRound(entry.league.round),
+		matchday: parseMatchday(entry.league.round)
 	};
 }
 
