@@ -8,6 +8,7 @@ const ROUND_MAP: Record<string, Stage> = {
 	'Quarter-finals': 'QF',
 	'Semi-finals': 'SF',
 	'3rd Place': '3rd-place',
+	'3rd Place Final': '3rd-place',
 	Final: 'Final'
 };
 
