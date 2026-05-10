@@ -103,7 +103,6 @@
 		font-family: var(--display);
 		font-size: 46px;
 		line-height: 0.9;
-		margin: 0;
 	}
 	.brand a {
 		color: inherit;
@@ -156,7 +155,6 @@
 		height: 18px;
 		background: var(--paper);
 		border: 2px solid var(--ink);
-		position: relative;
 		overflow: hidden;
 	}
 	.progress-fill {
@@ -173,7 +171,6 @@
 		color: var(--accent);
 	}
 	.progress-stat {
-		font-family: var(--mono);
 		font-size: 11px;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
@@ -195,11 +192,9 @@
 		color: var(--ink);
 		text-decoration: none;
 		font-size: 14px;
+		border: none;
 		border-right: 1px solid rgba(24, 20, 13, 0.2);
 		background: none;
-		border-top: none;
-		border-bottom: none;
-		border-left: none;
 		font-family: var(--headline);
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
