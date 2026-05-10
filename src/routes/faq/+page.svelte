@@ -64,20 +64,25 @@
 					<td class="pts">1</td>
 				</tr>
 				<tr>
-					<td>Knockouts (R32, R16, QF, SF)</td>
+					<td>R32 / R16</td>
 					<td class="pts">2</td>
 				</tr>
 				<tr>
-					<td>3rd-place playoff</td>
+					<td>QF / SF</td>
 					<td class="pts">3</td>
 				</tr>
 				<tr>
+					<td>3rd-place playoff</td>
+					<td class="pts">4</td>
+				</tr>
+				<tr>
 					<td>Final</td>
-					<td class="pts">5</td>
+					<td class="pts">6</td>
 				</tr>
 			</tbody>
 		</table>
 		<p class="note">
+			Each foil tier maps 1:1 to a point value — the sticker tells the truth.
 			The 3rd-place playoff is worth more than a semi-final — it's the last
 			chance to catch up before the Final.
 		</p>
@@ -88,6 +93,7 @@
 		<p>
 			Each Stage has a foil tier that reflects its weight in the tournament.
 			Higher-stage Fixtures earn fancier stickers — and more points.
+			Every foil tier maps 1:1 to a single point value.
 		</p>
 		<dl class="tier-legend">
 			<dt>Group · paper</dt>
@@ -99,15 +105,15 @@
 			<span class="swatch swatch-pearl"></span>
 
 			<dt>QF / SF · holo</dt>
-			<dd>2 pts</dd>
+			<dd>3 pts</dd>
 			<span class="swatch swatch-holo"></span>
 
 			<dt>3rd-place · gold</dt>
-			<dd>3 pts</dd>
+			<dd>4 pts</dd>
 			<span class="swatch swatch-gold"></span>
 
 			<dt>The Final · legendary</dt>
-			<dd>5 pts</dd>
+			<dd>6 pts</dd>
 			<span class="swatch swatch-legendary"></span>
 		</dl>
 	</section>

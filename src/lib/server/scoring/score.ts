@@ -5,10 +5,10 @@ const stageWeights: Record<string, number> = {
 	Group: 1,
 	R32: 2,
 	R16: 2,
-	QF: 2,
-	SF: 2,
-	'3rd-place': 3,
-	Final: 5
+	QF: 3,
+	SF: 3,
+	'3rd-place': 4,
+	Final: 6
 };
 
 export function computeScores(

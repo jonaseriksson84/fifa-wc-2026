@@ -36,18 +36,18 @@ describe('computeScores', () => {
 
 		const scores = computeScores(picks, fixtures);
 
-		expect(scores.get('u1')).toBe(2);
+		expect(scores.get('u1')).toBe(3);
 	});
 
-	it('applies correct stage weights: Group=1, R32/R16/QF/SF=2, 3rd-place=3, Final=5', () => {
+	it('applies correct stage weights: Group=1, R32/R16=2, QF/SF=3, 3rd-place=4, Final=6', () => {
 		const stages = [
 			{ stage: 'Group', weight: 1 },
 			{ stage: 'R32', weight: 2 },
 			{ stage: 'R16', weight: 2 },
-			{ stage: 'QF', weight: 2 },
-			{ stage: 'SF', weight: 2 },
-			{ stage: '3rd-place', weight: 3 },
-			{ stage: 'Final', weight: 5 }
+			{ stage: 'QF', weight: 3 },
+			{ stage: 'SF', weight: 3 },
+			{ stage: '3rd-place', weight: 4 },
+			{ stage: 'Final', weight: 6 }
 		];
 
 		for (const { stage, weight } of stages) {
@@ -142,7 +142,7 @@ describe('computeScores', () => {
 
 		const picks: ScoringPick[] = [
 			// Alice: gets everything right except fixture 2 and 10 (unplayed)
-			// Group: 1+0+1=2, R32: 2, R16: 2, QF: 2, SF: 2, 3rd: 3, Final: 5 => 18
+			// Group: 1+0+1=2, R32: 2, R16: 2, QF: 3, SF: 3, 3rd: 4, Final: 6 => 22
 			makePick('alice', 1, 'HOME'),
 			makePick('alice', 2, 'HOME'), // wrong
 			makePick('alice', 3, 'AWAY'),
@@ -161,7 +161,7 @@ describe('computeScores', () => {
 			makePick('bob', 3, 'HOME'), // wrong
 
 			// Carol: late joiner, only picks from SF onward, gets all right
-			// SF: 2, 3rd: 3, Final: 5 => 10
+			// SF: 3, 3rd: 4, Final: 6 => 13
 			makePick('carol', 7, 'AWAY'),
 			makePick('carol', 8, 'HOME'),
 			makePick('carol', 9, 'HOME'),
@@ -180,10 +180,37 @@ describe('computeScores', () => {
 
 		const scores = computeScores(picks, fixtures);
 
-		expect(scores.get('alice')).toBe(18);
+		expect(scores.get('alice')).toBe(22);
 		expect(scores.get('bob')).toBe(2);
-		expect(scores.get('carol')).toBe(10);
+		expect(scores.get('carol')).toBe(13);
 		expect(scores.get('dave')).toBe(0);
+	});
+
+	it('max-points sanity: a perfect run scores 124 (48×1 + 16×2 + 8×2 + 4×3 + 2×3 + 1×4 + 1×6)', () => {
+		const stageCounts = [
+			{ stage: 'Group', count: 48 },
+			{ stage: 'R32', count: 16 },
+			{ stage: 'R16', count: 8 },
+			{ stage: 'QF', count: 4 },
+			{ stage: 'SF', count: 2 },
+			{ stage: '3rd-place', count: 1 },
+			{ stage: 'Final', count: 1 }
+		];
+
+		let nextId = 1;
+		const fixtures: ScoringFixture[] = [];
+		const picks: ScoringPick[] = [];
+		for (const { stage, count } of stageCounts) {
+			for (let i = 0; i < count; i++) {
+				fixtures.push({ id: nextId, stage, result: 'HOME' });
+				picks.push(makePick('perfect', nextId, 'HOME'));
+				nextId++;
+			}
+		}
+
+		const scores = computeScores(picks, fixtures);
+
+		expect(scores.get('perfect')).toBe(124);
 	});
 
 	it('returns an empty map when there are no picks', () => {
