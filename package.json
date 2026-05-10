@@ -14,7 +14,8 @@
     "seed:generate": "npx vite-node scripts/seed-fixtures.ts",
     "seed:fixtures": "npx vite-node scripts/seed-fixtures.ts && npx wrangler d1 execute fifa-wc-2026 --local --file=scripts/seed-fixtures.sql",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "npx wrangler d1 migrations apply fifa-wc-2026 --local"
+    "db:migrate": "npx wrangler d1 migrations apply fifa-wc-2026 --local",
+    "dev:reset": "npx wrangler d1 execute fifa-wc-2026 --local --file=scripts/reset-dev.sql"
   },
   "dependencies": {
     "@sveltejs/adapter-cloudflare": "^6.0.0",
