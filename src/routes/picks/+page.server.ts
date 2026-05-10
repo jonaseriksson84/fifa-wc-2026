@@ -2,7 +2,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 import { createDb } from '$lib/server/db';
-import { fixture, user } from '$lib/server/db/schema';
+import { fixture, pick as pickTable, user } from '$lib/server/db/schema';
 import {
 	getPicksForUser,
 	getPicksForFixture,
@@ -10,6 +10,8 @@ import {
 } from '$lib/server/picks/pick-repository';
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 import { displayName } from '$lib/display-name';
+import { computeScores } from '$lib/server/scoring/score';
+import { topN } from '$lib/top-leaderboard';
 
 const stageOrder: Record<string, number> = {
 	Group: 0,
@@ -34,10 +36,11 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	const db = createDb(platform!.env.DB);
 	const now = new Date();
 
-	const [fixtures, picks, allUsers] = await Promise.all([
+	const [fixtures, picks, allUsers, allPicks] = await Promise.all([
 		db.select().from(fixture),
 		getPicksForUser(db, locals.user.id),
-		db.select({ email: user.email, name: user.name, displayName: user.displayName }).from(user)
+		db.select({ id: user.id, email: user.email, name: user.name, displayName: user.displayName }).from(user),
+		db.select().from(pickTable)
 	]);
 
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
@@ -83,10 +86,35 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 
 	const unpickedCount = enriched.filter((f) => f.currentPick === null).length;
 
+	const scoreMap = computeScores(allPicks, fixtures);
+	const entries = allUsers.map((u) => ({
+		userId: u.id,
+		name: u.name,
+		email: u.email,
+		displayName: u.displayName,
+		points: scoreMap.get(u.id) ?? 0
+	}));
+	entries.sort((a, b) => b.points - a.points);
+
+	let rank = 1;
+	const ranked = entries.map((entry, i) => {
+		if (i > 0 && entry.points < entries[i - 1].points) {
+			rank = i + 1;
+		}
+		const tied =
+			(i > 0 && entries[i - 1].points === entry.points) ||
+			(i < entries.length - 1 && entries[i + 1].points === entry.points);
+		return { ...entry, rank, tied };
+	});
+
+	const topLeaderboard = topN(ranked, 10);
+
 	return {
 		fixtures: enriched,
 		unpickedCount,
-		totalCount: enriched.length
+		totalCount: enriched.length,
+		topLeaderboard,
+		currentUserId: locals.user.id
 	};
 };
 

@@ -111,6 +111,58 @@ describe('section heading composition', () => {
 	});
 });
 
+describe('top-10 sidebar', () => {
+	it('renders a sidebar with aria-label for accessibility', () => {
+		expect(pageHtml).toContain('top10-sidebar');
+		expect(pageHtml).toContain('aria-label="Top 10 standings"');
+	});
+
+	it('uses a sidebar-panel with overhang tab labelled TOP 10', () => {
+		expect(pageHtml).toContain('sidebar-panel');
+		expect(pageHtml).toContain('sidebar-overhang');
+		expect(pageHtml).toContain('TOP 10');
+	});
+
+	it('renders a table with rank, display name, and points', () => {
+		expect(pageHtml).toContain('sidebar-table');
+		expect(pageHtml).toContain('sidebar-rank');
+		expect(pageHtml).toContain('sidebar-who');
+		expect(pageHtml).toContain('sidebar-pts');
+	});
+
+	it('highlights the current user row', () => {
+		expect(pageHtml).toContain('class:you=');
+		expect(pageHtml).toContain('currentUserId');
+	});
+
+	it('shows tied indicator for equal ranks', () => {
+		expect(pageHtml).toContain('sidebar-tied');
+		expect(pageHtml).toContain('entry.tied');
+	});
+
+	it('uses displayName helper for user names', () => {
+		expect(pageHtml).toContain("from '$lib/display-name'");
+		expect(pageHtml).toContain('displayName(entry)');
+	});
+
+	it('has a "See full leaderboard" link to /leaderboard', () => {
+		expect(pageHtml).toContain('sidebar-link');
+		expect(pageHtml).toContain('href="/leaderboard"');
+		expect(pageLower).toContain('see full leaderboard');
+	});
+
+	it('applies ellipsis to sidebar display names', () => {
+		const styleSection = pageHtml.slice(pageHtml.indexOf('<style'));
+		expect(styleSection).toMatch(/\.sidebar-who[\s\S]*?text-overflow:\s*ellipsis/);
+	});
+
+	it('sidebar stacks below picks on mobile (<1024px)', () => {
+		const styleSection = pageHtml.slice(pageHtml.indexOf('<style'));
+		expect(styleSection).toMatch(/max-width:\s*1023px/);
+		expect(styleSection).toMatch(/flex-direction:\s*column/);
+	});
+});
+
 describe('picks page server', () => {
 	it('redirects to /login when not authenticated', () => {
 		expect(serverTs).toContain("redirect(302, '/login')");
@@ -150,6 +202,19 @@ describe('picks page server', () => {
 
 	it('fetches all users to identify who did not pick', () => {
 		expect(serverTs).toContain('user');
+	});
+
+	it('computes leaderboard scores using computeScores', () => {
+		expect(serverTs).toContain('computeScores');
+	});
+
+	it('exposes topLeaderboard via topN', () => {
+		expect(serverTs).toContain('topN');
+		expect(serverTs).toContain('topLeaderboard');
+	});
+
+	it('returns currentUserId for sidebar highlighting', () => {
+		expect(serverTs).toContain('currentUserId');
 	});
 
 	it('only includes other users picks for locked fixtures', () => {

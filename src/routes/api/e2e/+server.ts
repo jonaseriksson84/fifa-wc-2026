@@ -1,7 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createDb } from '$lib/server/db';
-import { fixture } from '$lib/server/db/schema';
+import { fixture, user, pick } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 function guard(platform: App.Platform | undefined) {
@@ -65,6 +65,39 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 			.update(fixture)
 			.set({ result: fixtureResult, finalScore, updatedAt: new Date().toISOString() })
 			.where(eq(fixture.id, fixtureId));
+		return json({ ok: true });
+	}
+
+	if (action === 'seed-users') {
+		const db = createDb(platform!.env.DB);
+		const users = body.users as {
+			email: string;
+			displayName?: string;
+			picks?: { fixtureId: number; value: string }[];
+		}[];
+		const now = new Date();
+		for (const u of users) {
+			const id = crypto.randomUUID();
+			await db.insert(user).values({
+				id,
+				name: u.email.split('@')[0],
+				email: u.email,
+				emailVerified: true,
+				displayName: u.displayName ?? null,
+				createdAt: now,
+				updatedAt: now
+			});
+			if (u.picks) {
+				for (const p of u.picks) {
+					await db.insert(pick).values({
+						userId: id,
+						fixtureId: p.fixtureId,
+						value: p.value,
+						updatedAt: now.toISOString()
+					});
+				}
+			}
+		}
 		return json({ ok: true });
 	}
 
