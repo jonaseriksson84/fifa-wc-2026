@@ -10,6 +10,7 @@
     "deploy": "npm run build && wrangler deploy",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "seed:generate": "npx vite-node scripts/seed-fixtures.ts",
     "seed:fixtures": "npx vite-node scripts/seed-fixtures.ts && npx wrangler d1 execute fifa-wc-2026 --local --file=scripts/seed-fixtures.sql",
     "db:generate": "drizzle-kit generate",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260509.1",
+    "@playwright/test": "1.59.1",
     "@tailwindcss/vite": "^4.1.0",
     "@types/node": "^25.6.2",
     "drizzle-kit": "^0.31.0",

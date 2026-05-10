@@ -27,6 +27,7 @@ declare global {
 				SENDER_EMAIL?: string;
 				POOL_NAME: string;
 				POOL_ACCENT_HEX: string;
+				E2E_TEST?: string;
 			};
 			context: {
 				waitUntil(promise: Promise<unknown>): void;
