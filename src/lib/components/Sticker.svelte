@@ -3,6 +3,7 @@
 	import ResultStamp from './ResultStamp.svelte';
 	import EmptySlot from './EmptySlot.svelte';
 	import { foilTier } from '$lib/foil-tier';
+	import { flagEmoji } from '$lib/team-flag';
 
 	type PicksByValue = {
 		HOME: string[];
@@ -19,7 +20,7 @@
 		locked,
 		error
 	}: {
-		fixture: { id: number; homeTeam: string; awayTeam: string; kickoff: string; stage: string; result: string | null };
+		fixture: { id: number; homeTeam: string; awayTeam: string; kickoff: string; stage: string; result: string | null; finalScore: string | null };
 		identifier: string;
 		currentPick: string | null;
 		picksByValue: PicksByValue | null;
@@ -41,6 +42,12 @@
 		if (value === 'HOME') return fixture.homeTeam;
 		if (value === 'AWAY') return fixture.awayTeam;
 		return 'Draw';
+	}
+
+	function pickFlag(value: string): string {
+		if (value === 'HOME') return flagEmoji(fixture.homeTeam);
+		if (value === 'AWAY') return flagEmoji(fixture.awayTeam);
+		return '';
 	}
 
 	let pickValues = $derived(isKnockout ? ['HOME', 'AWAY'] : ['HOME', 'DRAW', 'AWAY']);
@@ -65,11 +72,13 @@
 
 	<div class="matchup">
 		<div class="team">
+			<span class="team-flag">{flagEmoji(fixture.homeTeam)}</span>
 			<span class="team-name">{fixture.homeTeam}</span>
 		</div>
 		<div class="versus">×</div>
 		<div class="team">
 			<span class="team-name">{fixture.awayTeam}</span>
+			<span class="team-flag">{flagEmoji(fixture.awayTeam)}</span>
 		</div>
 	</div>
 
@@ -96,6 +105,9 @@
 	{/if}
 
 	{#if isFilled}
+		{#if fixture.finalScore}
+			<div class="final-score">{fixture.finalScore}</div>
+		{/if}
 		<ResultStamp
 			pick={currentPick}
 			result={fixture.result!}
@@ -112,8 +124,9 @@
 		<div class="others-picks">
 			{#each pickValues as v}
 				{@const names = picksByValue[v as keyof PicksByValue]}
+				{@const chipFlag = pickFlag(v)}
 				{#each names as name}
-					<span class="chip"><strong>{buttonLabel(v)}</strong> {name}</span>
+					<span class="chip">{#if chipFlag}<span class="chip-flag">{chipFlag}</span>{/if}<strong>{buttonLabel(v)}</strong> {name}</span>
 				{/each}
 			{/each}
 		</div>
@@ -351,16 +364,23 @@
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 		line-height: 1;
+		display: flex;
+		align-items: center;
+		gap: 6px;
 		overflow: hidden;
+	}
+	.team:last-child {
+		text-align: right;
+		justify-content: flex-end;
+	}
+	.team-flag {
+		font-size: 22px;
+		line-height: 1;
 	}
 	.team-name {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		display: block;
-	}
-	.team:last-child {
-		text-align: right;
 	}
 	.versus {
 		font-family: var(--display);
@@ -435,6 +455,17 @@
 		color: var(--accent);
 	}
 
+	/* Final score */
+	.final-score {
+		font-family: var(--display);
+		font-size: 26px;
+		text-align: center;
+		letter-spacing: 0.06em;
+		margin: 6px 0 4px;
+		position: relative;
+		z-index: 1;
+	}
+
 	/* Others' picks */
 	.others-picks {
 		margin-top: 10px;
@@ -457,5 +488,8 @@
 	}
 	.others-picks .chip strong {
 		font-family: var(--headline);
+	}
+	.others-picks .chip-flag {
+		margin-right: 2px;
 	}
 </style>

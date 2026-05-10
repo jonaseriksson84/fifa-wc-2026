@@ -9,6 +9,7 @@
 UPDATE fixture
 SET kickoff = datetime('now', '-3 hour'),
     result = 'HOME',
+    final_score = '2-1',
     updated_at = datetime('now')
 WHERE id = (
   SELECT id FROM fixture
@@ -19,6 +20,7 @@ WHERE id = (
 UPDATE fixture
 SET kickoff = datetime('now', '-2 hour'),
     result = 'AWAY',
+    final_score = '0-3',
     updated_at = datetime('now')
 WHERE id = (
   SELECT id FROM fixture
@@ -29,6 +31,7 @@ WHERE id = (
 UPDATE fixture
 SET kickoff = datetime('now', '-1 hour'),
     result = 'DRAW',
+    final_score = '1-1',
     updated_at = datetime('now')
 WHERE id = (
   SELECT id FROM fixture

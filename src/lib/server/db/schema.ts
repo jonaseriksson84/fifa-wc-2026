@@ -7,6 +7,7 @@ export const fixture = sqliteTable('fixture', {
 	kickoff: text('kickoff').notNull(),
 	stage: text('stage').notNull(),
 	result: text('result'),
+	finalScore: text('final_score'),
 	apiFootballId: integer('api_football_id').unique(),
 	updatedAt: text('updated_at')
 		.notNull()

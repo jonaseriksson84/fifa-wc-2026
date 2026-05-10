@@ -1,4 +1,5 @@
 import type { ApiFixtureResponse, DomainFixture, DomainResult, Stage, Result } from './types';
+import { formatFinalScore, type ScoreShape } from '$lib/final-score';
 
 const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
 
@@ -45,11 +46,33 @@ export function mapFixture(entry: ApiFixtureResponse): DomainFixture {
 	};
 }
 
+export function deriveScoreShape(entry: ApiFixtureResponse): ScoreShape | null {
+	if (!FINISHED_STATUSES.has(entry.fixture.status.short)) return null;
+
+	const s = entry.score;
+	const ft: [number, number] = [s.fulltime.home!, s.fulltime.away!];
+
+	if (s.penalty.home !== null && s.penalty.away !== null) {
+		return { ft, et: null, pens: [s.penalty.home, s.penalty.away] };
+	}
+
+	if (s.extratime.home !== null && s.extratime.away !== null) {
+		const etTotal: [number, number] = [
+			s.fulltime.home! + s.extratime.home,
+			s.fulltime.away! + s.extratime.away
+		];
+		return { ft, et: etTotal, pens: null };
+	}
+
+	return { ft, et: null, pens: null };
+}
+
 export function mapResult(entry: ApiFixtureResponse): DomainResult | null {
 	const result = deriveResult(entry);
 	if (result === null) return null;
 	return {
 		apiFootballId: entry.fixture.id,
-		result
+		result,
+		finalScore: formatFinalScore(deriveScoreShape(entry))
 	};
 }

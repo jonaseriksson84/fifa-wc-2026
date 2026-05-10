@@ -1,0 +1,1 @@
+ALTER TABLE `fixture` ADD `final_score` text;

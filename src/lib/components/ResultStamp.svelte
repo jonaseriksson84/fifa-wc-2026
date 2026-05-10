@@ -35,6 +35,8 @@
 
 <style>
 	.result-stamp {
+		--correct: #2d6a4f;
+		--wrong: #c1121f;
 		margin-top: 4px;
 		display: flex;
 		align-items: center;
@@ -53,23 +55,23 @@
 	.result-stamp .result-tag {
 		font-family: var(--display);
 		font-size: 18px;
-		color: var(--green);
+		color: var(--correct);
 		transform: rotate(-3deg);
 	}
 	.result-stamp.wrong .result-tag {
-		color: var(--accent);
+		color: var(--wrong);
 	}
 	.result-stamp .verdict {
 		font-family: var(--mono);
 		font-size: 10px;
 		letter-spacing: 0.15em;
 		padding: 3px 7px;
-		background: var(--green);
+		background: var(--correct);
 		color: var(--paper);
 		text-transform: uppercase;
 	}
 	.result-stamp.wrong .verdict,
 	.result-stamp .verdict.missed {
-		background: var(--accent);
+		background: var(--wrong);
 	}
 </style>

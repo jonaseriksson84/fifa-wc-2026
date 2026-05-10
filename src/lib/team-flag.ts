@@ -1,0 +1,41 @@
+const FLAGS: Record<string, string> = {
+	'USA': '\u{1F1FA}\u{1F1F8}',
+	'Mexico': '\u{1F1F2}\u{1F1FD}',
+	'Canada': '\u{1F1E8}\u{1F1E6}',
+	'Brazil': '\u{1F1E7}\u{1F1F7}',
+	'Argentina': '\u{1F1E6}\u{1F1F7}',
+	'France': '\u{1F1EB}\u{1F1F7}',
+	'Germany': '\u{1F1E9}\u{1F1EA}',
+	'Spain': '\u{1F1EA}\u{1F1F8}',
+	'England': '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}',
+	'Netherlands': '\u{1F1F3}\u{1F1F1}',
+	'Portugal': '\u{1F1F5}\u{1F1F9}',
+	'Belgium': '\u{1F1E7}\u{1F1EA}',
+	'Croatia': '\u{1F1ED}\u{1F1F7}',
+	'Uruguay': '\u{1F1FA}\u{1F1FE}',
+	'Colombia': '\u{1F1E8}\u{1F1F4}',
+	'Japan': '\u{1F1EF}\u{1F1F5}',
+	'South Korea': '\u{1F1F0}\u{1F1F7}',
+	'Australia': '\u{1F1E6}\u{1F1FA}',
+	'Saudi Arabia': '\u{1F1F8}\u{1F1E6}',
+	'Iran': '\u{1F1EE}\u{1F1F7}',
+	'Qatar': '\u{1F1F6}\u{1F1E6}',
+	'Senegal': '\u{1F1F8}\u{1F1F3}',
+	'Morocco': '\u{1F1F2}\u{1F1E6}',
+	'Ghana': '\u{1F1EC}\u{1F1ED}',
+	'Cameroon': '\u{1F1E8}\u{1F1F2}',
+	'Nigeria': '\u{1F1F3}\u{1F1EC}',
+	'Ecuador': '\u{1F1EA}\u{1F1E8}',
+	'Serbia': '\u{1F1F7}\u{1F1F8}',
+	'Switzerland': '\u{1F1E8}\u{1F1ED}',
+	'Denmark': '\u{1F1E9}\u{1F1F0}',
+	'Poland': '\u{1F1F5}\u{1F1F1}',
+	'Wales': '\u{1F3F4}\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}',
+	'Sweden': '\u{1F1F8}\u{1F1EA}',
+	'Costa Rica': '\u{1F1E8}\u{1F1F7}',
+	'Scotland': '\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}'
+};
+
+export function flagEmoji(team: string): string {
+	return FLAGS[team] ?? '';
+}
