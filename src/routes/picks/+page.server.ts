@@ -9,6 +9,7 @@ import {
 	upsertPick
 } from '$lib/server/picks/pick-repository';
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
+import { displayName } from '$lib/display-name';
 
 const stageOrder: Record<string, number> = {
 	Group: 0,
@@ -36,11 +37,11 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	const [fixtures, picks, allUsers] = await Promise.all([
 		db.select().from(fixture),
 		getPicksForUser(db, locals.user.id),
-		db.select({ email: user.email }).from(user)
+		db.select({ email: user.email, name: user.name, displayName: user.displayName }).from(user)
 	]);
 
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
-	const allEmails = allUsers.map((u) => u.email);
+	const userDisplayNames = new Map(allUsers.map((u) => [u.email, displayName(u)]));
 
 	const enriched = await Promise.all(
 		fixtures.map(async (f) => {
@@ -54,13 +55,13 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 
 				for (const p of fixturePicks) {
 					const key = p.value as PickValue;
-					buckets[key]?.push(p.email);
+					buckets[key]?.push(displayName(p));
 					pickedEmails.add(p.email);
 				}
 
-				for (const email of allEmails) {
-					if (!pickedEmails.has(email)) {
-						buckets.noPick.push(email);
+				for (const u of allUsers) {
+					if (!pickedEmails.has(u.email)) {
+						buckets.noPick.push(displayName(u));
 					}
 				}
 

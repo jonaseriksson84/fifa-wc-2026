@@ -5,6 +5,7 @@ declare global {
 				id: string;
 				email: string;
 				name: string;
+				displayName?: string | null;
 				emailVerified: boolean;
 				image?: string | null;
 				createdAt: Date;

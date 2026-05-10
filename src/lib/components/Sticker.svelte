@@ -111,9 +111,9 @@
 	{#if locked && picksByValue}
 		<div class="others-picks">
 			{#each pickValues as v}
-				{@const emails = picksByValue[v as keyof PicksByValue]}
-				{#each emails as email}
-					<span class="chip"><strong>{buttonLabel(v)}</strong> {email.split('@')[0]}</span>
+				{@const names = picksByValue[v as keyof PicksByValue]}
+				{#each names as name}
+					<span class="chip"><strong>{buttonLabel(v)}</strong> <span class="chip-name">{name}</span></span>
 				{/each}
 			{/each}
 		</div>
@@ -351,6 +351,13 @@
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 		line-height: 1;
+		overflow: hidden;
+	}
+	.team-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		display: block;
 	}
 	.team:last-child {
 		text-align: right;
@@ -443,8 +450,16 @@
 		border: 1.5px solid var(--ink);
 		padding: 2px 7px;
 		background: var(--paper-deep);
+		max-width: 140px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.others-picks .chip strong {
 		font-family: var(--headline);
+	}
+	.others-picks .chip .chip-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 </style>

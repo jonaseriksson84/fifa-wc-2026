@@ -53,7 +53,7 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		await page.goto(`/api/auth/magic-link/verify?token=${token}&callbackURL=/account`);
 
 		await page.waitForURL('**/account');
-		await expect(page.locator('header')).toContainText(TEST_EMAIL);
+		await expect(page.locator('header')).toContainText(TEST_EMAIL.split('@')[0]);
 
 		await page.click('a[href="/picks"]');
 		await expect(page).toHaveURL('/picks');
@@ -78,5 +78,48 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		const row = leaderboardTable.locator('tr', { hasText: TEST_EMAIL });
 		// Group stage = 1 point
 		await expect(row).toContainText('1');
+	});
+
+	test('display name: set on account, appears on leaderboard and chips', async ({ page, request }) => {
+		const email = `dn-${Date.now()}@test.local`;
+		const displayName = 'TestNickname';
+
+		await request.post('/api/e2e', { data: { action: 'reset' } });
+		await request.post('/api/e2e', { data: { action: 'seed-fixtures', fixtures: FIXTURES } });
+
+		await page.goto('/login');
+		await page.fill('input[name="email"]', email);
+		await page.click('button[type="submit"]');
+
+		const tokenRes = await request.get(
+			`/api/e2e?action=verification-token&email=${encodeURIComponent(email)}`
+		);
+		const { token } = await tokenRes.json();
+		await page.goto(`/api/auth/magic-link/verify?token=${token}&callbackURL=/account`);
+		await page.waitForURL('**/account');
+
+		await page.fill('input[name="displayName"]', displayName);
+		await page.click('button:has-text("Save")');
+		await page.waitForLoadState('networkidle');
+
+		await page.goto('/account');
+		await expect(page.locator('input[name="displayName"]')).toHaveValue(displayName);
+		await expect(page.locator('header')).toContainText(displayName);
+
+		await page.click('a[href="/picks"]');
+		const firstSticker = page.locator('article.sticker').first();
+		const homeButton = firstSticker.locator('button.pick-btn', { hasText: 'Sweden' });
+		await homeButton.click();
+
+		const setResultRes = await request.post('/api/e2e', {
+			data: { action: 'set-result', fixtureId: 1, result: 'HOME' }
+		});
+		expect(setResultRes.ok()).toBe(true);
+
+		await page.click('a[href="/leaderboard"]');
+		await expect(page).toHaveURL('/leaderboard');
+
+		const leaderboardTable = page.locator('table');
+		await expect(leaderboardTable.locator('td', { hasText: displayName })).toBeVisible();
 	});
 });

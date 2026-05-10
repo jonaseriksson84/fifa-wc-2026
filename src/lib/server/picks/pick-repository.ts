@@ -9,7 +9,7 @@ export async function getPicksForUser(db: Db, userId: string) {
 
 export async function getPicksForFixture(db: Db, fixtureId: number) {
 	return db
-		.select({ email: user.email, value: pick.value })
+		.select({ email: user.email, name: user.name, displayName: user.displayName, value: pick.value })
 		.from(pick)
 		.innerJoin(user, eq(pick.userId, user.id))
 		.where(eq(pick.fixtureId, fixtureId));

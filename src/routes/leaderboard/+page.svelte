@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { displayName } from '$lib/display-name';
 
 	let { data }: { data: PageData } = $props();
 
@@ -7,13 +8,6 @@
 		const local = email.split('@')[0];
 		const plusIdx = local.indexOf('+');
 		return plusIdx >= 0 ? local.slice(plusIdx) : email;
-	}
-
-	function displayName(entry: { name: string | null; email: string }): string {
-		if (entry.name) return entry.name;
-		const local = entry.email.split('@')[0];
-		const plusIdx = local.indexOf('+');
-		return plusIdx >= 0 ? local.slice(plusIdx + 1) : local;
 	}
 </script>
 
@@ -177,10 +171,18 @@
 	}
 
 	/* User identity */
+	.who-cell {
+		max-width: 0;
+		overflow: hidden;
+	}
 	.who {
 		font-family: var(--headline);
 		font-size: 18px;
 		letter-spacing: 0.03em;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		display: block;
 	}
 	.suffix {
 		display: block;

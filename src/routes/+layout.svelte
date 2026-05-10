@@ -3,6 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
+	import { displayName } from '$lib/display-name';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -21,7 +22,7 @@
 			</div>
 		</div>
 		{#if data.user}
-			<div class="user-pill">{data.user.email}</div>
+			<div class="user-pill">{displayName(data.user)}</div>
 		{:else}
 			<a href="/login" class="user-pill">Sign in</a>
 		{/if}
@@ -124,6 +125,9 @@
 		text-decoration: none;
 		color: var(--ink);
 		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 180px;
 	}
 	.user-pill::before {
 		content: '◀ ';

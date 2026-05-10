@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -10,6 +11,21 @@
 	<div class="account-card">
 		<p class="account-label">Signed in as</p>
 		<p class="account-email">{data.user.email}</p>
+	</div>
+
+	<div class="account-card">
+		<p class="account-label">Display name</p>
+		<form method="POST" action="?/updateDisplayName" use:enhance>
+			<input
+				type="text"
+				name="displayName"
+				value={data.user.displayName ?? ''}
+				maxlength="24"
+				placeholder="How others see you"
+				class="display-name-input"
+			/>
+			<button type="submit" class="display-name-save">Save</button>
+		</form>
 	</div>
 
 	<form method="POST" action="/logout">
@@ -52,6 +68,40 @@
 		font-size: 18px;
 		margin: 0;
 		font-weight: 600;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.display-name-input {
+		font-family: var(--body);
+		font-size: 16px;
+		border: 2px solid var(--ink);
+		background: var(--paper);
+		padding: 10px 14px;
+		width: 100%;
+		box-sizing: border-box;
+		margin-bottom: 10px;
+	}
+	.display-name-input::placeholder {
+		opacity: 0.5;
+		font-style: italic;
+	}
+
+	.display-name-save {
+		font-family: var(--headline);
+		font-size: 13px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		border: 2px solid var(--ink);
+		background: var(--accent);
+		color: var(--paper);
+		padding: 10px 22px;
+		cursor: pointer;
+		transition: all 0.12s;
+	}
+	.display-name-save:hover {
+		background: var(--ink);
 	}
 
 	.account-signout {

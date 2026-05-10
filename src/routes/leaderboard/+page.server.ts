@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	const [allFixtures, allPicks, allUsers] = await Promise.all([
 		db.select().from(fixture),
 		db.select().from(pick),
-		db.select({ id: user.id, name: user.name, email: user.email }).from(user)
+		db.select({ id: user.id, name: user.name, email: user.email, displayName: user.displayName }).from(user)
 	]);
 
 	const fixtureById = new Map(allFixtures.map((f) => [f.id, f]));
@@ -22,6 +22,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		userId: u.id,
 		name: u.name,
 		email: u.email,
+		displayName: u.displayName,
 		points: scoreMap.get(u.id) ?? 0
 	}));
 
