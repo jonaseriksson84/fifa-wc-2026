@@ -1,7 +1,8 @@
 <script lang="ts">
-	let { pick, result, homeTeam, awayTeam }: {
+	let { pick, result, finalScore, homeTeam, awayTeam }: {
 		pick: string | null;
 		result: string;
+		finalScore: string | null;
 		homeTeam: string;
 		awayTeam: string;
 	} = $props();
@@ -16,16 +17,15 @@
 	}
 
 	let pickLabel = $derived(valueLabel(pick));
-	let resultLabel = $derived(valueLabel(result));
 </script>
 
-<div class="result-stamp" class:wrong={!correct && pick !== null}>
+<div class="result-stamp" class:wrong={!correct}>
 	{#if pick}
 		<span class="stamped-pick">Picked: {pickLabel}</span>
 	{:else}
 		<span class="stamped-pick">No pick</span>
 	{/if}
-	<span class="result-tag">{resultLabel} wins</span>
+	<span class="result-tag">{finalScore ?? '—'}</span>
 	{#if pick}
 		<span class="verdict">{correct ? 'Correct' : 'Missed'}</span>
 	{:else}

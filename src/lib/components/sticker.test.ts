@@ -30,12 +30,8 @@ describe('Sticker flag rendering', () => {
 });
 
 describe('Sticker final score display', () => {
-	it('renders finalScore on filled stickers', () => {
-		expect(stickerSvelte).toContain('fixture.finalScore');
-	});
-
-	it('has final-score CSS class', () => {
-		expect(stickerSvelte).toContain('.final-score');
+	it('passes finalScore to ResultStamp', () => {
+		expect(stickerSvelte).toContain('finalScore={fixture.finalScore}');
 	});
 
 	it('accepts finalScore in fixture prop type', () => {

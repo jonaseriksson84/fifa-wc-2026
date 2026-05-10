@@ -38,14 +38,14 @@ describe('masthead tab pills', () => {
 		expect(layoutHtml).toContain('color: var(--paper)');
 	});
 
-	it('renders a red badge element inside the active picks tab', () => {
+	it('renders a badge element inside the active picks tab', () => {
 		expect(layoutHtml).toContain('badge');
 		expect(layoutHtml).toContain('openCount');
 	});
 
-	it('badge uses red background', () => {
+	it('badge uses accent background', () => {
 		expect(layoutHtml).toContain('.badge');
 		const badgeSection = layoutHtml.slice(layoutHtml.indexOf('.badge'));
-		expect(badgeSection).toMatch(/background:.*var\(--red\)/);
+		expect(badgeSection).toMatch(/background:.*var\(--accent\)/);
 	});
 });

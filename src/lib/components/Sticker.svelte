@@ -75,7 +75,7 @@
 			<span class="team-flag">{flagEmoji(fixture.homeTeam)}</span>
 			<span class="team-name">{fixture.homeTeam}</span>
 		</div>
-		<div class="versus">×</div>
+		<div class="versus">vs</div>
 		<div class="team">
 			<span class="team-name">{fixture.awayTeam}</span>
 			<span class="team-flag">{flagEmoji(fixture.awayTeam)}</span>
@@ -105,12 +105,10 @@
 	{/if}
 
 	{#if isFilled}
-		{#if fixture.finalScore}
-			<div class="final-score">{fixture.finalScore}</div>
-		{/if}
 		<ResultStamp
 			pick={currentPick}
 			result={fixture.result!}
+			finalScore={fixture.finalScore}
 			homeTeam={fixture.homeTeam}
 			awayTeam={fixture.awayTeam}
 		/>
@@ -389,9 +387,6 @@
 	.versus {
 		font-family: var(--display);
 		font-size: 22px;
-		color: var(--accent);
-	}
-	.sticker.foil-legendary .versus {
 		color: var(--ink);
 	}
 
@@ -460,16 +455,6 @@
 	}
 
 	/* Final score */
-	.final-score {
-		font-family: var(--display);
-		font-size: 26px;
-		text-align: center;
-		letter-spacing: 0.06em;
-		margin: 6px 0 4px;
-		position: relative;
-		z-index: 1;
-	}
-
 	/* Others' picks */
 	.others-picks {
 		margin-top: 10px;

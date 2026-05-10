@@ -205,7 +205,7 @@
 		color: var(--paper);
 	}
 	.badge {
-		background: var(--red);
+		background: var(--accent);
 		color: var(--paper);
 		font-family: var(--mono);
 		font-size: 10px;
