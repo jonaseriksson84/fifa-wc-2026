@@ -36,7 +36,8 @@ describe('FAQ page content', () => {
 		expect(faqHtml).toContain('1');
 		expect(faqHtml).toContain('2');
 		expect(faqHtml).toContain('3');
-		expect(faqHtml).toContain('5');
+		expect(faqHtml).toContain('4');
+		expect(faqHtml).toContain('6');
 		expect(faqLower).toContain('group');
 		expect(faqLower).toContain('final');
 		expect(faqLower).toContain('3rd-place');
@@ -122,11 +123,16 @@ describe('Sticker tiers section', () => {
 		expect(faqHtml).toContain('Final');
 	});
 
+	it('explains the 1:1 foil-tier-to-point-value mapping', () => {
+		expect(faqLower).toContain('1:1');
+	});
+
 	it('shows correct point values for each tier', () => {
 		expect(faqHtml).toContain('1 pt');
 		expect(faqHtml).toContain('2 pts');
 		expect(faqHtml).toContain('3 pts');
-		expect(faqHtml).toContain('5 pts');
+		expect(faqHtml).toContain('4 pts');
+		expect(faqHtml).toContain('6 pts');
 	});
 
 	it('uses foil swatch CSS classes matching the leaderboard legend', () => {

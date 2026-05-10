@@ -35,7 +35,7 @@ The operator of a deployment. Enters results, manages users, regenerates anythin
 The instant a **Fixture** stops accepting new or updated **Picks**. Equal to the fixture's scheduled kickoff time — picks are open right up to kickoff and frozen the moment the match starts.
 
 **Score weight**:
-The point value of a correct **Pick** for a given **Fixture**, derived from its **Stage**. Group matches are worth 1pt, knockout matches (R32 through SF) are worth 2pt, the 3rd-place playoff is worth 3pt, and the Final is worth 5pt. The 3rd-place bump is a deliberate catch-up mechanic giving trailing players one last swing before the Final.
+The point value of a correct **Pick** for a given **Fixture**, derived from its **Stage**. Group = 1pt, R32/R16 = 2pt, QF/SF = 3pt, 3rd-place = 4pt, Final = 6pt. Each foil tier (paper/pearl/holo/gold/legendary) maps 1:1 to a single point value. The 3rd-place bump is a deliberate catch-up mechanic giving trailing players one last swing before the Final.
 
 ## Relationships
 
