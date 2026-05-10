@@ -21,3 +21,8 @@ BETTER_AUTH_SECRET=
 # Local dev default is http://localhost:5173; in production set to the
 # deployed Worker URL (e.g. https://fifa-wc-2026-friends.<account>.workers.dev).
 BETTER_AUTH_URL=http://localhost:5173
+
+# Enables /api/e2e test-helper routes (reset DB, seed fixtures, fetch
+# verification tokens, force results). Local-only — never set in prod.
+# Required by `npm run test:e2e`.
+E2E_TEST=1
