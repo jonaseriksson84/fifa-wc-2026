@@ -7,12 +7,16 @@
 	} = $props();
 
 	let correct = $derived(pick === result);
-	let pickLabel = $derived(
-		pick === 'HOME' ? homeTeam : pick === 'AWAY' ? awayTeam : pick === 'DRAW' ? 'Draw' : '—'
-	);
-	let resultLabel = $derived(
-		result === 'HOME' ? homeTeam : result === 'AWAY' ? awayTeam : 'Draw'
-	);
+
+	function valueLabel(value: string | null): string {
+		if (value === 'HOME') return homeTeam;
+		if (value === 'AWAY') return awayTeam;
+		if (value === 'DRAW') return 'Draw';
+		return '—';
+	}
+
+	let pickLabel = $derived(valueLabel(pick));
+	let resultLabel = $derived(valueLabel(result));
 </script>
 
 <div class="result-stamp" class:wrong={!correct && pick !== null}>

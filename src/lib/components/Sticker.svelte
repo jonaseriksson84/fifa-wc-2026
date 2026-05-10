@@ -27,18 +27,17 @@
 		error: string | null;
 	} = $props();
 
-	const knockoutStages = new Set(['R32', 'R16', 'QF', 'SF', '3rd-place', 'Final']);
-	let isKnockout = $derived(knockoutStages.has(fixture.stage));
-	let isFilled = $derived(locked && fixture.result !== null);
 	let tier = $derived(foilTier(fixture.stage));
+	let isKnockout = $derived(tier !== 'paper');
+	let isFilled = $derived(locked && fixture.result !== null);
 
-	let foilClass = $derived(
-		tier === 'pearl' ? 'foil-1' :
-		tier === 'holo' ? 'foil-2' :
-		tier === 'gold' ? 'foil-3' :
-		tier === 'legendary' ? 'foil-final' :
-		''
-	);
+	const foilClasses: Record<string, string> = {
+		pearl: 'foil-1',
+		holo: 'foil-2',
+		gold: 'foil-3',
+		legendary: 'foil-final'
+	};
+	let foilClass = $derived(foilClasses[tier] ?? '');
 
 	let kickoffDisplay = $derived(
 		new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(fixture.kickoff))
@@ -120,7 +119,7 @@
 			{#each pickValues as v}
 				{@const emails = picksByValue[v as keyof PicksByValue]}
 				{#each emails as email}
-					<span class="chip"><strong>{v === 'HOME' ? fixture.homeTeam : v === 'AWAY' ? fixture.awayTeam : 'Draw'}</strong> {email.split('@')[0]}</span>
+					<span class="chip"><strong>{buttonLabel(v)}</strong> {email.split('@')[0]}</span>
 				{/each}
 			{/each}
 		</div>

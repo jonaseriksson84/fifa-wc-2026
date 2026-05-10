@@ -1,16 +1,19 @@
 <script lang="ts">
+	import { foilTier } from '$lib/foil-tier';
+
 	let { stage }: { stage: string } = $props();
 
-	const knockoutStages = new Set(['R32', 'R16', 'QF', 'SF', '3rd-place', 'Final']);
-	let isKnockout = $derived(knockoutStages.has(stage));
+	let tier = $derived(foilTier(stage));
+	let isKnockout = $derived(tier !== 'paper');
 
-	let labelA = $derived(
-		stage === 'Final' ? 'Legendary sticker pending' :
-		stage === '3rd-place' ? 'Gold sticker pending' :
-		(stage === 'QF' || stage === 'SF') ? 'Holo sticker pending' :
-		(stage === 'R32' || stage === 'R16') ? 'Foil sticker pending' :
-		'Sticker to come'
-	);
+	const tierLabels: Record<string, string> = {
+		paper: 'Sticker to come',
+		pearl: 'Foil sticker pending',
+		holo: 'Holo sticker pending',
+		gold: 'Gold sticker pending',
+		legendary: 'Legendary sticker pending'
+	};
+	let labelA = $derived(tierLabels[tier]);
 	let labelB = $derived(
 		isKnockout ? 'winner advances' : 'arrives at full time'
 	);
