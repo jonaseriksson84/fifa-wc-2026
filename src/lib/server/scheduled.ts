@@ -56,8 +56,9 @@ async function pollResults(env: ScheduledEnv): Promise<void> {
 
 	const now = new Date().toISOString();
 	const batch = results.map((r) =>
-		env.DB.prepare('UPDATE fixture SET result = ?, updated_at = ? WHERE api_football_id = ?').bind(
+		env.DB.prepare('UPDATE fixture SET result = ?, final_score = ?, updated_at = ? WHERE api_football_id = ?').bind(
 			r.result,
+			r.finalScore,
 			now,
 			r.apiFootballId
 		)

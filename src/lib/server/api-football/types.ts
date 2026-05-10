@@ -12,6 +12,7 @@ export interface DomainFixture {
 export interface DomainResult {
 	apiFootballId: number;
 	result: Result;
+	finalScore: string;
 }
 
 export interface ApiFixtureResponse {

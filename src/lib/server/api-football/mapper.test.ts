@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRound, deriveResult, mapFixture, mapResult } from './mapper';
+import { parseRound, deriveResult, deriveScoreShape, mapFixture, mapResult } from './mapper';
 import type { ApiFixtureResponse } from './types';
 
 import groupHomeWin from '../../../../tests/fixtures/api-football/group-home-win.json';
@@ -85,12 +85,37 @@ describe('mapFixture', () => {
 	});
 });
 
+describe('deriveScoreShape', () => {
+	it('returns ft-only shape for a 90-minute result', () => {
+		expect(deriveScoreShape(groupHomeWin as ApiFixtureResponse)).toEqual({
+			ft: [2, 1], et: null, pens: null
+		});
+	});
+
+	it('returns et shape for extra-time result', () => {
+		expect(deriveScoreShape(knockoutExtraTime as ApiFixtureResponse)).toEqual({
+			ft: [2, 2], et: [2, 3], pens: null
+		});
+	});
+
+	it('returns pens shape for penalty result', () => {
+		expect(deriveScoreShape(knockoutPenalties as ApiFixtureResponse)).toEqual({
+			ft: [1, 1], et: null, pens: [5, 3]
+		});
+	});
+
+	it('returns null for unstarted fixture', () => {
+		expect(deriveScoreShape(notStarted as ApiFixtureResponse)).toBeNull();
+	});
+});
+
 describe('mapResult', () => {
-	it('returns a domain result for a finished fixture', () => {
+	it('returns a domain result with finalScore for a finished fixture', () => {
 		const result = mapResult(groupHomeWin as ApiFixtureResponse);
 		expect(result).toEqual({
 			apiFootballId: 1145510,
-			result: 'HOME'
+			result: 'HOME',
+			finalScore: '2-1'
 		});
 	});
 
@@ -98,11 +123,21 @@ describe('mapResult', () => {
 		expect(mapResult(notStarted as ApiFixtureResponse)).toBeNull();
 	});
 
-	it('correctly derives knockout penalty result', () => {
+	it('correctly derives knockout penalty result with finalScore', () => {
 		const result = mapResult(knockoutPenalties as ApiFixtureResponse);
 		expect(result).toEqual({
 			apiFootballId: 1145580,
-			result: 'HOME'
+			result: 'HOME',
+			finalScore: '1-1 (5-3 pen.)'
+		});
+	});
+
+	it('includes a.e.t. finalScore for extra-time result', () => {
+		const result = mapResult(knockoutExtraTime as ApiFixtureResponse);
+		expect(result).toEqual({
+			apiFootballId: 1145570,
+			result: 'AWAY',
+			finalScore: '2-2 a.e.t. 2-3'
 		});
 	});
 });

@@ -60,9 +60,10 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 		const db = createDb(platform!.env.DB);
 		const fixtureId = body.fixtureId as number;
 		const fixtureResult = body.result as string;
+		const finalScore = (body.finalScore as string) ?? null;
 		await db
 			.update(fixture)
-			.set({ result: fixtureResult, updatedAt: new Date().toISOString() })
+			.set({ result: fixtureResult, finalScore, updatedAt: new Date().toISOString() })
 			.where(eq(fixture.id, fixtureId));
 		return json({ ok: true });
 	}
