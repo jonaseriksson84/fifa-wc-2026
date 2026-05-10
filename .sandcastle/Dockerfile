@@ -15,6 +15,32 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
   && apt-get update && apt-get install -y gh \
   && rm -rf /var/lib/apt/lists/*
 
+# Install Playwright CLI for the agent — browser-control commands designed for
+# coding agents (token-efficient alternative to Playwright MCP). Used to
+# navigate, snapshot, and screenshot the live dev server so the agent can
+# verify frontend work visually before committing.
+#
+# Per the README, the agent-facing install is just `@playwright/cli`. We also
+# install `playwright` globally so the regular `playwright install` command
+# is on PATH at image-build time — without it browsers would have to be
+# downloaded at first run (~300MB, flaky). `playwright-cli install --skills`
+# drops the SKILL.md that Claude Code reads for tool discovery.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+# Firefox (not Chrome) because Google Chrome has no Linux ARM64 build,
+# and Apple Silicon hosts produce ARM64 images by default. Of the four
+# channels playwright-cli's --browser accepts (chrome/firefox/webkit/msedge),
+# only Firefox and WebKit ship for Linux ARM64.
+#
+# Use playwright-cli's own `install-browser` subcommand — the regular
+# `playwright install` puts browsers in a location playwright-cli doesn't
+# look in. `playwright-cli install --skills` drops the SKILL.md the
+# Claude Code agent reads for tool discovery.
+RUN npm install -g @playwright/cli@latest \
+  && playwright-cli install-browser firefox --with-deps \
+  && playwright-cli install --skills \
+  && rm -rf /var/lib/apt/lists/* \
+  && chmod -R o+rx /ms-playwright
+
 # Build-args for UID/GID alignment: sandcastle docker build-image
 # defaults these to the host user's UID/GID so image-built files
 # and bind-mounted files share an owner without runtime chown.

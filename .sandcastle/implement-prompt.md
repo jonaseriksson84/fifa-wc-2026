@@ -37,6 +37,37 @@ If applicable, use RGR to complete the task.
 
 Before committing, run `npm run typecheck` and `npm run test` to ensure the tests pass.
 
+## Visual verification for frontend tasks
+
+If your task changes anything the user sees (Svelte components, CSS, page layout, routes that render UI), you must verify the result visually before committing. The sandbox has `playwright-cli` available — use it.
+
+Workflow:
+
+1. Start the dev server in the background:
+   ```
+   npm run dev > /tmp/dev.log 2>&1 &
+   until curl -fs http://localhost:5173 > /dev/null; do sleep 1; done
+   ```
+2. If the page you're working on needs data, run the local seed scripts:
+   ```
+   npm run db:migrate
+   npm run dev:reset           # clean state, 7 future fixtures
+   npm run dev:fastforward     # resolves 3 group fixtures (run again to resolve more)
+   ```
+3. Drive the page with `playwright-cli` (use a session name with `-s=` so subsequent commands target the same browser):
+   - `playwright-cli -s=dev open --browser firefox http://localhost:5173/<path>`
+   - `playwright-cli -s=dev screenshot --filename /tmp/page.png` then read the screenshot back to compare against the intended visual.
+   - `playwright-cli -s=dev snapshot` to inspect the DOM / accessibility tree (returns numbered refs `e1`, `e2`, ... that subsequent `click`/`fill` commands target).
+   - `playwright-cli -s=dev console` to surface client-side errors.
+   - `playwright-cli -s=dev close` when done.
+
+   Use `--browser firefox` because the sandbox is Linux ARM64 and Google Chrome has no ARM64 Linux build. Firefox is what's installed in the image.
+4. If the parent PRD references a design exploration file under `design-explorations/`, open that file too and compare the live page against it.
+5. Iterate the code → reload → screenshot loop until the live page matches the intent.
+6. Stop the dev server before committing: `kill %1` (or `pkill -f "vite dev"`).
+
+Spending several iterations on visual verification is expected for frontend work — it's the only way to catch spacing, typography, and colour mistakes that typecheck and unit tests can't see.
+
 # COMMIT
 
 Make a git commit. The commit message must:
