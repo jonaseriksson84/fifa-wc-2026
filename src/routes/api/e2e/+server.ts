@@ -42,22 +42,24 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 
 	if (action === 'seed-fixtures') {
 		const db = createDb(platform!.env.DB);
-		const fixtures = (body as { action: string; fixtures: { homeTeam: string; awayTeam: string; kickoff: string; stage: string }[] }).fixtures;
-		for (const f of fixtures) {
-			await db.insert(fixture).values({
+		const fixtures = body.fixtures as { homeTeam: string; awayTeam: string; kickoff: string; stage: string }[];
+		const now = new Date().toISOString();
+		await db.insert(fixture).values(
+			fixtures.map((f) => ({
 				homeTeam: f.homeTeam,
 				awayTeam: f.awayTeam,
 				kickoff: f.kickoff,
 				stage: f.stage,
-				updatedAt: new Date().toISOString()
-			});
-		}
+				updatedAt: now
+			}))
+		);
 		return json({ ok: true });
 	}
 
 	if (action === 'set-result') {
 		const db = createDb(platform!.env.DB);
-		const { fixtureId, result: fixtureResult } = body as { action: string; fixtureId: number; result: string };
+		const fixtureId = body.fixtureId as number;
+		const fixtureResult = body.result as string;
 		await db
 			.update(fixture)
 			.set({ result: fixtureResult, updatedAt: new Date().toISOString() })
