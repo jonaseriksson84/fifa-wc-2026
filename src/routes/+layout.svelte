@@ -36,11 +36,16 @@
 	</div>
 
 	<nav class="tabs">
-		<a href="/picks" class:active={currentPath === '/picks'}>Picks</a>
-		<a href="/leaderboard" class:active={currentPath === '/leaderboard'}>Leaderboard</a>
-		<a href="/faq" class:active={currentPath === '/faq'}>FAQ</a>
+		<a href="/picks" class="tab-pill" class:active={currentPath === '/picks'}>
+			My Picks
+			{#if currentPath === '/picks' && data.openCount > 0}
+				<span class="badge">{data.openCount}</span>
+			{/if}
+		</a>
+		<a href="/leaderboard" class="tab-pill" class:active={currentPath === '/leaderboard'}>Leaderboard</a>
+		<a href="/faq" class="tab-pill" class:active={currentPath === '/faq'}>FAQ</a>
 		{#if data.user}
-			<a href="/account" class:active={currentPath === '/account'}>Account</a>
+			<a href="/account" class="tab-pill" class:active={currentPath === '/account'}>Account</a>
 		{/if}
 	</nav>
 
@@ -188,16 +193,25 @@
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
-	nav.tabs a {
+	nav.tabs a.tab-pill {
 		padding: 14px 22px;
 		color: var(--ink);
 		text-decoration: none;
 		font-size: 14px;
 		border-right: 1px solid rgba(24, 20, 13, 0.2);
 	}
-	nav.tabs a.active {
-		border-bottom: 2px solid var(--accent);
-		margin-bottom: -2px;
+	nav.tabs a.tab-pill.active {
+		background: var(--ink);
+		color: var(--paper);
+	}
+	.badge {
+		background: var(--red);
+		color: var(--paper);
+		font-family: var(--mono);
+		font-size: 10px;
+		padding: 1px 6px;
+		margin-left: 6px;
+		vertical-align: 2px;
 	}
 
 	/* Footer */
@@ -240,9 +254,14 @@
 			padding: 0 16px;
 			overflow-x: auto;
 		}
-		nav.tabs a {
+		nav.tabs a.tab-pill {
 			padding: 12px 14px;
 			font-size: 13px;
+		}
+		.badge {
+			font-size: 9px;
+			padding: 1px 5px;
+			margin-left: 4px;
 		}
 		.site-footer {
 			padding: 20px 16px;
