@@ -126,7 +126,11 @@
 				{@const names = picksByValue[v as keyof PicksByValue]}
 				{@const chipFlag = pickFlag(v)}
 				{#each names as name}
-					<span class="chip">{#if chipFlag}<span class="chip-flag">{chipFlag}</span>{/if}<strong>{buttonLabel(v)}</strong> {name}</span>
+					<span
+						class="chip"
+						class:correct={isFilled && v === fixture.result}
+						class:wrong={isFilled && v !== fixture.result}
+					>{#if chipFlag}<span class="chip-flag">{chipFlag}</span>{/if}<strong>{buttonLabel(v)}</strong> {name}</span>
 				{/each}
 			{/each}
 		</div>
@@ -485,6 +489,12 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	.others-picks .chip.correct {
+		background: rgba(45, 106, 79, 0.15);
+	}
+	.others-picks .chip.wrong {
+		background: rgba(193, 18, 31, 0.12);
 	}
 	.others-picks .chip strong {
 		font-family: var(--headline);

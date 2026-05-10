@@ -61,6 +61,31 @@ describe('ResultStamp hard-coded colours', () => {
 	});
 });
 
+describe('Chip correct/wrong tinting', () => {
+	it('adds correct class to chip when pick value matches fixture result', () => {
+		expect(stickerSvelte).toMatch(/class:correct=\{.*isFilled.*===.*fixture\.result/);
+	});
+
+	it('adds wrong class to chip when pick value does not match fixture result', () => {
+		expect(stickerSvelte).toMatch(/class:wrong=\{.*isFilled.*!==.*fixture\.result/);
+	});
+
+	it('has CSS rule for .chip.correct with green-tinted background', () => {
+		expect(stickerSvelte).toContain('.chip.correct');
+	});
+
+	it('has CSS rule for .chip.wrong with red-tinted background', () => {
+		expect(stickerSvelte).toContain('.chip.wrong');
+	});
+
+	it('uses rgba for chip tinting backgrounds', () => {
+		const correctMatch = stickerSvelte.match(/\.chip\.correct[^}]*background:\s*rgba\([^)]+\)/s);
+		const wrongMatch = stickerSvelte.match(/\.chip\.wrong[^}]*background:\s*rgba\([^)]+\)/s);
+		expect(correctMatch).not.toBeNull();
+		expect(wrongMatch).not.toBeNull();
+	});
+});
+
 describe('Sticker foil class names', () => {
 	it('derives foil class from tier using foil- prefix', () => {
 		expect(stickerSvelte).toContain('`foil-${tier}`');
