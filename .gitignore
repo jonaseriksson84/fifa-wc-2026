@@ -8,10 +8,12 @@ build/
 # TypeScript build info
 *.tsbuildinfo
 
-# Cloudflare Wrangler — local state, dev secrets, build cache
+# Cloudflare Wrangler — local state, dev secrets, build cache.
+# `.dev.vars.example` is the committed template; everything else is local.
 .wrangler/
 .dev.vars
-.dev.vars.*
+.dev.vars.local
+.dev.vars.*.local
 
 # Env / secrets (never commit)
 .env

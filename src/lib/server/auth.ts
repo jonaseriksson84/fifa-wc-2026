@@ -10,6 +10,7 @@ export function createAuth(env: App.Platform['env']) {
 	const resend = new Resend(env.RESEND_API_KEY);
 
 	return betterAuth({
+		baseURL: env.BETTER_AUTH_URL ?? 'http://localhost:5173',
 		secret: env.BETTER_AUTH_SECRET,
 		database: drizzleAdapter(db, { provider: 'sqlite', schema }),
 		emailAndPassword: { enabled: false },

@@ -1,0 +1,23 @@
+# Local development secrets. Copy this file to `.dev.vars` and fill in values.
+# `.dev.vars` is gitignored.
+#
+# In production these same names are set per-environment via:
+#   wrangler secret put <NAME> --env friends
+#   wrangler secret put <NAME> --env work
+
+# Resend — transactional email for magic-link auth.
+# Free tier: https://resend.com → API Keys → Create API Key
+RESEND_API_KEY=
+
+# api-football — fixtures + results.
+# Free tier: https://www.api-football.com (or api-sports.io)
+API_FOOTBALL_KEY=
+
+# Better Auth — session signing secret.
+# Generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=
+
+# Better Auth — public base URL for callbacks.
+# Local dev default is http://localhost:5173; in production set to the
+# deployed Worker URL (e.g. https://fifa-wc-2026-friends.<account>.workers.dev).
+BETTER_AUTH_URL=http://localhost:5173

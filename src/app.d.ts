@@ -23,6 +23,7 @@ declare global {
 				API_FOOTBALL_KEY: string;
 				RESEND_API_KEY: string;
 				BETTER_AUTH_SECRET: string;
+				BETTER_AUTH_URL?: string;
 				SENDER_EMAIL?: string;
 			};
 			context: {
