@@ -13,7 +13,7 @@
 	</div>
 
 	<h1 class="login-brand">{layoutData.poolName}</h1>
-	<p class="login-tagline"><em>the friends edition</em></p>
+	<p class="login-tagline">the friends edition</p>
 
 	{#if form?.success}
 		<div class="login-card">
@@ -85,9 +85,6 @@
 		font-style: italic;
 		color: var(--ink-mute);
 		margin: 0 0 36px;
-	}
-	.login-tagline em {
-		font-style: italic;
 	}
 
 	.login-prompt {

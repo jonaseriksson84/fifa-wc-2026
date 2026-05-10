@@ -189,13 +189,7 @@
 		color: var(--ink);
 		text-decoration: none;
 		font-size: 14px;
-		border: none;
 		border-right: 1px solid rgba(24, 20, 13, 0.2);
-		background: none;
-		font-family: var(--headline);
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		cursor: pointer;
 	}
 	nav.tabs a.active {
 		border-bottom: 2px solid var(--accent);
