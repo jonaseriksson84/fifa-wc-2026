@@ -1,1 +1,49 @@
 @import 'tailwindcss';
+
+:root {
+	--paper: #f1e6cb;
+	--paper-deep: #e6d8b5;
+	--paper-card: #fdf6e3;
+	--paper-empty: #ebdfba;
+	--ink: #18140d;
+	--ink-mute: #6c604c;
+	--green: #1d6d4d;
+	--gold: #c79321;
+	--accent: #2563eb;
+
+	--display: 'Bungee Shade', system-ui;
+	--headline: 'Anton', system-ui;
+	--body: 'Newsreader', Georgia, serif;
+	--mono: 'Space Mono', monospace;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: var(--paper);
+	color: var(--ink);
+	font-family: var(--body);
+	font-size: 17px;
+	line-height: 1.5;
+	background-image:
+		radial-gradient(rgba(24, 20, 13, 0.05) 1px, transparent 1px),
+		radial-gradient(rgba(24, 20, 13, 0.04) 1px, transparent 1px);
+	background-size: 4px 4px, 23px 23px;
+	background-position: 0 0, 11px 11px;
+	min-height: 100vh;
+	overflow-x: hidden;
+}
+
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.07 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+	opacity: 0.55;
+	mix-blend-mode: multiply;
+	z-index: 100;
+}
