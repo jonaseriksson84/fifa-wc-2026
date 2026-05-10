@@ -28,19 +28,15 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	entries.sort((a, b) => b.points - a.points);
 
 	let rank = 1;
-	const withRank = entries.map((entry, i) => {
+	const ranked = entries.map((entry, i) => {
 		if (i > 0 && entry.points < entries[i - 1].points) {
 			rank = i + 1;
 		}
-		return { ...entry, rank };
+		const tied =
+			(i > 0 && entries[i - 1].points === entry.points) ||
+			(i < entries.length - 1 && entries[i + 1].points === entry.points);
+		return { ...entry, rank, tied };
 	});
-
-	const ranked = withRank.map((entry, i) => ({
-		...entry,
-		tied:
-			(i > 0 && withRank[i - 1].rank === entry.rank) ||
-			(i < withRank.length - 1 && withRank[i + 1].rank === entry.rank)
-	}));
 
 	const currentUserId = locals.user.id;
 	const pickMap = new Map<number, { value: string; correct: boolean | null }>();
