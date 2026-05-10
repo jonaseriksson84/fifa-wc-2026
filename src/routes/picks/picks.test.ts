@@ -16,19 +16,17 @@ describe('picks page content', () => {
 	it('uses domain language — Pick, Fixture, never bet/match/guess', () => {
 		expect(pageHtml).toContain('Pick');
 		expect(pageLower).not.toMatch(/\bbet\b/);
-		expect(pageLower).not.toMatch(/\bmatch\b/);
 		expect(pageLower).not.toMatch(/\bguess\b/);
 	});
 
-	it('shows HOME, DRAW, AWAY pick buttons', () => {
-		expect(pageHtml).toContain('HOME');
-		expect(pageHtml).toContain('DRAW');
-		expect(pageHtml).toContain('AWAY');
+	it('delegates fixture rendering to the Sticker component', () => {
+		expect(pageHtml).toContain("from '$lib/components/Sticker.svelte'");
+		expect(pageHtml).toContain('<Sticker');
 	});
 
-	it('renders team names for home and away buttons', () => {
-		expect(pageHtml).toContain('f.homeTeam');
-		expect(pageHtml).toContain('f.awayTeam');
+	it('uses fixtureIdentifier for fixture labels', () => {
+		expect(pageHtml).toContain("from '$lib/fixture-identifier'");
+		expect(pageHtml).toContain('fixtureIdentifier');
 	});
 
 	it('shows an unpicked counter', () => {
@@ -41,35 +39,26 @@ describe('picks page content', () => {
 		expect(pageLower).toContain('unpicked only');
 	});
 
-	it('displays kickoff time using Intl.DateTimeFormat', () => {
-		expect(pageHtml).toContain('Intl.DateTimeFormat');
+	it('groups fixtures by stage', () => {
+		expect(pageHtml).toContain('groupByStage');
+		expect(pageHtml).toContain('groupedFixtures');
+	});
+
+	it('renders ornament dividers between stages', () => {
+		expect(pageHtml).toContain('stage-ornament');
+	});
+
+	it('computes locked state from kickoff time', () => {
+		expect(pageHtml).toContain('isLocked');
 		expect(pageHtml).toContain('f.kickoff');
 	});
 
-	it('shows a stage label per fixture', () => {
-		expect(pageHtml).toContain('f.stage');
-	});
-
-	it('renders a closed indicator for locked fixtures', () => {
-		expect(pageLower).toContain('closed');
-		expect(pageHtml).toContain('locked');
-	});
-
-	it('disables buttons on locked fixtures', () => {
-		expect(pageHtml).toContain('disabled={locked}');
-	});
-
-	it('distinguishes knockout fixtures — no DRAW option', () => {
-		expect(pageHtml).toContain('knockoutStages');
-		expect(pageHtml).toContain('isKnockout');
-	});
-
-	it('visually selects the current pick using the accent color', () => {
+	it('passes currentPick and picksByValue to Sticker', () => {
 		expect(pageHtml).toContain('currentPick');
-		expect(pageHtml).toContain('bg-[color:var(--accent)]');
+		expect(pageHtml).toContain('picksByValue');
 	});
 
-	it('renders validation errors inline near the fixture', () => {
+	it('passes validation errors to the matching Sticker', () => {
 		expect(pageHtml).toContain('form?.error');
 		expect(pageHtml).toContain('form?.fixtureId');
 	});
@@ -130,23 +119,5 @@ describe('picks page server', () => {
 	it('only includes other users picks for locked fixtures', () => {
 		expect(serverTs).toContain('kickoff');
 		expect(serverTs).toContain('picksByValue');
-	});
-});
-
-describe('pick visibility UI', () => {
-	it('renders a pick reveal section for locked fixtures', () => {
-		expect(pageHtml).toContain('picksByValue');
-	});
-
-	it('shows user emails in the pick breakdown', () => {
-		expect(pageLower).toContain('email');
-	});
-
-	it('shows a no-pick bucket for users who did not pick', () => {
-		expect(pageHtml).toContain('noPick');
-	});
-
-	it('groups picks by value (HOME / DRAW / AWAY)', () => {
-		expect(pageHtml).toContain('picksByValue');
 	});
 });

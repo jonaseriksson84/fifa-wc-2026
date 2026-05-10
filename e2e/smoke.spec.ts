@@ -59,11 +59,11 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		await expect(page).toHaveURL('/picks');
 		await expect(page.locator('h1')).toContainText('My Picks');
 
-		const firstFixture = page.locator('li').first();
-		await expect(firstFixture).toContainText('Sweden');
-		const homeButton = firstFixture.locator('button', { hasText: 'Sweden' });
+		const firstSticker = page.locator('article.sticker').first();
+		await expect(firstSticker).toContainText('Sweden');
+		const homeButton = firstSticker.locator('button.pick-btn', { hasText: 'Sweden' });
 		await homeButton.click();
-		await expect(homeButton).toHaveClass(/bg-\[color:var\(--accent\)\]/);
+		await expect(homeButton).toHaveClass(/selected/);
 
 		const setResultRes = await request.post('/api/e2e', {
 			data: { action: 'set-result', fixtureId: 1, result: 'HOME' }
