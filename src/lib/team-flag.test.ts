@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { flagEmoji } from './team-flag';
+import { WC_TEAMS } from './wc-teams';
+
+describe('team-flag shared source', () => {
+	it('has a flag entry for every WC_TEAMS member', () => {
+		for (const team of WC_TEAMS) {
+			expect(flagEmoji(team)).not.toBe('');
+		}
+	});
+});
 
 describe('flagEmoji', () => {
 	it('returns US flag for USA', () => {

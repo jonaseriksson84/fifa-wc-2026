@@ -6,7 +6,8 @@
 --   - 6 future Group fixtures (HOME / DRAW / AWAY pickable).
 --   - 1 future fixture per knockout stage so every foil tier is exercised:
 --       R32 (pearl), R16 (pearl), QF (holo), SF (holo), 3rd-place (gold), Final (legendary).
---     Knockout fixtures only allow HOME / AWAY (no DRAW).
+--     R32 uses real team names (pickable). R16–Final use placeholder strings
+--     (TBD — locked by the is-known-team check, not pickable).
 --
 -- Walkthrough:
 --   1. npm run dev:reset
@@ -40,15 +41,15 @@ INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, updated_at)
   -- Group matchday 3
   ('England',   'USA',        datetime('now', '+5 days'),  'Group',     3, datetime('now')),
   ('Spain',     'Costa Rica', datetime('now', '+5 days'),  'Group',     3, datetime('now')),
-  -- R32 (pearl, 2pt)
+  -- R32 (pearl, 2pt) — known teams, pickable
   ('Netherlands','Senegal',   datetime('now', '+10 days'), 'R32',       NULL, datetime('now')),
-  -- R16 (pearl, 2pt)
-  ('Portugal',  'Switzerland',datetime('now', '+12 days'), 'R16',       NULL, datetime('now')),
-  -- QF (holo, 3pt)
-  ('Brazil',    'Croatia',    datetime('now', '+14 days'), 'QF',        NULL, datetime('now')),
-  -- SF (holo, 3pt)
-  ('France',    'Morocco',    datetime('now', '+18 days'), 'SF',        NULL, datetime('now')),
-  -- 3rd-place (gold, 4pt)
-  ('Croatia',   'Morocco',    datetime('now', '+22 days'), '3rd-place', NULL, datetime('now')),
-  -- Final (legendary, 6pt)
-  ('Argentina', 'France',     datetime('now', '+24 days'), 'Final',     NULL, datetime('now'));
+  -- R16 (pearl, 2pt) — TBD, bracket not drawn
+  ('Winner Group A','Runner-up Group B', datetime('now', '+12 days'), 'R16', NULL, datetime('now')),
+  -- QF (holo, 3pt) — TBD
+  ('Winner R32 - Match 1','Winner R32 - Match 2', datetime('now', '+14 days'), 'QF', NULL, datetime('now')),
+  -- SF (holo, 3pt) — TBD
+  ('Winner QF1','Winner QF2', datetime('now', '+18 days'), 'SF',        NULL, datetime('now')),
+  -- 3rd-place (gold, 4pt) — TBD
+  ('Loser SF1', 'Loser SF2',  datetime('now', '+22 days'), '3rd-place', NULL, datetime('now')),
+  -- Final (legendary, 6pt) — TBD
+  ('Winner SF1','Winner SF2', datetime('now', '+24 days'), 'Final',     NULL, datetime('now'));

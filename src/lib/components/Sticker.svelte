@@ -4,6 +4,7 @@
 	import EmptySlot from './EmptySlot.svelte';
 	import { foilTier } from '$lib/foil-tier';
 	import { flagEmoji } from '$lib/team-flag';
+	import { isKnownTeam } from '$lib/is-known-team';
 
 	type PicksByValue = {
 		HOME: string[];
@@ -31,6 +32,7 @@
 	let tier = $derived(foilTier(fixture.stage));
 	let isKnockout = $derived(tier !== 'paper');
 	let isFilled = $derived(locked && fixture.result !== null);
+	let isTbd = $derived(!isKnownTeam(fixture.homeTeam) || !isKnownTeam(fixture.awayTeam));
 
 	let foilClass = $derived(`foil-${tier}`);
 
@@ -55,7 +57,7 @@
 
 <article
 	class="sticker {isFilled ? 'filled' : 'empty'} {foilClass}"
-	aria-label="{fixture.homeTeam} vs {fixture.awayTeam} — {locked ? 'locked' : 'open'}{isFilled && currentPick === fixture.result ? ' — correct' : isFilled && currentPick ? ' — missed' : ''}"
+	aria-label="{isTbd ? 'TBD — bracket not drawn yet' : `${fixture.homeTeam} vs ${fixture.awayTeam}`} — {locked ? 'locked' : 'open'}{isFilled && currentPick === fixture.result ? ' — correct' : isFilled && currentPick ? ' — missed' : ''}"
 >
 	{#if isFilled}
 		<span class="corner">FT · STUCK</span>
@@ -70,38 +72,46 @@
 		<span>{kickoffDisplay}</span>
 	</div>
 
-	<div class="matchup">
-		<div class="team">
-			<span class="team-flag">{flagEmoji(fixture.homeTeam)}</span>
-			<span class="team-name">{fixture.homeTeam}</span>
+	{#if isTbd}
+		<div class="sticker-tbd">
+			<span class="tbd-headline">TBD</span>
+			<span class="tbd-sub">Bracket not drawn yet</span>
+			<span class="slot-hint">{fixture.homeTeam} vs {fixture.awayTeam}</span>
 		</div>
-		<div class="versus">vs</div>
-		<div class="team">
-			<span class="team-name">{fixture.awayTeam}</span>
-			<span class="team-flag">{flagEmoji(fixture.awayTeam)}</span>
-		</div>
-	</div>
-
-	{#if !isFilled}
-		<div class="pick-row" class:knockout={isKnockout}>
-			{#each pickValues as value}
-				<form method="POST" action="?/pick" use:enhance>
-					<input type="hidden" name="fixtureId" value={fixture.id} />
-					<input type="hidden" name="value" value={value} />
-					<button
-						type="submit"
-						disabled={locked}
-						class="pick-btn"
-						class:selected={currentPick === value}
-						aria-pressed={currentPick === value}
-					>
-						{buttonLabel(value)}
-					</button>
-				</form>
-			{/each}
+	{:else}
+		<div class="matchup">
+			<div class="team">
+				<span class="team-flag">{flagEmoji(fixture.homeTeam)}</span>
+				<span class="team-name">{fixture.homeTeam}</span>
+			</div>
+			<div class="versus">vs</div>
+			<div class="team">
+				<span class="team-name">{fixture.awayTeam}</span>
+				<span class="team-flag">{flagEmoji(fixture.awayTeam)}</span>
+			</div>
 		</div>
 
-		<EmptySlot stage={fixture.stage} />
+		{#if !isFilled}
+			<div class="pick-row" class:knockout={isKnockout}>
+				{#each pickValues as value}
+					<form method="POST" action="?/pick" use:enhance>
+						<input type="hidden" name="fixtureId" value={fixture.id} />
+						<input type="hidden" name="value" value={value} />
+						<button
+							type="submit"
+							disabled={locked}
+							class="pick-btn"
+							class:selected={currentPick === value}
+							aria-pressed={currentPick === value}
+						>
+							{buttonLabel(value)}
+						</button>
+					</form>
+				{/each}
+			</div>
+
+			<EmptySlot stage={fixture.stage} />
+		{/if}
 	{/if}
 
 	{#if isFilled}
@@ -344,6 +354,45 @@
 		opacity: 0.65;
 		position: relative;
 		z-index: 1;
+	}
+
+	/* TBD block */
+	.sticker-tbd {
+		margin: 10px 0 14px;
+		padding: 18px 12px 14px;
+		border: 2px dashed var(--ink);
+		background: rgba(24, 20, 13, 0.04);
+		text-align: center;
+		position: relative;
+		z-index: 1;
+	}
+	.tbd-headline {
+		display: block;
+		font-family: var(--display);
+		font-size: 28px;
+		letter-spacing: 0.12em;
+		color: var(--ink);
+		opacity: 0.7;
+		line-height: 1;
+		margin-bottom: 4px;
+	}
+	.tbd-sub {
+		display: block;
+		font-family: var(--mono);
+		font-size: 11px;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		color: var(--ink-mute);
+		margin-bottom: 10px;
+	}
+	.slot-hint {
+		display: block;
+		font-family: var(--mono);
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		color: var(--ink-mute);
+		opacity: 0.7;
+		font-variant: small-caps;
 	}
 
 	/* Matchup */

@@ -82,6 +82,48 @@ describe('Chip correct/wrong tinting', () => {
 	});
 });
 
+describe('Sticker TBD layout for unknown teams', () => {
+	it('imports isKnownTeam from is-known-team module', () => {
+		expect(stickerSvelte).toContain("from '$lib/is-known-team'");
+	});
+
+	it('derives a isTbd flag from isKnownTeam checks', () => {
+		expect(stickerSvelte).toMatch(/isTbd/);
+	});
+
+	it('renders a .sticker-tbd block for TBD stickers', () => {
+		expect(stickerSvelte).toContain('.sticker-tbd');
+	});
+
+	it('shows "TBD" headline text in the TBD block', () => {
+		expect(stickerSvelte).toContain('TBD');
+	});
+
+	it('shows bracket slot hint caption in the TBD block', () => {
+		expect(stickerSvelte).toContain('slot-hint');
+	});
+
+	it('pick-row is inside the else branch of the isTbd conditional', () => {
+		const tbdIdx = stickerSvelte.indexOf('{#if isTbd}');
+		const elseIdx = stickerSvelte.indexOf('{:else}', tbdIdx);
+		const pickRowIdx = stickerSvelte.indexOf('pick-row', elseIdx);
+		expect(tbdIdx).toBeGreaterThan(-1);
+		expect(elseIdx).toBeGreaterThan(tbdIdx);
+		expect(pickRowIdx).toBeGreaterThan(elseIdx);
+	});
+
+	it('matchup is inside the else branch of the isTbd conditional', () => {
+		const tbdIdx = stickerSvelte.indexOf('{#if isTbd}');
+		const elseIdx = stickerSvelte.indexOf('{:else}', tbdIdx);
+		const matchupIdx = stickerSvelte.indexOf('class="matchup"', elseIdx);
+		expect(matchupIdx).toBeGreaterThan(elseIdx);
+	});
+
+	it('preserves foil class on article regardless of TBD state', () => {
+		expect(stickerSvelte).toContain('{foilClass}');
+	});
+});
+
 describe('Sticker foil class names', () => {
 	it('derives foil class from tier using foil- prefix', () => {
 		expect(stickerSvelte).toContain('`foil-${tier}`');

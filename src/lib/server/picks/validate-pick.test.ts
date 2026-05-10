@@ -4,13 +4,15 @@ import { validatePick } from './validate-pick';
 const groupFixture = {
 	id: 1,
 	stage: 'Group',
-	kickoff: '2026-06-11T18:00:00Z'
+	kickoff: '2026-06-11T18:00:00Z',
+	homeTeam: 'Sweden',
+	awayTeam: 'Brazil'
 };
 
 const knockoutStages = ['R32', 'R16', 'QF', 'SF', '3rd-place', 'Final'] as const;
 
 function makeKnockoutFixture(stage: string) {
-	return { id: 2, stage, kickoff: '2026-07-10T20:00:00Z' };
+	return { id: 2, stage, kickoff: '2026-07-10T20:00:00Z', homeTeam: 'France', awayTeam: 'Germany' };
 }
 
 const beforeKickoff = new Date('2026-06-11T17:59:59.000Z');
@@ -61,6 +63,26 @@ describe('validatePick', () => {
 					reason: 'draw_not_allowed'
 				});
 			}
+		});
+	});
+
+	describe('TBD fixtures (teams not yet known)', () => {
+		it('rejects pick when home team is a placeholder', () => {
+			const f = { ...groupFixture, homeTeam: 'Winner Group A' };
+			const result = validatePick(f, 'HOME', beforeKickoff);
+			expect(result).toEqual({ valid: false, reason: 'teams_not_known' });
+		});
+
+		it('rejects pick when away team is a placeholder', () => {
+			const f = { ...groupFixture, awayTeam: 'Runner-up Group B' };
+			const result = validatePick(f, 'HOME', beforeKickoff);
+			expect(result).toEqual({ valid: false, reason: 'teams_not_known' });
+		});
+
+		it('rejects pick when both teams are placeholders', () => {
+			const f = { ...groupFixture, homeTeam: 'Winner Group A', awayTeam: 'Runner-up Group B' };
+			const result = validatePick(f, 'HOME', beforeKickoff);
+			expect(result).toEqual({ valid: false, reason: 'teams_not_known' });
 		});
 	});
 
