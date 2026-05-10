@@ -87,4 +87,53 @@ describe('FAQ page structure', () => {
 		expect(faqHtml).not.toContain('$effect');
 		expect(faqHtml).not.toContain('onclick');
 	});
+
+	it('uses paper-card panels with ink borders for FAQ sections', () => {
+		expect(faqHtml).toContain('faq-card');
+	});
+
+	it('uses Anton headline font for section headings', () => {
+		expect(faqHtml).toMatch(/font-family:\s*var\(--headline\)/);
+	});
+
+	it('includes pool name in welcome copy', () => {
+		expect(faqHtml).toContain('poolName');
+	});
+});
+
+describe('Sticker tiers section', () => {
+	it('has a Sticker tiers heading', () => {
+		expect(faqHtml).toContain('Sticker tiers');
+	});
+
+	it('lists all five foil tiers', () => {
+		expect(faqLower).toContain('paper');
+		expect(faqLower).toContain('pearl');
+		expect(faqLower).toContain('holo');
+		expect(faqLower).toContain('gold');
+		expect(faqLower).toContain('legendary');
+	});
+
+	it('shows correct stages for each tier', () => {
+		expect(faqHtml).toContain('Group');
+		expect(faqHtml).toMatch(/R32\s*\/?\s*R16/);
+		expect(faqHtml).toMatch(/QF\s*\/?\s*SF/);
+		expect(faqHtml).toContain('3rd-place');
+		expect(faqHtml).toContain('Final');
+	});
+
+	it('shows correct point values for each tier', () => {
+		expect(faqHtml).toContain('1 pt');
+		expect(faqHtml).toContain('2 pts');
+		expect(faqHtml).toContain('3 pts');
+		expect(faqHtml).toContain('5 pts');
+	});
+
+	it('uses foil swatch CSS classes matching the leaderboard legend', () => {
+		expect(faqHtml).toContain('swatch-paper');
+		expect(faqHtml).toContain('swatch-pearl');
+		expect(faqHtml).toContain('swatch-holo');
+		expect(faqHtml).toContain('swatch-gold');
+		expect(faqHtml).toContain('swatch-legendary');
+	});
 });
