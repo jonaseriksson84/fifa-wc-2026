@@ -2,7 +2,6 @@
 	import Sticker from '$lib/components/Sticker.svelte';
 	import Standings from '$lib/components/Standings.svelte';
 	import StickerTiersLegend from '$lib/components/StickerTiersLegend.svelte';
-	import { fixtureIdentifier } from '$lib/fixture-identifier';
 	import { isLocked, isOpenForPicks } from '$lib/lock-time';
 	import { getStage } from '$lib/stage';
 	import type { PageData, ActionData } from './$types';
@@ -43,14 +42,6 @@
 			return a - b;
 		});
 	}
-
-	let identifiers = $derived.by(() => {
-		const map = new Map<number, string>();
-		for (const [, stageFixtures] of groupByStage(data.fixtures)) {
-			stageFixtures.forEach((f, i) => map.set(f.id, fixtureIdentifier(f.stage, i)));
-		}
-		return map;
-	});
 
 	let visibleFixtures = $derived(
 		showUnpickedOnly
@@ -114,7 +105,7 @@
 									{@const locked = isLocked(f.kickoff, new Date())}
 									<Sticker
 										fixture={f}
-										identifier={identifiers.get(f.id) ?? ''}
+										identifier={f.identifier}
 										currentPick={f.currentPick}
 										picksByValue={f.picksByValue}
 										{locked}
@@ -130,7 +121,7 @@
 								{@const locked = isLocked(f.kickoff, new Date())}
 								<Sticker
 									fixture={f}
-									identifier={identifiers.get(f.id) ?? ''}
+									identifier={f.identifier}
 									currentPick={f.currentPick}
 									picksByValue={f.picksByValue}
 									{locked}

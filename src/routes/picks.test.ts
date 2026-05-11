@@ -33,9 +33,10 @@ describe('picks page content', () => {
 		expect(pageHtml).toContain('<Sticker');
 	});
 
-	it('uses fixtureIdentifier for fixture labels', () => {
-		expect(pageHtml).toContain("from '$lib/fixture-identifier'");
-		expect(pageHtml).toContain('fixtureIdentifier');
+	it('attaches fixture identifiers server-side and passes them to Sticker', () => {
+		expect(serverTs).toContain("from '$lib/fixture-identifier'");
+		expect(serverTs).toContain('fixtureIdentifier');
+		expect(pageHtml).toContain('identifier={f.identifier}');
 	});
 
 	it('shows an unpicked counter', () => {

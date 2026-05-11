@@ -7,6 +7,7 @@ import { getAllPicks, getPicksForUser, upsertPick } from '$lib/server/picks/pick
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries, topN } from '$lib/top-leaderboard';
+import { fixtureIdentifier } from '$lib/fixture-identifier';
 import { isTBDFixture } from '$lib/is-known-team';
 import { isOpenForPicks } from '$lib/lock-time';
 import { pickRevealIndex } from '$lib/pick-reveal';
@@ -40,7 +41,14 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 	});
 
-	const pickable = enriched.filter((f) => isOpenForPicks(f.kickoff, now) && !isTBDFixture(f));
+	const stageCounts = new Map<string, number>();
+	const labelled = enriched.map((f) => {
+		const idx = stageCounts.get(f.stage) ?? 0;
+		stageCounts.set(f.stage, idx + 1);
+		return { ...f, identifier: fixtureIdentifier(f.stage, idx) };
+	});
+
+	const pickable = labelled.filter((f) => isOpenForPicks(f.kickoff, now) && !isTBDFixture(f));
 	const unpickedCount = pickable.filter((f) => f.currentPick === null).length;
 	const pickableCount = pickable.length;
 
@@ -56,10 +64,10 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	const topLeaderboard = topN(ranked, 10);
 
 	return {
-		fixtures: enriched,
+		fixtures: labelled,
 		unpickedCount,
 		pickableCount,
-		totalCount: enriched.length,
+		totalCount: labelled.length,
 		topLeaderboard,
 		currentUserId: locals.user?.id ?? null
 	};
