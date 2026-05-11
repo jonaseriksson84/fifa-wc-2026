@@ -1,5 +1,6 @@
 name = "fifa-wc-2026"
 compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
 main = ".svelte-kit/cloudflare/_worker.js"
 assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 
@@ -10,12 +11,19 @@ POOL_ACCENT_HEX = "#2563eb"
 [triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
 
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+
 [env.friends]
 name = "fifa-wc-2026-friends"
 
 [env.friends.vars]
 POOL_NAME = "WC26 Jobbiga Bets"
-POOL_ACCENT_HEX = "#27D3F5"
+POOL_ACCENT_HEX = "#0369A1"
 SENDER_EMAIL = "noreply@mynameisjonas.dev"
 BETTER_AUTH_URL = "https://wc26.mynameisjonas.dev"
 
@@ -25,6 +33,13 @@ custom_domain = true
 
 [env.friends.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
+
+[env.friends.observability.logs]
+enabled = true
+invocation_logs = true
+
+[env.friends.observability.traces]
+enabled = false
 
 [[env.friends.d1_databases]]
 binding = "DB"
@@ -37,7 +52,7 @@ name = "fifa-wc-2026-work"
 
 [env.work.vars]
 POOL_NAME = "WC26 Office Picks"
-POOL_ACCENT_HEX = "#F54927"
+POOL_ACCENT_HEX = "#0284C7"
 SENDER_EMAIL = "noreply@mynameisjonas.dev"
 ALLOWED_EMAIL_DOMAINS = "embark-studios.com"
 BETTER_AUTH_URL = "https://wc26-embark.mynameisjonas.dev"
@@ -48,6 +63,13 @@ custom_domain = true
 
 [env.work.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
+
+[env.work.observability.logs]
+enabled = true
+invocation_logs = true
+
+[env.work.observability.traces]
+enabled = false
 
 [[env.work.d1_databases]]
 binding = "DB"

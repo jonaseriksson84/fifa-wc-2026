@@ -36,6 +36,7 @@ playwright/.cache/
 .vscode/
 .idea/
 .cursor/
+.claude/
 .aider*
 
 # OS noise
