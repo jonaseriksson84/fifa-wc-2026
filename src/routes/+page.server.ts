@@ -7,7 +7,7 @@ import { getAllPicks, getPicksForUser, upsertPick } from '$lib/server/picks/pick
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries, topN } from '$lib/top-leaderboard';
-import { isKnownTeam } from '$lib/is-known-team';
+import { isTBDFixture } from '$lib/is-known-team';
 import { isOpenForPicks } from '$lib/lock-time';
 import { pickRevealIndex } from '$lib/pick-reveal';
 import { getStage } from '$lib/stage';
@@ -40,9 +40,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 	});
 
-	const pickable = enriched.filter(
-		(f) => isOpenForPicks(f.kickoff, now) && isKnownTeam(f.homeTeam) && isKnownTeam(f.awayTeam)
-	);
+	const pickable = enriched.filter((f) => isOpenForPicks(f.kickoff, now) && !isTBDFixture(f));
 	const unpickedCount = pickable.filter((f) => f.currentPick === null).length;
 	const pickableCount = pickable.length;
 

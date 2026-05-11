@@ -4,7 +4,7 @@
 	import EmptySlot from './EmptySlot.svelte';
 	import { getStage } from '$lib/stage';
 	import { flagEmoji } from '$lib/team-flag';
-	import { isKnownTeam } from '$lib/is-known-team';
+	import { isTBDFixture } from '$lib/is-known-team';
 	import type { PicksByValue } from '$lib/pick-reveal';
 
 	let {
@@ -29,7 +29,7 @@
 	let tier = $derived(stageInfo.foilTier);
 	let isKnockout = $derived(stageInfo.isKnockout);
 	let isFilled = $derived(locked && fixture.result !== null);
-	let isTbd = $derived(!isKnownTeam(fixture.homeTeam) || !isKnownTeam(fixture.awayTeam));
+	let isTbd = $derived(isTBDFixture(fixture));
 
 	let foilClass = $derived(`foil-${tier}`);
 

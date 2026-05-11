@@ -1,4 +1,4 @@
-import { isKnownTeam } from '$lib/is-known-team';
+import { isTBDFixture } from '$lib/is-known-team';
 import { isLocked } from '$lib/lock-time';
 import { getStage } from '$lib/stage';
 
@@ -21,7 +21,7 @@ export function validatePick(
 	value: PickValue,
 	now: Date
 ): ValidationResult {
-	if (!isKnownTeam(fixture.homeTeam) || !isKnownTeam(fixture.awayTeam)) {
+	if (isTBDFixture(fixture)) {
 		return { valid: false, reason: 'teams_not_known' };
 	}
 

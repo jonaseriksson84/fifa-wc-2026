@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isKnownTeam } from './is-known-team';
+import { isKnownTeam, isTBDFixture } from './is-known-team';
 import { WC_TEAMS } from './wc-teams';
 
 describe('WC_TEAMS constant', () => {
@@ -43,5 +43,25 @@ describe('isKnownTeam', () => {
 	it('returns false for partial matches', () => {
 		expect(isKnownTeam('South')).toBe(false);
 		expect(isKnownTeam('Korea')).toBe(false);
+	});
+});
+
+describe('isTBDFixture', () => {
+	it('is false when both teams are known qualifiers', () => {
+		expect(isTBDFixture({ homeTeam: 'Brazil', awayTeam: 'France' })).toBe(false);
+	});
+
+	it('is true when only the home team is a placeholder', () => {
+		expect(isTBDFixture({ homeTeam: 'Winner Group A', awayTeam: 'France' })).toBe(true);
+	});
+
+	it('is true when only the away team is a placeholder', () => {
+		expect(isTBDFixture({ homeTeam: 'Brazil', awayTeam: 'Runner-up Group B' })).toBe(true);
+	});
+
+	it('is true when both teams are placeholders', () => {
+		expect(
+			isTBDFixture({ homeTeam: 'Winner R32 - Match 1', awayTeam: 'Winner R32 - Match 2' })
+		).toBe(true);
 	});
 });

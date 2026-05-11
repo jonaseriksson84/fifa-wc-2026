@@ -267,7 +267,7 @@ describe('picks page server', () => {
 	});
 
 	it('excludes TBD fixtures from pickable count', () => {
-		expect(serverTs).toContain('isKnownTeam');
+		expect(serverTs).toContain('isTBDFixture');
 	});
 
 	it('returns a teams_not_known error when picking a TBD fixture', () => {
