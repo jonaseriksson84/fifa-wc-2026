@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { createDb } from '$lib/server/db';
-import { fixture, pick, user } from '$lib/server/db/schema';
+import { fixture, user } from '$lib/server/db/schema';
+import { getAllPicks } from '$lib/server/picks/pick-repository';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries } from '$lib/top-leaderboard';
 import { getStage } from '$lib/stage';
@@ -10,7 +11,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 
 	const [allFixtures, allPicks, allUsers] = await Promise.all([
 		db.select().from(fixture),
-		db.select().from(pick),
+		getAllPicks(db),
 		db.select({ id: user.id, name: user.name, email: user.email, displayName: user.displayName }).from(user)
 	]);
 

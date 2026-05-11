@@ -74,13 +74,16 @@ describe('picks page content', () => {
 });
 
 describe('pick repository', () => {
-	it('exports getPicksForFixture', () => {
-		expect(repoTs).toContain('export async function getPicksForFixture');
+	it('exports getAllPicks', () => {
+		expect(repoTs).toContain('export async function getAllPicks');
 	});
 
-	it('getPicksForFixture joins pick with user to retrieve email', () => {
-		expect(repoTs).toContain('user');
-		expect(repoTs).toContain('email');
+	it('exports getPicksForUser', () => {
+		expect(repoTs).toContain('export async function getPicksForUser');
+	});
+
+	it('exports upsertPick', () => {
+		expect(repoTs).toContain('export async function upsertPick');
 	});
 });
 

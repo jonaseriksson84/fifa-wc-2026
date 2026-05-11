@@ -1,18 +1,14 @@
 import { eq } from 'drizzle-orm';
-import { pick, user } from '$lib/server/db/schema';
+import { pick } from '$lib/server/db/schema';
 import type { Db } from '$lib/server/db';
 import type { PickValue } from './validate-pick';
 
-export async function getPicksForUser(db: Db, userId: string) {
-	return db.select().from(pick).where(eq(pick.userId, userId));
+export async function getAllPicks(db: Db) {
+	return db.select().from(pick);
 }
 
-export async function getPicksForFixture(db: Db, fixtureId: number) {
-	return db
-		.select({ email: user.email, name: user.name, displayName: user.displayName, value: pick.value })
-		.from(pick)
-		.innerJoin(user, eq(pick.userId, user.id))
-		.where(eq(pick.fixtureId, fixtureId));
+export async function getPicksForUser(db: Db, userId: string) {
+	return db.select().from(pick).where(eq(pick.userId, userId));
 }
 
 export async function upsertPick(db: Db, userId: string, fixtureId: number, value: PickValue) {

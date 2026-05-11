@@ -2,8 +2,8 @@ import { redirect, fail } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 import { createDb } from '$lib/server/db';
-import { fixture, pick as pickTable, user } from '$lib/server/db/schema';
-import { getPicksForUser, upsertPick } from '$lib/server/picks/pick-repository';
+import { fixture, user } from '$lib/server/db/schema';
+import { getAllPicks, getPicksForUser, upsertPick } from '$lib/server/picks/pick-repository';
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries, topN } from '$lib/top-leaderboard';
@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		db.select().from(fixture),
 		locals.user ? getPicksForUser(db, locals.user.id) : Promise.resolve([]),
 		db.select({ id: user.id, email: user.email, name: user.name, displayName: user.displayName }).from(user),
-		db.select().from(pickTable)
+		getAllPicks(db)
 	]);
 
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
