@@ -55,8 +55,8 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		await page.waitForURL('**/account');
 		await expect(page.locator('header')).toContainText(TEST_EMAIL.split('@')[0]);
 
-		await page.click('a[href="/picks"]');
-		await expect(page).toHaveURL('/picks');
+		await page.click('a[href="/"]');
+		await expect(page).toHaveURL('/');
 		await expect(page.locator('h1')).toContainText('My Picks');
 
 		const firstSticker = page.locator('article.sticker').first();
@@ -80,19 +80,19 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		await expect(row).toContainText('1');
 	});
 
-	test('guest can view /picks without signing in', async ({ page, request }) => {
+	test('guest can view / without signing in', async ({ page, request }) => {
 		await request.post('/api/e2e', { data: { action: 'reset' } });
 		await request.post('/api/e2e', { data: { action: 'seed-fixtures', fixtures: FIXTURES } });
 
-		await page.goto('/picks');
-		await expect(page).toHaveURL('/picks');
+		await page.goto('/');
+		await expect(page).toHaveURL('/');
 		await expect(page.locator('h1')).toContainText('My Picks');
 		await expect(page.locator('article.sticker').first()).toContainText('Sweden');
 
 		const pickButton = page.locator('a.pick-btn.guest-link').first();
 		await expect(pickButton).toBeVisible();
 		await pickButton.click();
-		await expect(page).toHaveURL(/\/login\?then=\/picks/);
+		await expect(page).toHaveURL(/\/login\?then=\//);
 	});
 
 	test('guest can view /leaderboard without signing in', async ({ page, request }) => {
@@ -136,7 +136,7 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		await expect(page.locator('input[name="displayName"]')).toHaveValue(displayName);
 		await expect(page.locator('header')).toContainText(displayName);
 
-		await page.click('a[href="/picks"]');
+		await page.click('a[href="/"]');
 		const firstSticker = page.locator('article.sticker').first();
 		const homeButton = firstSticker.locator('button.pick-btn', { hasText: 'Sweden' });
 		await homeButton.click();

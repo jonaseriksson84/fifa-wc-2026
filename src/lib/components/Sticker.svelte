@@ -97,7 +97,7 @@
 			<div class="pick-row" class:knockout={isKnockout}>
 				{#each pickValues as value}
 					{#if guest}
-						<a href="/login?then=/picks" class="pick-btn guest-link">
+						<a href="/login?then=/" class="pick-btn guest-link">
 							{buttonLabel(value)}
 						</a>
 					{:else}
