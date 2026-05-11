@@ -127,8 +127,20 @@ describe('favicon', () => {
 		expect(existsSync(resolve(root, 'static/favicon.png'))).toBe(true);
 	});
 
+	it('apple-touch-icon.png exists in static/', () => {
+		expect(existsSync(resolve(root, 'static/apple-touch-icon.png'))).toBe(true);
+	});
+
+	it('app.html references favicon.svg', () => {
+		expect(appHtml).toContain('favicon.svg');
+	});
+
 	it('app.html references favicon.png', () => {
 		expect(appHtml).toContain('favicon.png');
+	});
+
+	it('app.html references apple-touch-icon', () => {
+		expect(appHtml).toContain('apple-touch-icon');
 	});
 
 	it('favicon.svg is a valid SVG', () => {
