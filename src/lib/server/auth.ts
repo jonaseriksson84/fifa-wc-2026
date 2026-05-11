@@ -4,10 +4,12 @@ import { magicLink } from 'better-auth/plugins';
 import { drizzle } from 'drizzle-orm/d1';
 import { Resend } from 'resend';
 import * as schema from './db/schema';
+import { isEmailAllowed, parseAllowedDomains } from './email-domain';
 
 export function createAuth(env: App.Platform['env']) {
 	const db = drizzle(env.DB, { schema });
 	const resend = new Resend(env.RESEND_API_KEY);
+	const allowedDomains = parseAllowedDomains(env.ALLOWED_EMAIL_DOMAINS);
 
 	return betterAuth({
 		baseURL: env.BETTER_AUTH_URL ?? 'http://localhost:5173',
@@ -17,6 +19,7 @@ export function createAuth(env: App.Platform['env']) {
 		plugins: [
 			magicLink({
 				sendMagicLink: async ({ email, url }) => {
+					if (!isEmailAllowed(email, allowedDomains)) return;
 					await resend.emails.send({
 						from: env.SENDER_EMAIL ?? 'onboarding@resend.dev',
 						to: email,

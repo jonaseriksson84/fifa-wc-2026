@@ -1,5 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { createAuth } from '$lib/server/auth';
+import { isEmailAllowed, parseAllowedDomains } from '$lib/server/email-domain';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -12,6 +13,15 @@ export const actions: Actions = {
 		const email = data.get('email')?.toString();
 
 		if (!email) return fail(400, { error: 'Email is required', email: '' });
+
+		const allowedDomains = parseAllowedDomains(platform!.env.ALLOWED_EMAIL_DOMAINS);
+		if (!isEmailAllowed(email, allowedDomains)) {
+			const list = allowedDomains.map((d) => `@${d}`).join(' or ');
+			return fail(403, {
+				error: `Sign-in is restricted to ${list} email addresses.`,
+				email
+			});
+		}
 
 		const auth = createAuth(platform!.env);
 

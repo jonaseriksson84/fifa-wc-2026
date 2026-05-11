@@ -28,6 +28,7 @@ declare global {
 				SENDER_EMAIL?: string;
 				POOL_NAME: string;
 				POOL_ACCENT_HEX: string;
+				ALLOWED_EMAIL_DOMAINS?: string;
 				E2E_TEST?: string;
 			};
 			context: {

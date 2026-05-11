@@ -17,6 +17,11 @@ name = "fifa-wc-2026-friends"
 POOL_NAME = "WC26 Jobbiga Bets"
 POOL_ACCENT_HEX = "#27D3F5"
 SENDER_EMAIL = "noreply@mynameisjonas.dev"
+BETTER_AUTH_URL = "https://wc26.mynameisjonas.dev"
+
+[[env.friends.routes]]
+pattern = "wc26.mynameisjonas.dev"
+custom_domain = true
 
 [env.friends.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
@@ -34,6 +39,12 @@ name = "fifa-wc-2026-work"
 POOL_NAME = "WC26 Office Picks"
 POOL_ACCENT_HEX = "#F54927"
 SENDER_EMAIL = "noreply@mynameisjonas.dev"
+ALLOWED_EMAIL_DOMAINS = "embark-studios.com"
+BETTER_AUTH_URL = "https://wc26-embark.mynameisjonas.dev"
+
+[[env.work.routes]]
+pattern = "wc26-embark.mynameisjonas.dev"
+custom_domain = true
 
 [env.work.triggers]
 crons = ["*/5 * * * *", "0 8 * * *"]
