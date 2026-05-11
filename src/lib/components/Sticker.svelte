@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import ResultStamp from './ResultStamp.svelte';
 	import EmptySlot from './EmptySlot.svelte';
-	import { foilTier } from '$lib/foil-tier';
+	import { getStage } from '$lib/stage';
 	import { flagEmoji } from '$lib/team-flag';
 	import { isKnownTeam } from '$lib/is-known-team';
 
@@ -31,8 +31,9 @@
 		guest?: boolean;
 	} = $props();
 
-	let tier = $derived(foilTier(fixture.stage));
-	let isKnockout = $derived(tier !== 'paper');
+	let stageInfo = $derived(getStage(fixture.stage));
+	let tier = $derived(stageInfo.foilTier);
+	let isKnockout = $derived(stageInfo.isKnockout);
 	let isFilled = $derived(locked && fixture.result !== null);
 	let isTbd = $derived(!isKnownTeam(fixture.homeTeam) || !isKnownTeam(fixture.awayTeam));
 

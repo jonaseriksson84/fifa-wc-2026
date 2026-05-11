@@ -214,14 +214,9 @@ describe('picks page — guest pick button redirect', () => {
 
 describe('picks page server', () => {
 	it('sorts fixtures by stage order then kickoff', () => {
-		expect(serverTs).toContain('stageOrder');
-		expect(serverTs).toContain('Group');
-		expect(serverTs).toContain('R32');
-		expect(serverTs).toContain('R16');
-		expect(serverTs).toContain('QF');
-		expect(serverTs).toContain('SF');
-		expect(serverTs).toContain('3rd-place');
-		expect(serverTs).toContain('Final');
+		expect(serverTs).toContain("from '$lib/stage'");
+		expect(serverTs).toContain('sortIndex');
+		expect(serverTs).toContain('kickoff');
 	});
 
 	it('computes unpicked count server-side', () => {

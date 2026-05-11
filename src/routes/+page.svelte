@@ -3,6 +3,7 @@
 	import Standings from '$lib/components/Standings.svelte';
 	import StickerTiersLegend from '$lib/components/StickerTiersLegend.svelte';
 	import { fixtureIdentifier } from '$lib/fixture-identifier';
+	import { getStage } from '$lib/stage';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -46,36 +47,6 @@
 		});
 	}
 
-	const stageDisplayNames: Record<string, string> = {
-		Group: 'Group Stage',
-		R32: 'Round of 32',
-		R16: 'Round of 16',
-		QF: 'Quarter-finals',
-		SF: 'Semi-finals',
-		'3rd-place': 'Third-place Playoff',
-		Final: 'The Final'
-	};
-
-	const stagePointHints: Record<string, string> = {
-		Group: 'paper · 1 pt each',
-		R32: 'pearl · 2 pts each',
-		R16: 'pearl · 2 pts each',
-		QF: 'holo · 3 pts each',
-		SF: 'holo · 3 pts each',
-		'3rd-place': 'gold · 4 pts',
-		Final: 'legendary · 6 pts'
-	};
-
-	const stageKickers: Record<string, string> = {
-		Group: 'Round one · Album page 01',
-		R32: 'Round two · Album page 02',
-		R16: 'Round three · Album page 03',
-		QF: 'Round four · Album page 04',
-		SF: 'Round five · Album page 05',
-		'3rd-place': 'The decider · Album page 06',
-		Final: 'The final · Album page 07'
-	};
-
 	let identifiers = $derived.by(() => {
 		const map = new Map<number, string>();
 		for (const [, stageFixtures] of groupByStage(data.fixtures)) {
@@ -118,16 +89,17 @@
 			<p class="empty-msg">No fixtures available yet.</p>
 		{:else}
 			{#each groupedFixtures as [stage, fixtures], stageIdx}
+				{@const stageInfo = getStage(stage)}
 				{#if stageIdx > 0}
 					<div class="stage-ornament" aria-hidden="true">★ ★ ★</div>
 				{/if}
 				<section class="stage-section">
-					<span class="section-kicker">{stageKickers[stage] ?? ''}</span>
-					<h2 class="section-heading">{stageDisplayNames[stage] ?? stage}</h2>
+					<span class="section-kicker">{stageInfo.albumPageKicker}</span>
+					<h2 class="section-heading">{stageInfo.displayName}</h2>
 					<div class="stage-label-row">
-						<span class="stage-name">{stageDisplayNames[stage] ?? stage}</span>
+						<span class="stage-name">{stageInfo.displayName}</span>
 						<span class="stage-rule"></span>
-						<span class="point-hint">{stagePointHints[stage] ?? ''}</span>
+						<span class="point-hint">{stageInfo.pointHint}</span>
 					</div>
 					{#if stage === 'Group'}
 						{#each groupByMatchday(fixtures) as [matchday, mdFixtures], mdIdx}

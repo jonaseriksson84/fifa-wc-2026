@@ -1,4 +1,5 @@
-export type Stage = 'Group' | 'R32' | 'R16' | 'QF' | 'SF' | '3rd-place' | 'Final';
+import type { Stage } from '$lib/stage';
+export type { Stage };
 export type Result = 'HOME' | 'DRAW' | 'AWAY';
 
 export interface DomainFixture {

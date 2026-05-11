@@ -1,11 +1,12 @@
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import type { Stage } from '$lib/stage';
 
 export const fixture = sqliteTable('fixture', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	homeTeam: text('home_team').notNull(),
 	awayTeam: text('away_team').notNull(),
 	kickoff: text('kickoff').notNull(),
-	stage: text('stage').notNull(),
+	stage: text('stage').$type<Stage>().notNull(),
 	matchday: integer('matchday'),
 	result: text('result'),
 	finalScore: text('final_score'),

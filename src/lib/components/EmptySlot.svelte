@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { foilTier } from '$lib/foil-tier';
+	import { getStage } from '$lib/stage';
 
 	let { stage }: { stage: string } = $props();
 
-	let tier = $derived(foilTier(stage));
-	let isKnockout = $derived(tier !== 'paper');
+	let stageInfo = $derived(getStage(stage));
+	let tier = $derived(stageInfo.foilTier);
+	let isKnockout = $derived(stageInfo.isKnockout);
 
 	const tierLabels: Record<string, string> = {
 		paper: 'Sticker to come',

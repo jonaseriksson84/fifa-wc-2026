@@ -2,6 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createDb } from '$lib/server/db';
 import { fixture, user, pick } from '$lib/server/db/schema';
+import { getStage, type Stage } from '$lib/stage';
 import { eq } from 'drizzle-orm';
 
 function guard(platform: App.Platform | undefined) {
@@ -49,7 +50,7 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 				homeTeam: f.homeTeam,
 				awayTeam: f.awayTeam,
 				kickoff: f.kickoff,
-				stage: f.stage,
+				stage: getStage(f.stage).name as Stage,
 				updatedAt: now
 			}))
 		);

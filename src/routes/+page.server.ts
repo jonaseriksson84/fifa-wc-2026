@@ -9,16 +9,7 @@ import { displayName } from '$lib/display-name';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries, topN } from '$lib/top-leaderboard';
 import { isKnownTeam } from '$lib/is-known-team';
-
-const stageOrder: Record<string, number> = {
-	Group: 0,
-	R32: 1,
-	R16: 2,
-	QF: 3,
-	SF: 4,
-	'3rd-place': 5,
-	Final: 6
-};
+import { getStage } from '$lib/stage';
 
 export type PicksByValue = {
 	HOME: string[];
@@ -80,7 +71,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	});
 
 	enriched.sort((a, b) => {
-		const stageDiff = (stageOrder[a.stage] ?? 99) - (stageOrder[b.stage] ?? 99);
+		const stageDiff = getStage(a.stage).sortIndex - getStage(b.stage).sortIndex;
 		if (stageDiff !== 0) return stageDiff;
 		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 	});

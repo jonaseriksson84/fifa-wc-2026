@@ -1,4 +1,5 @@
 import { isKnownTeam } from '$lib/is-known-team';
+import { getStage } from '$lib/stage';
 
 export type PickValue = 'HOME' | 'DRAW' | 'AWAY';
 
@@ -14,8 +15,6 @@ type ValidResult = { valid: true };
 type InvalidResult = { valid: false; reason: 'fixture_locked' | 'draw_not_allowed' | 'teams_not_known' };
 export type ValidationResult = ValidResult | InvalidResult;
 
-const knockoutStages = new Set(['R32', 'R16', 'QF', 'SF', '3rd-place', 'Final']);
-
 export function validatePick(
 	fixture: PickFixture,
 	value: PickValue,
@@ -29,7 +28,7 @@ export function validatePick(
 		return { valid: false, reason: 'fixture_locked' };
 	}
 
-	if (value === 'DRAW' && knockoutStages.has(fixture.stage)) {
+	if (value === 'DRAW' && getStage(fixture.stage).isKnockout) {
 		return { valid: false, reason: 'draw_not_allowed' };
 	}
 

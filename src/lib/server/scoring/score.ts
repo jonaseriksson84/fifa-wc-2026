@@ -1,15 +1,7 @@
+import { getStage } from '$lib/stage';
+
 export type ScoringPick = { userId: string; fixtureId: number; value: string };
 export type ScoringFixture = { id: number; stage: string; result: string | null };
-
-const stageWeights: Record<string, number> = {
-	Group: 1,
-	R32: 2,
-	R16: 2,
-	QF: 3,
-	SF: 3,
-	'3rd-place': 4,
-	Final: 6
-};
 
 export function computeScores(
 	picks: ScoringPick[],
@@ -27,7 +19,7 @@ export function computeScores(
 		if (!fixture || fixture.result === null) continue;
 
 		if (pick.value === fixture.result) {
-			const weight = stageWeights[fixture.stage] ?? 0;
+			const weight = getStage(fixture.stage).weight;
 			scores.set(pick.userId, scores.get(pick.userId)! + weight);
 		}
 	}
