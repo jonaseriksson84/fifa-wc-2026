@@ -5,19 +5,14 @@ import { createDb } from '$lib/server/db';
 import { fixture, pick as pickTable, user } from '$lib/server/db/schema';
 import { getPicksForUser, upsertPick } from '$lib/server/picks/pick-repository';
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
-import { displayName } from '$lib/display-name';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries, topN } from '$lib/top-leaderboard';
 import { isKnownTeam } from '$lib/is-known-team';
-import { isLocked, isOpenForPicks } from '$lib/lock-time';
+import { isOpenForPicks } from '$lib/lock-time';
+import { pickRevealIndex } from '$lib/pick-reveal';
 import { getStage } from '$lib/stage';
 
-export type PicksByValue = {
-	HOME: string[];
-	DRAW: string[];
-	AWAY: string[];
-	noPick: string[];
-};
+export type { PicksByValue } from '$lib/pick-reveal';
 
 export const load: PageServerLoad = async ({ locals, platform }) => {
 	const db = createDb(platform!.env.DB);
@@ -31,45 +26,13 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	]);
 
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
+	const reveal = pickRevealIndex(allPicks, allUsers);
 
-	const userById = new Map(allUsers.map((u) => [u.id, u]));
-	const picksByFixtureId = new Map<number, (typeof allPicks)[number][]>();
-	for (const p of allPicks) {
-		const existing = picksByFixtureId.get(p.fixtureId);
-		if (existing) existing.push(p);
-		else picksByFixtureId.set(p.fixtureId, [p]);
-	}
-
-	const enriched = fixtures.map((f) => {
-		const locked = isLocked(f.kickoff, now);
-		let picksByValue: PicksByValue | null = null;
-
-		if (locked && locals.user) {
-			const buckets: PicksByValue = { HOME: [], DRAW: [], AWAY: [], noPick: [] };
-			const pickedUserIds = new Set<string>();
-
-			for (const p of picksByFixtureId.get(f.id) ?? []) {
-				const u = userById.get(p.userId);
-				if (!u) continue;
-				buckets[p.value as PickValue]?.push(displayName(u));
-				pickedUserIds.add(p.userId);
-			}
-
-			for (const u of allUsers) {
-				if (!pickedUserIds.has(u.id)) {
-					buckets.noPick.push(displayName(u));
-				}
-			}
-
-			picksByValue = buckets;
-		}
-
-		return {
-			...f,
-			currentPick: (pickMap.get(f.id) as PickValue) ?? null,
-			picksByValue
-		};
-	});
+	const enriched = fixtures.map((f) => ({
+		...f,
+		currentPick: (pickMap.get(f.id) as PickValue) ?? null,
+		picksByValue: locals.user ? reveal(f.id, f.kickoff, now) : null
+	}));
 
 	enriched.sort((a, b) => {
 		const stageDiff = getStage(a.stage).sortIndex - getStage(b.stage).sortIndex;

@@ -5,13 +5,7 @@
 	import { getStage } from '$lib/stage';
 	import { flagEmoji } from '$lib/team-flag';
 	import { isKnownTeam } from '$lib/is-known-team';
-
-	type PicksByValue = {
-		HOME: string[];
-		DRAW: string[];
-		AWAY: string[];
-		noPick: string[];
-	};
+	import type { PicksByValue } from '$lib/pick-reveal';
 
 	let {
 		fixture,

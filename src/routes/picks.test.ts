@@ -236,9 +236,9 @@ describe('picks page server', () => {
 		expect(serverTs).toContain('pick:');
 	});
 
-	it('builds per-fixture pick buckets from allPicks and allUsers', () => {
-		expect(serverTs).toContain('picksByFixtureId');
-		expect(serverTs).toContain('userById');
+	it('builds per-fixture pick buckets via the pick-reveal module', () => {
+		expect(serverTs).toContain("from '$lib/pick-reveal'");
+		expect(serverTs).toContain('pickRevealIndex');
 	});
 
 	it('fetches all users to identify who did not pick', () => {
