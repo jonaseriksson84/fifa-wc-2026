@@ -5,11 +5,11 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const standingsSvelte = readFileSync(
-	resolve(__dirname, '../../lib/components/Standings.svelte'),
+	resolve(__dirname, '../lib/components/Standings.svelte'),
 	'utf-8'
 );
 const tiersSvelte = readFileSync(
-	resolve(__dirname, '../../lib/components/StickerTiersLegend.svelte'),
+	resolve(__dirname, '../lib/components/StickerTiersLegend.svelte'),
 	'utf-8'
 );
 const pageHtml =
@@ -17,7 +17,7 @@ const pageHtml =
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
 const repoTs = readFileSync(
-	resolve(__dirname, '../../lib/server/picks/pick-repository.ts'),
+	resolve(__dirname, '../lib/server/picks/pick-repository.ts'),
 	'utf-8'
 );
 
@@ -168,7 +168,7 @@ describe('top-10 sidebar', () => {
 });
 
 describe('picks page server — guest access', () => {
-	it('does NOT redirect guests away from /picks (no auth guard on load)', () => {
+	it('does NOT redirect guests away from / (no auth guard on load)', () => {
 		const loadBlock = serverTs.slice(
 			serverTs.indexOf('export const load'),
 			serverTs.indexOf('export const actions')
@@ -193,8 +193,8 @@ describe('picks page server — guest access', () => {
 		expect(actionsBlock).toMatch(/if\s*\(\s*!locals\.user\s*\)/);
 	});
 
-	it('pick action redirects to /login?then=/picks when unauthenticated', () => {
-		expect(serverTs).toContain("/login?then=/picks");
+	it('pick action redirects to /login?then=/ when unauthenticated', () => {
+		expect(serverTs).toContain("/login?then=/");
 	});
 });
 
@@ -203,12 +203,12 @@ describe('picks page — guest pick button redirect', () => {
 		expect(pageHtml).toContain('guest');
 	});
 
-	it('guest pick buttons link to /login?then=/picks instead of form submit', () => {
+	it('guest pick buttons link to /login?then=/ instead of form submit', () => {
 		const stickerSvelte = readFileSync(
-			resolve(__dirname, '../../lib/components/Sticker.svelte'),
+			resolve(__dirname, '../lib/components/Sticker.svelte'),
 			'utf-8'
 		);
-		expect(stickerSvelte).toContain('/login?then=/picks');
+		expect(stickerSvelte).toContain('/login?then=/');
 	});
 });
 

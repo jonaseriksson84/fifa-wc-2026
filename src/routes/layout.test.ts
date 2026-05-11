@@ -16,8 +16,8 @@ describe('site layout', () => {
 		expect(layoutHtml).toContain('href="/"');
 	});
 
-	it('contains a link to the picks page', () => {
-		expect(layoutHtml).toContain('href="/picks"');
+	it('contains a link to the picks page at /', () => {
+		expect(layoutHtml).toContain('href="/"');
 		expect(layoutHtml.toLowerCase()).toContain('picks');
 	});
 

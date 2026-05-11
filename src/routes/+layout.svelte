@@ -36,9 +36,9 @@
 	</div>
 
 	<nav class="tabs">
-		<a href="/picks" class="tab-pill" class:active={currentPath === '/picks'}>
+		<a href="/" class="tab-pill" class:active={currentPath === '/'}>
 			My Picks
-			{#if currentPath === '/picks' && data.openCount > 0}
+			{#if currentPath === '/' && data.openCount > 0}
 				<span class="badge">{data.openCount}</span>
 			{/if}
 		</a>

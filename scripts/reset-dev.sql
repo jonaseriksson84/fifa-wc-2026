@@ -14,10 +14,10 @@
 --   2. npm run dev   (in another terminal)
 --   3. Sign up as jonaseriksson84+alice@gmail.com (and any +bob, +carol)
 --      via the magic-link flow. Use separate browser profiles for each.
---   4. Each user submits picks at /picks (12 fixtures, all pickable).
+--   4. Each user submits picks at / (12 fixtures, all pickable).
 --   5. npm run dev:fastforward
 --      → resolves 3 Group fixtures and ALL knockouts in one run, so every
---        foil tier appears as a filled sticker on /picks and the leaderboard
+--        foil tier appears as a filled sticker on / and the leaderboard
 --        starts showing points.
 --   6. Run dev:fastforward again to resolve the remaining 3 Group fixtures.
 

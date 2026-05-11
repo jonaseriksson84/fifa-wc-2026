@@ -19,10 +19,6 @@ const svelteFiles = [
 		content: readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8')
 	},
 	{
-		name: 'picks/+page.svelte',
-		content: readFileSync(resolve(__dirname, 'picks/+page.svelte'), 'utf-8')
-	},
-	{
 		name: 'leaderboard/+page.svelte',
 		content: readFileSync(resolve(__dirname, 'leaderboard/+page.svelte'), 'utf-8')
 	},
