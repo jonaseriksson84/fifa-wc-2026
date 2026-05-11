@@ -1,4 +1,5 @@
 import { isKnownTeam } from '$lib/is-known-team';
+import { isLocked } from '$lib/lock-time';
 import { getStage } from '$lib/stage';
 
 export type PickValue = 'HOME' | 'DRAW' | 'AWAY';
@@ -24,7 +25,7 @@ export function validatePick(
 		return { valid: false, reason: 'teams_not_known' };
 	}
 
-	if (now.getTime() >= new Date(fixture.kickoff).getTime()) {
+	if (isLocked(fixture.kickoff, now)) {
 		return { valid: false, reason: 'fixture_locked' };
 	}
 

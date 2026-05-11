@@ -9,6 +9,7 @@ import { displayName } from '$lib/display-name';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries, topN } from '$lib/top-leaderboard';
 import { isKnownTeam } from '$lib/is-known-team';
+import { isLocked, isOpenForPicks } from '$lib/lock-time';
 import { getStage } from '$lib/stage';
 
 export type PicksByValue = {
@@ -40,7 +41,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	}
 
 	const enriched = fixtures.map((f) => {
-		const locked = now.getTime() >= new Date(f.kickoff).getTime();
+		const locked = isLocked(f.kickoff, now);
 		let picksByValue: PicksByValue | null = null;
 
 		if (locked && locals.user) {
@@ -76,7 +77,9 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 	});
 
-	const pickable = enriched.filter((f) => new Date(f.kickoff) > now && isKnownTeam(f.homeTeam) && isKnownTeam(f.awayTeam));
+	const pickable = enriched.filter(
+		(f) => isOpenForPicks(f.kickoff, now) && isKnownTeam(f.homeTeam) && isKnownTeam(f.awayTeam)
+	);
 	const unpickedCount = pickable.filter((f) => f.currentPick === null).length;
 	const pickableCount = pickable.length;
 

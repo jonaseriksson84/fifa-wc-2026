@@ -3,6 +3,7 @@
 	import Standings from '$lib/components/Standings.svelte';
 	import StickerTiersLegend from '$lib/components/StickerTiersLegend.svelte';
 	import { fixtureIdentifier } from '$lib/fixture-identifier';
+	import { isLocked, isOpenForPicks } from '$lib/lock-time';
 	import { getStage } from '$lib/stage';
 	import type { PageData, ActionData } from './$types';
 
@@ -12,10 +13,6 @@
 	let showUnpickedOnly = $state(false);
 
 	type Fixture = (typeof data.fixtures)[number];
-
-	function isLocked(kickoff: string): boolean {
-		return new Date() >= new Date(kickoff);
-	}
 
 	function groupByStage(fixtures: Fixture[]): [string, Fixture[]][] {
 		const groups = new Map<string, Fixture[]>();
@@ -57,7 +54,7 @@
 
 	let visibleFixtures = $derived(
 		showUnpickedOnly
-			? data.fixtures.filter((f) => f.currentPick === null && !isLocked(f.kickoff))
+			? data.fixtures.filter((f) => f.currentPick === null && isOpenForPicks(f.kickoff, new Date()))
 			: data.fixtures
 	);
 
@@ -114,7 +111,7 @@
 							{/if}
 							<div class="sticker-grid">
 								{#each mdFixtures as f}
-									{@const locked = isLocked(f.kickoff)}
+									{@const locked = isLocked(f.kickoff, new Date())}
 									<Sticker
 										fixture={f}
 										identifier={identifiers.get(f.id) ?? ''}
@@ -130,7 +127,7 @@
 					{:else}
 						<div class="sticker-grid">
 							{#each fixtures as f}
-								{@const locked = isLocked(f.kickoff)}
+								{@const locked = isLocked(f.kickoff, new Date())}
 								<Sticker
 									fixture={f}
 									identifier={identifiers.get(f.id) ?? ''}

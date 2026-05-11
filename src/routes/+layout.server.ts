@@ -3,6 +3,7 @@ import type { LayoutServerLoad } from './$types';
 import { createDb } from '$lib/server/db';
 import { fixture, user } from '$lib/server/db/schema';
 import { albumProgress } from '$lib/album-progress';
+import { isOpenForPicks } from '$lib/lock-time';
 import { getPicksForUser } from '$lib/server/picks/pick-repository';
 
 export const load: LayoutServerLoad = async ({ locals, platform }) => {
@@ -26,7 +27,7 @@ export const load: LayoutServerLoad = async ({ locals, platform }) => {
 		const pickedIds = new Set(picks.map((p) => p.fixtureId));
 		const now = new Date();
 		openCount = fixtures.filter(
-			(f) => now < new Date(f.kickoff) && !pickedIds.has(f.id)
+			(f) => isOpenForPicks(f.kickoff, now) && !pickedIds.has(f.id)
 		).length;
 	}
 
