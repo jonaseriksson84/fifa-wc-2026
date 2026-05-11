@@ -266,4 +266,12 @@ describe('picks page server', () => {
 		expect(serverTs).toContain('kickoff');
 		expect(serverTs).toContain('picksByValue');
 	});
+
+	it('excludes TBD fixtures from pickable count', () => {
+		expect(serverTs).toContain('isKnownTeam');
+	});
+
+	it('returns a teams_not_known error when picking a TBD fixture', () => {
+		expect(serverTs).toContain('teams_not_known');
+	});
 });

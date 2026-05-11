@@ -12,6 +12,7 @@ import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 import { displayName } from '$lib/display-name';
 import { computeScores } from '$lib/server/scoring/score';
 import { rankEntries, topN } from '$lib/top-leaderboard';
+import { isKnownTeam } from '$lib/is-known-team';
 
 const stageOrder: Record<string, number> = {
 	Group: 0,
@@ -82,7 +83,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 	});
 
-	const pickable = enriched.filter((f) => new Date(f.kickoff) > now);
+	const pickable = enriched.filter((f) => new Date(f.kickoff) > now && isKnownTeam(f.homeTeam) && isKnownTeam(f.awayTeam));
 	const unpickedCount = pickable.filter((f) => f.currentPick === null).length;
 	const pickableCount = pickable.length;
 
@@ -141,11 +142,13 @@ export const actions: Actions = {
 
 		const validation = validatePick(f, value as PickValue, new Date());
 		if (!validation.valid) {
+			const messages: Record<string, string> = {
+				fixture_locked: 'This fixture is locked — picking is closed',
+				draw_not_allowed: 'DRAW is not allowed on knockout fixtures',
+				teams_not_known: 'Teams have not been determined yet — picking is not open'
+			};
 			return fail(422, {
-				error:
-					validation.reason === 'fixture_locked'
-						? 'This fixture is locked — picking is closed'
-						: 'DRAW is not allowed on knockout fixtures',
+				error: messages[validation.reason],
 				fixtureId
 			});
 		}
