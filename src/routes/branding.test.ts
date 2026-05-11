@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '../..');
 
+const appHtml = readFileSync(resolve(root, 'src/app.html'), 'utf-8');
 const wranglerToml = readFileSync(resolve(root, 'wrangler.toml'), 'utf-8');
 const appDts = readFileSync(resolve(root, 'src/app.d.ts'), 'utf-8');
 const layoutServerTs = readFileSync(resolve(__dirname, '+layout.server.ts'), 'utf-8');
@@ -114,5 +115,33 @@ describe('per-deployment branding: UI', () => {
 
 	it('accent elements use var(--accent) instead of hardcoded color', () => {
 		expect(layoutSvelte).toContain('var(--accent)');
+	});
+});
+
+describe('favicon', () => {
+	it('favicon.svg exists in static/', () => {
+		expect(existsSync(resolve(root, 'static/favicon.svg'))).toBe(true);
+	});
+
+	it('favicon.png exists in static/', () => {
+		expect(existsSync(resolve(root, 'static/favicon.png'))).toBe(true);
+	});
+
+	it('app.html references favicon.png', () => {
+		expect(appHtml).toContain('favicon.png');
+	});
+
+	it('favicon.svg is a valid SVG', () => {
+		const svg = readFileSync(resolve(root, 'static/favicon.svg'), 'utf-8');
+		expect(svg).toContain('<svg');
+		expect(svg).toContain('</svg>');
+	});
+
+	it('favicon.png is a valid PNG (magic bytes)', () => {
+		const buf = readFileSync(resolve(root, 'static/favicon.png'));
+		expect(buf[0]).toBe(0x89);
+		expect(buf[1]).toBe(0x50); // P
+		expect(buf[2]).toBe(0x4e); // N
+		expect(buf[3]).toBe(0x47); // G
 	});
 });
