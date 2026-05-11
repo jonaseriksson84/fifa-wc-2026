@@ -241,8 +241,9 @@ describe('picks page server', () => {
 		expect(serverTs).toContain('pick:');
 	});
 
-	it('imports getPicksForFixture from the repository', () => {
-		expect(serverTs).toContain('getPicksForFixture');
+	it('builds per-fixture pick buckets from allPicks and allUsers', () => {
+		expect(serverTs).toContain('picksByFixtureId');
+		expect(serverTs).toContain('userById');
 	});
 
 	it('fetches all users to identify who did not pick', () => {

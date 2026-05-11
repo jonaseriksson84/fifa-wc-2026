@@ -3,11 +3,7 @@ import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 import { createDb } from '$lib/server/db';
 import { fixture, pick as pickTable, user } from '$lib/server/db/schema';
-import {
-	getPicksForUser,
-	getPicksForFixture,
-	upsertPick
-} from '$lib/server/picks/pick-repository';
+import { getPicksForUser, upsertPick } from '$lib/server/picks/pick-repository';
 import { validatePick, type PickValue } from '$lib/server/picks/validate-pick';
 import { displayName } from '$lib/display-name';
 import { computeScores } from '$lib/server/scoring/score';
@@ -44,38 +40,44 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 
 	const pickMap = new Map(picks.map((p) => [p.fixtureId, p.value]));
 
-	const enriched = await Promise.all(
-		fixtures.map(async (f) => {
-			const locked = now.getTime() >= new Date(f.kickoff).getTime();
-			let picksByValue: PicksByValue | null = null;
+	const userById = new Map(allUsers.map((u) => [u.id, u]));
+	const picksByFixtureId = new Map<number, (typeof allPicks)[number][]>();
+	for (const p of allPicks) {
+		const existing = picksByFixtureId.get(p.fixtureId);
+		if (existing) existing.push(p);
+		else picksByFixtureId.set(p.fixtureId, [p]);
+	}
 
-			if (locked && locals.user) {
-				const fixturePicks = await getPicksForFixture(db, f.id);
-				const buckets: PicksByValue = { HOME: [], DRAW: [], AWAY: [], noPick: [] };
-				const pickedEmails = new Set<string>();
+	const enriched = fixtures.map((f) => {
+		const locked = now.getTime() >= new Date(f.kickoff).getTime();
+		let picksByValue: PicksByValue | null = null;
 
-				for (const p of fixturePicks) {
-					const key = p.value as PickValue;
-					buckets[key]?.push(displayName(p));
-					pickedEmails.add(p.email);
-				}
+		if (locked && locals.user) {
+			const buckets: PicksByValue = { HOME: [], DRAW: [], AWAY: [], noPick: [] };
+			const pickedUserIds = new Set<string>();
 
-				for (const u of allUsers) {
-					if (!pickedEmails.has(u.email)) {
-						buckets.noPick.push(displayName(u));
-					}
-				}
-
-				picksByValue = buckets;
+			for (const p of picksByFixtureId.get(f.id) ?? []) {
+				const u = userById.get(p.userId);
+				if (!u) continue;
+				buckets[p.value as PickValue]?.push(displayName(u));
+				pickedUserIds.add(p.userId);
 			}
 
-			return {
-				...f,
-				currentPick: (pickMap.get(f.id) as PickValue) ?? null,
-				picksByValue
-			};
-		})
-	);
+			for (const u of allUsers) {
+				if (!pickedUserIds.has(u.id)) {
+					buckets.noPick.push(displayName(u));
+				}
+			}
+
+			picksByValue = buckets;
+		}
+
+		return {
+			...f,
+			currentPick: (pickMap.get(f.id) as PickValue) ?? null,
+			picksByValue
+		};
+	});
 
 	enriched.sort((a, b) => {
 		const stageDiff = (stageOrder[a.stage] ?? 99) - (stageOrder[b.stage] ?? 99);
