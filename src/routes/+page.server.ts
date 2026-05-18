@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	const enriched = fixtures.map((f) => ({
 		...f,
 		currentPick: (pickMap.get(f.id) as PickValue) ?? null,
-		picksByValue: locals.user ? reveal(f.id, f.kickoff, now) : null
+		picksByValue: reveal(f.id, f.kickoff, now)
 	}));
 
 	enriched.sort((a, b) => {

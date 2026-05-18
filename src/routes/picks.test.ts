@@ -188,8 +188,8 @@ describe('picks page server — guest access', () => {
 		expect(serverTs).toMatch(/locals\.user\s*\?\s*/);
 	});
 
-	it('hides others-picks chips for guests (picksByValue null when no user)', () => {
-		expect(serverTs).toContain('locals.user');
+	it('exposes others-picks chips to guests too (reveal is unconditional; lock-time alone gates pre-kickoff)', () => {
+		expect(serverTs).toMatch(/picksByValue:\s*reveal\(f\.id,\s*f\.kickoff,\s*now\)/);
 	});
 
 	it('keeps auth guard on the pick form action (defence in depth)', () => {
