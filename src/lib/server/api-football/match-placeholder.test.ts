@@ -21,14 +21,12 @@ const placeholderR32: PlaceholderRow = {
 
 describe('matchPlaceholder', () => {
 	it('returns the placeholder row on exact (stage, kickoff) match', () => {
-		const result = matchPlaceholder(incomingR32, [placeholderR32]);
-		expect(result).toEqual({ row: placeholderR32 });
+		expect(matchPlaceholder(incomingR32, [placeholderR32])).toEqual(placeholderR32);
 	});
 
 	it('returns null when stage differs but kickoff matches', () => {
 		const wrongStage: PlaceholderRow = { ...placeholderR32, stage: 'R16' };
-		const result = matchPlaceholder(incomingR32, [wrongStage]);
-		expect(result).toEqual({ row: null });
+		expect(matchPlaceholder(incomingR32, [wrongStage])).toBeNull();
 	});
 
 	it('returns null when kickoff differs but stage matches', () => {
@@ -36,8 +34,7 @@ describe('matchPlaceholder', () => {
 			...placeholderR32,
 			kickoff: '2026-06-28T22:00:00.000Z'
 		};
-		const result = matchPlaceholder(incomingR32, [wrongKickoff]);
-		expect(result).toEqual({ row: null });
+		expect(matchPlaceholder(incomingR32, [wrongKickoff])).toBeNull();
 	});
 
 	it('disambiguates multiple candidates at the same kickoff but different stage', () => {
@@ -48,13 +45,11 @@ describe('matchPlaceholder', () => {
 			homeTeam: 'Winner R32.01',
 			awayTeam: 'Winner R32.02'
 		};
-		const result = matchPlaceholder(incomingR32, [r16SameKickoff, placeholderR32]);
-		expect(result).toEqual({ row: placeholderR32 });
+		expect(matchPlaceholder(incomingR32, [r16SameKickoff, placeholderR32])).toEqual(placeholderR32);
 	});
 
 	it('returns null when no placeholders exist', () => {
-		const result = matchPlaceholder(incomingR32, []);
-		expect(result).toEqual({ row: null });
+		expect(matchPlaceholder(incomingR32, [])).toBeNull();
 	});
 
 	it('uses string-equality for kickoff — differently-formatted ISO strings do NOT match', () => {
@@ -62,7 +57,6 @@ describe('matchPlaceholder', () => {
 			...incomingR32,
 			kickoff: '2026-06-28T19:00:00Z'
 		};
-		const result = matchPlaceholder(noMillis, [placeholderR32]);
-		expect(result).toEqual({ row: null });
+		expect(matchPlaceholder(noMillis, [placeholderR32])).toBeNull();
 	});
 });
