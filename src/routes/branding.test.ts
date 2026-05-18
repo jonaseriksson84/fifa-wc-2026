@@ -60,9 +60,9 @@ describe('per-deployment branding: wrangler.toml', () => {
 
 	it('uses operator-chosen values from issue #2', () => {
 		expect(wranglerToml).toContain('WC26 Jobbiga Bets');
-		expect(wranglerToml).toContain('#27D3F5');
+		expect(wranglerToml).toContain('#0369A1');
 		expect(wranglerToml).toContain('WC26 Office Picks');
-		expect(wranglerToml).toContain('#F54927');
+		expect(wranglerToml).toContain('#0284C7');
 	});
 });
 

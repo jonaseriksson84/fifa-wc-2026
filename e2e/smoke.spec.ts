@@ -73,9 +73,11 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 		await page.click('a[href="/leaderboard"]');
 		await expect(page).toHaveURL('/leaderboard');
 
+		// Leaderboard renders displayName (email local-part before '+' when nothing else set).
+		const displayed = TEST_EMAIL.split('@')[0];
 		const leaderboardTable = page.locator('table');
-		await expect(leaderboardTable.locator('td', { hasText: TEST_EMAIL })).toBeVisible();
-		const row = leaderboardTable.locator('tr', { hasText: TEST_EMAIL });
+		await expect(leaderboardTable.locator('td', { hasText: displayed })).toBeVisible();
+		const row = leaderboardTable.locator('tr', { hasText: displayed });
 		// Group stage = 1 point
 		await expect(row).toContainText('1');
 	});
@@ -101,8 +103,10 @@ test.describe('Smoke E2E: signup → pick → leaderboard', () => {
 
 		await page.goto('/leaderboard');
 		await expect(page).toHaveURL('/leaderboard');
-		await expect(page.locator('text=STANDINGS')).toBeVisible();
-		await expect(page.locator('text=Results')).not.toBeVisible();
+		// .overhang is the STANDINGS panel tab; using class avoids matching "No standings yet."
+		await expect(page.locator('.overhang')).toHaveText('STANDINGS');
+		// "Results & My Picks" heading is gated on currentUserId — guests should not see it.
+		await expect(page.locator('h2.results-heading')).toHaveCount(0);
 	});
 
 	test('guest cannot access /account', async ({ page }) => {

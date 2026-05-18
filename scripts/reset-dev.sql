@@ -1,25 +1,21 @@
--- Reset local D1 to a clean state with everything pickable.
+-- Reset local D1 to a clean state: wipe user data, restore fixtures to their
+-- "tournament not started" shape. Idempotent.
 -- Run via: npm run dev:reset
 --
 -- After this you have:
 --   - No users, sessions, picks, or verification tokens.
---   - 6 future Group fixtures (HOME / DRAW / AWAY pickable).
---   - 1 future fixture per knockout stage so every foil tier is exercised:
---       R32 (pearl), R16 (pearl), QF (holo), SF (holo), 3rd-place (gold), Final (legendary).
---     R32 uses real team names (pickable). R16–Final use placeholder strings
---     (TBD — locked by the is-known-team check, not pickable).
+--   - Group fixtures kept with their real kickoffs from api-football, results
+--     cleared. (Re-run `npm run seed:fixtures` if your DB is missing groups.)
+--   - 32 knockout placeholders restored to their migration-0007 shape
+--     (placeholder team labels, original future kickoffs, NULL results).
 --
--- Walkthrough:
---   1. npm run dev:reset
---   2. npm run dev   (in another terminal)
---   3. Sign up as jonaseriksson84+alice@gmail.com (and any +bob, +carol)
---      via the magic-link flow. Use separate browser profiles for each.
---   4. Each user submits picks at / (12 fixtures, all pickable).
---   5. npm run dev:fastforward
---      → resolves 3 Group fixtures and ALL knockouts in one run, so every
---        foil tier appears as a filled sticker on / and the leaderboard
---        starts showing points.
---   6. Run dev:fastforward again to resolve the remaining 3 Group fixtures.
+-- Walkthrough for local dev:
+--   1. npm run db:migrate                  # one-time, after new migration
+--   2. npm run seed:fixtures               # pulls 72 real group fixtures
+--   3. npm run dev:demo                    # fake 5 users + completed tournament (optional)
+--   4. npm run dev                         # open http://localhost:5173
+--   5. npm run dev:reset                   # back to clean state
+--   6. npm run dev:fastforward             # resolve another batch (idempotent, run repeatedly)
 
 -- 1. Wipe user state.
 DELETE FROM pick;
@@ -28,28 +24,87 @@ DELETE FROM verification;
 DELETE FROM account;
 DELETE FROM user;
 
--- 2. Wipe and re-seed fixtures — all in the future, all pickable.
-DELETE FROM fixture;
+-- 2. Clear results on every fixture (groups keep their api-football kickoffs).
+UPDATE fixture SET result = NULL, final_score = NULL;
 
-INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, updated_at) VALUES
-  -- Group matchday 1 (paper, 1pt) — 2 fixtures, simulates "all groups, first round"
-  ('Sweden',    'Brazil',     datetime('now', '+1 day'),   'Group',     1, datetime('now')),
-  ('Germany',   'Japan',      datetime('now', '+1 day'),   'Group',     1, datetime('now')),
-  -- Group matchday 2
-  ('Argentina', 'Mexico',     datetime('now', '+3 days'),  'Group',     2, datetime('now')),
-  ('France',    'Denmark',    datetime('now', '+3 days'),  'Group',     2, datetime('now')),
-  -- Group matchday 3
-  ('England',   'USA',        datetime('now', '+5 days'),  'Group',     3, datetime('now')),
-  ('Spain',     'Costa Rica', datetime('now', '+5 days'),  'Group',     3, datetime('now')),
-  -- R32 (pearl, 2pt) — known teams, pickable
-  ('Netherlands','Senegal',   datetime('now', '+10 days'), 'R32',       NULL, datetime('now')),
-  -- R16 (pearl, 2pt) — TBD, bracket not drawn
-  ('Winner Group A','Runner-up Group B', datetime('now', '+12 days'), 'R16', NULL, datetime('now')),
-  -- QF (holo, 3pt) — TBD
-  ('Winner R32 - Match 1','Winner R32 - Match 2', datetime('now', '+14 days'), 'QF', NULL, datetime('now')),
-  -- SF (holo, 3pt) — TBD
-  ('Winner QF1','Winner QF2', datetime('now', '+18 days'), 'SF',        NULL, datetime('now')),
-  -- 3rd-place (gold, 4pt) — TBD
-  ('Loser SF1', 'Loser SF2',  datetime('now', '+22 days'), '3rd-place', NULL, datetime('now')),
-  -- Final (legendary, 6pt) — TBD
-  ('Winner SF1','Winner SF2', datetime('now', '+24 days'), 'Final',     NULL, datetime('now'));
+-- 3. Restore knockout placeholders by wiping the unresolved rows (any row
+--    whose api_football_id is NULL — i.e. not yet replaced by a real fixture)
+--    and re-inserting from migration 0007. Resolved knockouts (with an
+--    api_football_id) are left alone since they reflect real upstream state.
+DELETE FROM fixture WHERE api_football_id IS NULL AND stage <> 'Group';
+
+-- R32 (16 matches) — chronological order matches R32.01 .. R32.16.
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Runner-up A', 'Runner-up B', '2026-06-28T19:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner C', 'Runner-up F', '2026-06-29T17:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner E', '3rd-place', '2026-06-29T20:30:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner F', 'Runner-up C', '2026-06-30T01:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Runner-up E', 'Runner-up I', '2026-06-30T17:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner I', '3rd-place', '2026-06-30T21:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner A', '3rd-place', '2026-07-01T01:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner L', '3rd-place', '2026-07-01T16:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner G', '3rd-place', '2026-07-01T20:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner D', '3rd-place', '2026-07-02T00:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner H', 'Runner-up J', '2026-07-02T19:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Runner-up K', 'Runner-up L', '2026-07-02T23:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner B', '3rd-place', '2026-07-03T03:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Runner-up D', 'Runner-up G', '2026-07-03T18:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner J', 'Runner-up H', '2026-07-03T22:00:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner K', '3rd-place', '2026-07-04T01:30:00.000Z', 'R32', NULL, NULL, NULL, NULL, datetime('now'));
+
+-- R16 (8 matches) — Winner R32.NN labels.
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.01', 'Winner R32.04', '2026-07-04T17:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.03', 'Winner R32.06', '2026-07-04T21:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.02', 'Winner R32.05', '2026-07-05T20:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.07', 'Winner R32.08', '2026-07-06T00:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.12', 'Winner R32.11', '2026-07-06T19:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.10', 'Winner R32.09', '2026-07-07T00:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.15', 'Winner R32.14', '2026-07-07T16:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R32.13', 'Winner R32.16', '2026-07-07T20:00:00.000Z', 'R16', NULL, NULL, NULL, NULL, datetime('now'));
+
+-- QF (4 matches)
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R16.02', 'Winner R16.01', '2026-07-09T20:00:00.000Z', 'QF', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R16.05', 'Winner R16.06', '2026-07-10T19:00:00.000Z', 'QF', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R16.03', 'Winner R16.04', '2026-07-11T21:00:00.000Z', 'QF', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner R16.07', 'Winner R16.08', '2026-07-12T01:00:00.000Z', 'QF', NULL, NULL, NULL, NULL, datetime('now'));
+
+-- SF (2 matches)
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner QF.01', 'Winner QF.02', '2026-07-14T19:00:00.000Z', 'SF', NULL, NULL, NULL, NULL, datetime('now'));
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner QF.03', 'Winner QF.04', '2026-07-15T19:00:00.000Z', 'SF', NULL, NULL, NULL, NULL, datetime('now'));
+
+-- 3rd-place playoff
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Loser SF.01', 'Loser SF.02', '2026-07-18T21:00:00.000Z', '3rd-place', NULL, NULL, NULL, NULL, datetime('now'));
+
+-- Final
+INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, result, final_score, updated_at)
+VALUES ('Winner SF.01', 'Winner SF.02', '2026-07-19T19:00:00.000Z', 'Final', NULL, NULL, NULL, NULL, datetime('now'));

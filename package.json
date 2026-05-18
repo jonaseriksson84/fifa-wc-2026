@@ -17,6 +17,7 @@
     "db:migrate": "npx wrangler d1 migrations apply fifa-wc-2026 --local",
     "dev:reset": "npx wrangler d1 execute fifa-wc-2026 --local --file=scripts/reset-dev.sql",
     "dev:fastforward": "npx wrangler d1 execute fifa-wc-2026 --local --file=scripts/fastforward-dev.sql",
+    "dev:demo": "npx tsx scripts/dev-seed-demo-tournament.ts",
     "verify:results": "npx tsx scripts/verify-results.ts"
   },
   "dependencies": {

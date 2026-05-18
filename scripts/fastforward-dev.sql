@@ -4,16 +4,16 @@
 -- Run via: npm run dev:fastforward
 --
 -- Idempotent: only operates on fixtures still unresolved (result IS NULL).
+-- Each invocation advances ONE fixture per stage (the oldest unresolved),
+-- so you can run repeatedly to progressively drain the schedule.
 --
--- Behaviour per run:
---   - Resolves the 3 oldest unresolved Group fixtures (HOME, AWAY, DRAW
---     for variety). Run repeatedly to drain all 6 Group fixtures.
---   - Resolves ALL unresolved knockout fixtures in one go so every foil
---     tier is awarded after the first run: pearl (R32, R16), holo (QF, SF),
---     gold (3rd-place), legendary (Final). Includes a regulation, an a.e.t.,
---     and a penalties-decided final_score for ResultStamp coverage.
+-- Knockout fixtures get hardcoded team substitutions — they all end up
+-- "Portugal vs Switzerland" / "Brazil vs Croatia" / etc. That's fine for
+-- dev: the goal is to exercise scoring, foil tiers, and the resolve-in-place
+-- path, not realistic football. For a fully-played tournament with deterministic
+-- bracket propagation, use `npm run dev:demo` instead.
 
--- ============= Group stage (3 oldest, one of each result) =============
+-- ============= Group stage (HOME, AWAY, DRAW for variety) =============
 
 UPDATE fixture
 SET kickoff = datetime('now', '-3 hour'),
@@ -48,17 +48,23 @@ WHERE id = (
   ORDER BY kickoff ASC LIMIT 1
 );
 
--- ============= Knockouts (all unresolved, one shot) =============
+-- ============= Knockouts (one per stage per run) =============
 
--- R32 — pearl, 2pt — regulation HOME win
+-- R32 — pearl, 2pt — regulation HOME win.
 UPDATE fixture
 SET kickoff = datetime('now', '-6 hour'),
+    home_team = 'Netherlands',
+    away_team = 'Senegal',
     result = 'HOME',
     final_score = '3-1',
     updated_at = datetime('now')
-WHERE result IS NULL AND stage = 'R32';
+WHERE id = (
+  SELECT id FROM fixture
+  WHERE result IS NULL AND stage = 'R32'
+  ORDER BY kickoff ASC LIMIT 1
+);
 
--- R16 — pearl, 2pt — resolve TBD teams then set result
+-- R16 — pearl, 2pt — penalties.
 UPDATE fixture
 SET kickoff = datetime('now', '-5 hour'),
     home_team = 'Portugal',
@@ -66,9 +72,13 @@ SET kickoff = datetime('now', '-5 hour'),
     result = 'AWAY',
     final_score = '1-1 (3-5 pen.)',
     updated_at = datetime('now')
-WHERE result IS NULL AND stage = 'R16';
+WHERE id = (
+  SELECT id FROM fixture
+  WHERE result IS NULL AND stage = 'R16'
+  ORDER BY kickoff ASC LIMIT 1
+);
 
--- QF — holo, 3pt — resolve TBD teams then set result
+-- QF — holo, 3pt — a.e.t.
 UPDATE fixture
 SET kickoff = datetime('now', '-4 hour'),
     home_team = 'Brazil',
@@ -76,9 +86,13 @@ SET kickoff = datetime('now', '-4 hour'),
     result = 'HOME',
     final_score = '2-1 a.e.t.',
     updated_at = datetime('now')
-WHERE result IS NULL AND stage = 'QF';
+WHERE id = (
+  SELECT id FROM fixture
+  WHERE result IS NULL AND stage = 'QF'
+  ORDER BY kickoff ASC LIMIT 1
+);
 
--- SF — holo, 3pt — resolve TBD teams then set result
+-- SF — holo, 3pt — regulation.
 UPDATE fixture
 SET kickoff = datetime('now', '-90 minute'),
     home_team = 'France',
@@ -86,9 +100,13 @@ SET kickoff = datetime('now', '-90 minute'),
     result = 'AWAY',
     final_score = '0-3',
     updated_at = datetime('now')
-WHERE result IS NULL AND stage = 'SF';
+WHERE id = (
+  SELECT id FROM fixture
+  WHERE result IS NULL AND stage = 'SF'
+  ORDER BY kickoff ASC LIMIT 1
+);
 
--- 3rd-place — gold, 4pt — resolve TBD teams then set result
+-- 3rd-place — gold, 4pt — regulation.
 UPDATE fixture
 SET kickoff = datetime('now', '-60 minute'),
     home_team = 'Croatia',
@@ -96,9 +114,13 @@ SET kickoff = datetime('now', '-60 minute'),
     result = 'HOME',
     final_score = '2-1',
     updated_at = datetime('now')
-WHERE result IS NULL AND stage = '3rd-place';
+WHERE id = (
+  SELECT id FROM fixture
+  WHERE result IS NULL AND stage = '3rd-place'
+  ORDER BY kickoff ASC LIMIT 1
+);
 
--- Final — legendary, 6pt — resolve TBD teams then set result
+-- Final — legendary, 6pt — penalties.
 UPDATE fixture
 SET kickoff = datetime('now', '-30 minute'),
     home_team = 'Argentina',
@@ -106,4 +128,8 @@ SET kickoff = datetime('now', '-30 minute'),
     result = 'HOME',
     final_score = '2-2 (5-3 pen.)',
     updated_at = datetime('now')
-WHERE result IS NULL AND stage = 'Final';
+WHERE id = (
+  SELECT id FROM fixture
+  WHERE result IS NULL AND stage = 'Final'
+  ORDER BY kickoff ASC LIMIT 1
+);
