@@ -82,6 +82,16 @@ describe('Chip correct/wrong tinting', () => {
 	});
 });
 
+describe('Sticker kickoff format', () => {
+	it('imports formatKickoff from kickoff-format module', () => {
+		expect(stickerSvelte).toContain("from '$lib/kickoff-format'");
+	});
+
+	it('uses formatKickoff for kickoff display', () => {
+		expect(stickerSvelte).toContain('formatKickoff(');
+	});
+});
+
 describe('Sticker TBD layout for unknown teams', () => {
 	it('imports isKnownTeam from is-known-team module', () => {
 		expect(stickerSvelte).toContain("from '$lib/is-known-team'");
@@ -97,6 +107,11 @@ describe('Sticker TBD layout for unknown teams', () => {
 
 	it('shows "TBD" headline text in the TBD block', () => {
 		expect(stickerSvelte).toContain('TBD');
+	});
+
+	it('says "Teams to be decided" not "Bracket not drawn yet"', () => {
+		expect(stickerSvelte).toContain('Teams to be decided');
+		expect(stickerSvelte).not.toContain('Bracket not drawn yet');
 	});
 
 	it('shows bracket slot hint caption in the TBD block', () => {

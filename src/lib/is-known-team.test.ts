@@ -3,14 +3,15 @@ import { isKnownTeam, isTBDFixture } from './is-known-team';
 import { WC_TEAMS } from './wc-teams';
 
 describe('WC_TEAMS constant', () => {
-	it('contains exactly 35 qualified nations', () => {
-		expect(WC_TEAMS.size).toBe(35);
+	it('contains exactly 48 qualified nations', () => {
+		expect(WC_TEAMS.size).toBe(48);
 	});
 
 	it('includes multi-word team names', () => {
 		expect(WC_TEAMS.has('South Korea')).toBe(true);
 		expect(WC_TEAMS.has('Saudi Arabia')).toBe(true);
-		expect(WC_TEAMS.has('Costa Rica')).toBe(true);
+		expect(WC_TEAMS.has('Bosnia & Herzegovina')).toBe(true);
+		expect(WC_TEAMS.has('Cape Verde Islands')).toBe(true);
 	});
 });
 

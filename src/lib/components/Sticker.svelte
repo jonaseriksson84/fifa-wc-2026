@@ -5,6 +5,7 @@
 	import { getStage } from '$lib/stage';
 	import { flagEmoji } from '$lib/team-flag';
 	import { isTBDFixture } from '$lib/is-known-team';
+	import { formatKickoff } from '$lib/kickoff-format';
 	import type { PicksByValue } from '$lib/pick-reveal';
 
 	let {
@@ -33,9 +34,7 @@
 
 	let foilClass = $derived(`foil-${tier}`);
 
-	let kickoffDisplay = $derived(
-		new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(fixture.kickoff))
-	);
+	let kickoffDisplay = $derived(formatKickoff(fixture.kickoff));
 
 	function buttonLabel(value: string): string {
 		if (value === 'HOME') return fixture.homeTeam;
@@ -54,7 +53,7 @@
 
 <article
 	class="sticker {isFilled ? 'filled' : 'empty'} {foilClass}"
-	aria-label="{isTbd ? 'TBD — bracket not drawn yet' : `${fixture.homeTeam} vs ${fixture.awayTeam}`} — {locked ? 'locked' : 'open'}{isFilled && currentPick === fixture.result ? ' — correct' : isFilled && currentPick ? ' — missed' : ''}"
+	aria-label="{isTbd ? 'TBD — teams to be decided' : `${fixture.homeTeam} vs ${fixture.awayTeam}`} — {locked ? 'locked' : 'open'}{isFilled && currentPick === fixture.result ? ' — correct' : isFilled && currentPick ? ' — missed' : ''}"
 >
 	{#if isFilled}
 		<span class="corner">FT · STUCK</span>
@@ -72,7 +71,7 @@
 	{#if isTbd}
 		<div class="sticker-tbd">
 			<span class="tbd-headline">TBD</span>
-			<span class="tbd-sub">Bracket not drawn yet</span>
+			<span class="tbd-sub">Teams to be decided</span>
 			<span class="slot-hint">{fixture.homeTeam} vs {fixture.awayTeam}</span>
 		</div>
 	{:else}

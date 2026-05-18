@@ -25,16 +25,18 @@ async function main() {
 		const awayTeam = escapeSQL(f.awayTeam);
 		const kickoff = escapeSQL(f.kickoff);
 		const stage = escapeSQL(f.stage);
+		const matchday = f.matchday !== null ? String(f.matchday) : 'NULL';
 		const now = new Date().toISOString();
 
 		return [
-			`INSERT INTO fixture (home_team, away_team, kickoff, stage, api_football_id, updated_at)`,
-			`VALUES ('${homeTeam}', '${awayTeam}', '${kickoff}', '${stage}', ${f.apiFootballId}, '${now}')`,
+			`INSERT INTO fixture (home_team, away_team, kickoff, stage, matchday, api_football_id, updated_at)`,
+			`VALUES ('${homeTeam}', '${awayTeam}', '${kickoff}', '${stage}', ${matchday}, ${f.apiFootballId}, '${now}')`,
 			`ON CONFLICT (api_football_id) DO UPDATE SET`,
 			`  home_team = '${homeTeam}',`,
 			`  away_team = '${awayTeam}',`,
 			`  kickoff = '${kickoff}',`,
 			`  stage = '${stage}',`,
+			`  matchday = ${matchday},`,
 			`  updated_at = '${now}';`
 		].join('\n');
 	});

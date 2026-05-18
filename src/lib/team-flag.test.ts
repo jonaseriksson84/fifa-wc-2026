@@ -43,8 +43,8 @@ describe('flagEmoji', () => {
 		expect(flagEmoji('England')).toBe('🏴󠁧󠁢󠁥󠁮󠁧󠁿');
 	});
 
-	it('returns Wales regional flag', () => {
-		expect(flagEmoji('Wales')).toBe('🏴󠁧󠁢󠁷󠁬󠁳󠁿');
+	it('returns Scottish regional flag', () => {
+		expect(flagEmoji('Scotland')).toBe('🏴󠁧󠁢󠁳󠁣󠁴󠁿');
 	});
 
 	it('returns Japanese flag for Japan', () => {
