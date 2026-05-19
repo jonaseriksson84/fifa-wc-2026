@@ -13,8 +13,13 @@
 	<section class="faq-card">
 		<h2>How do I sign in?</h2>
 		<p>
-			We use magic-link sign-in — no passwords. Enter your email address and
-			you'll receive a link in your inbox. Click it and you're in.
+			No passwords. Two options: tap <strong>Sign in with Google</strong> and
+			you're in, or enter your email to get a magic link in your inbox &mdash;
+			click the link and you're in.
+		</p>
+		<p>
+			Both methods sign you into the same account when they share an email
+			address, so you can switch between them any time.
 		</p>
 	</section>
 

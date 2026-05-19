@@ -8,9 +8,10 @@ const faqHtml = readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8');
 const faqLower = faqHtml.toLowerCase();
 
 describe('FAQ page content', () => {
-	it('explains magic-link sign-in', () => {
+	it('explains sign-in options — magic link and Google', () => {
 		expect(faqHtml).toContain('magic');
 		expect(faqLower).toContain('email');
+		expect(faqLower).toContain('google');
 		expect(faqLower).not.toMatch(/enter.*password/);
 		expect(faqLower).not.toMatch(/create.*password/);
 	});
