@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build && node scripts/inject-scheduled.js",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "npm run build && wrangler deploy --env friends && wrangler deploy --env work",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "test:e2e": "playwright test",

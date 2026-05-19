@@ -3,12 +3,28 @@ import { createAuth } from '$lib/server/auth';
 import { isEmailAllowed, parseAllowedDomains } from '$lib/server/email-domain';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, platform, url }) => {
 	if (locals.user) throw redirect(302, '/account');
+
+	const allowedDomains = parseAllowedDomains(platform!.env.ALLOWED_EMAIL_DOMAINS);
+	let oauthError: string | null = null;
+	if (url.searchParams.has('error')) {
+		if (allowedDomains.length > 0) {
+			const list = allowedDomains.map((d) => `@${d}`).join(' or ');
+			oauthError = `Sign-in is restricted to ${list} email addresses. Try a different Google account.`;
+		} else {
+			oauthError = 'Google sign-in failed. Please try again.';
+		}
+	}
+
+	return {
+		googleEnabled: !!(platform?.env.GOOGLE_CLIENT_ID && platform?.env.GOOGLE_CLIENT_SECRET),
+		oauthError
+	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, platform }) => {
+	magicLink: async ({ request, platform }) => {
 		const data = await request.formData();
 		const email = data.get('email')?.toString();
 
