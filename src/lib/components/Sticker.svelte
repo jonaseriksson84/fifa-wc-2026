@@ -423,7 +423,7 @@
 		justify-content: flex-end;
 	}
 	.team-flag {
-		font-family: 'Twemoji Country Flags', inherit;
+		font-family: 'Twemoji Country Flags', system-ui, sans-serif;
 		font-size: 22px;
 		line-height: 1;
 	}
