@@ -3,11 +3,17 @@
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import { displayName } from '$lib/display-name';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	let currentPath = $derived($page.url.pathname);
+
+	onMount(async () => {
+		const { polyfillCountryFlagEmojis } = await import('country-flag-emoji-polyfill');
+		polyfillCountryFlagEmojis();
+	});
 </script>
 
 <div style:--accent={data.poolAccentHex}>
