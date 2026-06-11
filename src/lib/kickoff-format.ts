@@ -1,9 +1,3 @@
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = [
-	'January', 'February', 'March', 'April', 'May', 'June',
-	'July', 'August', 'September', 'October', 'November', 'December'
-];
-
 function ordinal(n: number): string {
 	if (n >= 11 && n <= 13) return `${n}th`;
 	switch (n % 10) {
@@ -14,12 +8,17 @@ function ordinal(n: number): string {
 	}
 }
 
-export function formatKickoff(iso: string): string {
-	const d = new Date(iso);
-	const weekday = WEEKDAYS[d.getUTCDay()];
-	const month = MONTHS[d.getUTCMonth()];
-	const day = ordinal(d.getUTCDate());
-	const hh = String(d.getUTCHours()).padStart(2, '0');
-	const mm = String(d.getUTCMinutes()).padStart(2, '0');
-	return `${weekday} ${month} ${day} ${hh}:${mm}`;
+export function formatKickoff(iso: string, timeZone?: string): string {
+	const parts = new Intl.DateTimeFormat('en-US', {
+		timeZone,
+		weekday: 'short',
+		month: 'long',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+		hourCycle: 'h23'
+	}).formatToParts(new Date(iso));
+	const get = (type: Intl.DateTimeFormatPartTypes) =>
+		parts.find((p) => p.type === type)?.value ?? '';
+	return `${get('weekday')} ${get('month')} ${ordinal(Number(get('day')))} ${get('hour')}:${get('minute')}`;
 }
