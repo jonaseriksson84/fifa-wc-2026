@@ -5,7 +5,7 @@ import type { DomainFixture } from './api-football/types';
 
 const RESULT_POLLER_CRON = '*/5 * * * *';
 const FIXTURE_REFRESHER_CRON = '0 8 * * *';
-const MATCH_BUFFER_MS = 2.5 * 60 * 60 * 1000;
+const MATCH_BUFFER_MS = 2 * 60 * 60 * 1000;
 
 interface ScheduledEnv {
 	DB: D1Database;
