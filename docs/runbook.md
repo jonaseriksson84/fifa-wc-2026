@@ -32,6 +32,34 @@ wrangler d1 time-travel restore fifa-wc-2026-friends --bookmark=<bookmark>
 wrangler d1 time-travel restore fifa-wc-2026-work    --bookmark=<bookmark>
 ```
 
+## Remove a user
+
+Use the D1 database IDs from the table above. Replace `<USER_ID>` and `<EMAIL>` with the target user's values (look them up with the SELECT first).
+
+```bash
+# 1. Find the user
+wrangler d1 execute fifa-wc-2026-friends --remote \
+  --command="SELECT id, name, email FROM \"user\" ORDER BY created_at"
+
+# 2. Delete in dependency order (picks → sessions → accounts → verifications → user)
+wrangler d1 execute fifa-wc-2026-friends --remote \
+  --command="DELETE FROM pick WHERE user_id = '<USER_ID>'"
+wrangler d1 execute fifa-wc-2026-friends --remote \
+  --command="DELETE FROM session WHERE user_id = '<USER_ID>'"
+wrangler d1 execute fifa-wc-2026-friends --remote \
+  --command="DELETE FROM account WHERE user_id = '<USER_ID>'"
+wrangler d1 execute fifa-wc-2026-friends --remote \
+  --command="DELETE FROM verification WHERE identifier = '<EMAIL>'"
+wrangler d1 execute fifa-wc-2026-friends --remote \
+  --command="DELETE FROM \"user\" WHERE id = '<USER_ID>'"
+```
+
+Replace `fifa-wc-2026-friends` with `fifa-wc-2026-work` for the work pool.
+
+Alternatively, use the Cloudflare MCP `d1_database_query` tool with the appropriate `database_id` and run the same statements directly.
+
+---
+
 **What the scheduled jobs can and cannot corrupt**
 
 The `*/5 * * * *` result poller and `0 8 * * *` fixture refresher only write to the `fixture` table (team names, kickoffs, results). The `pick`, `user`, `session`, and `account` tables are never touched by scheduled jobs — picks are only at risk from migrations or pick-submission bugs, not API updates.
