@@ -543,6 +543,7 @@
 		font-family: var(--headline);
 	}
 	.others-picks .chip-flag {
+		font-family: 'Twemoji Country Flags', system-ui, sans-serif;
 		margin-right: 2px;
 	}
 </style>
