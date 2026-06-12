@@ -91,8 +91,8 @@
 			<div class="pick-row" class:knockout={isKnockout}>
 				{#each pickValues as value}
 					{#if guest}
-						<a href="/login?then=/" class="pick-btn guest-link">
-							{buttonLabel(value)}
+						<a href="/login?then=/" class="pick-btn guest-link" title={buttonLabel(value)}>
+							<span class="pick-btn-label">{buttonLabel(value)}</span>
 						</a>
 					{:else}
 						<form method="POST" action="?/pick" use:enhance>
@@ -104,8 +104,9 @@
 								class="pick-btn"
 								class:selected={currentPick === value}
 								aria-pressed={currentPick === value}
+								title={buttonLabel(value)}
 							>
-								{buttonLabel(value)}
+								<span class="pick-btn-label">{buttonLabel(value)}</span>
 							</button>
 						</form>
 					{/if}
@@ -135,13 +136,14 @@
 			{#each pickValues as v}
 				{@const names = picksByValue[v as keyof PicksByValue]}
 				{@const chipFlag = pickFlag(v)}
-				{#each names as name}
+				{#if names.length > 0}
 					<span
 						class="chip"
 						class:correct={isFilled && v === fixture.result}
 						class:wrong={isFilled && v !== fixture.result}
-					>{#if chipFlag}<span class="chip-flag">{chipFlag}</span>{/if}<strong>{buttonLabel(v)}</strong> {name}</span>
-				{/each}
+						title={buttonLabel(v)}
+					>{#if chipFlag}<span class="chip-flag">{chipFlag}</span>{:else}<span class="chip-draw">Draw</span>{/if} {names.join(' · ')}</span>
+				{/if}
 			{/each}
 		</div>
 	{/if}
@@ -464,6 +466,13 @@
 		cursor: pointer;
 		transition: all 0.12s;
 		position: relative;
+		min-width: 0;
+	}
+	.pick-btn-label {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.pick-btn:hover:not(:disabled) {
 		background: var(--ink);
@@ -499,9 +508,8 @@
 	a.pick-btn.guest-link {
 		text-decoration: none;
 		color: var(--ink);
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		display: block;
+		text-align: center;
 	}
 
 	/* Error message */
@@ -528,10 +536,6 @@
 		border: 1.5px solid var(--ink);
 		padding: 2px 7px;
 		background: var(--paper-deep);
-		max-width: 140px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.others-picks .chip.correct {
 		background: rgba(45, 106, 79, 0.15);
@@ -539,11 +543,18 @@
 	.others-picks .chip.wrong {
 		background: rgba(193, 18, 31, 0.12);
 	}
-	.others-picks .chip strong {
-		font-family: var(--headline);
+	.others-picks .chip-draw {
+		font-size: 10px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		margin-right: 2px;
 	}
 	.others-picks .chip-flag {
 		font-family: 'Twemoji Country Flags', system-ui, sans-serif;
+		font-size: 15px;
+		line-height: 1;
+		vertical-align: -2px;
 		margin-right: 2px;
 	}
 </style>
