@@ -33,7 +33,7 @@ const FLAGS: Record<string, string> = {
 	'Cape Verde Islands': '\u{1F1E8}\u{1F1FB}',
 	'Congo DR': '\u{1F1E8}\u{1F1E9}',
 	'Curaçao': '\u{1F1E8}\u{1F1FC}',
-	'Czech Republic': '\u{1F1E8}\u{1F1FF}',
+	'Czechia': '\u{1F1E8}\u{1F1FF}',
 	'Egypt': '\u{1F1EA}\u{1F1EC}',
 	'Haiti': '\u{1F1ED}\u{1F1F9}',
 	'Iraq': '\u{1F1EE}\u{1F1F6}',

@@ -33,7 +33,7 @@ export const WC_TEAMS: ReadonlySet<string> = new Set([
 	'Cape Verde Islands',
 	'Congo DR',
 	'Curaçao',
-	'Czech Republic',
+	'Czechia',
 	'Egypt',
 	'Haiti',
 	'Iraq',
