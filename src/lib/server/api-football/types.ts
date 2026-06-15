@@ -49,4 +49,11 @@ export interface ApiFixtureResponse {
 
 export interface ApiResponse {
 	response: ApiFixtureResponse[];
+	/**
+	 * API-Football reports failures (rate limits, bad params) inside a 200-status
+	 * body under `errors` — an empty array on success, or a populated array /
+	 * object on failure. The client inspects this so a throttled response isn't
+	 * mistaken for "no fixtures". See `client.ts`.
+	 */
+	errors?: unknown;
 }

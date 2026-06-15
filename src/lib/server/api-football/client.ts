@@ -32,7 +32,23 @@ async function request(
 		throw new Error(`api-football request failed: ${res.status} ${res.statusText}`);
 	}
 
-	return res.json() as Promise<ApiResponse>;
+	const body = (await res.json()) as ApiResponse;
+	// API-Football signals rate limits and other failures as HTTP 200 with a
+	// populated `errors` envelope. Without this check a throttled response looks
+	// like an empty fixtures list — harmless for the result poller (it just
+	// retries) but it silently stalls the daily fixture refresh. We share one
+	// subscription across sibling apps, so throttling is expected under load;
+	// throw so the failure is visible and the cron doesn't act on empty data.
+	if (hasErrors(body.errors)) {
+		throw new Error(`api-football ${path} returned errors: ${JSON.stringify(body.errors)}`);
+	}
+	return body;
+}
+
+function hasErrors(errors: unknown): boolean {
+	if (Array.isArray(errors)) return errors.length > 0;
+	if (errors && typeof errors === 'object') return Object.keys(errors).length > 0;
+	return Boolean(errors);
 }
 
 export async function fetchFixtures(opts: ClientOptions): Promise<DomainFixture[]> {

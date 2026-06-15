@@ -47,6 +47,31 @@ describe('fetchFixtures', () => {
 
 		await expect(fetchFixtures({ apiKey: 'key', fetch })).rejects.toThrow('429');
 	});
+
+	it('throws on a 200 response carrying a rate-limit errors envelope', async () => {
+		// Shared subscription throttling comes back as HTTP 200 with `errors`,
+		// not a 4xx — must not be mistaken for an empty fixtures list.
+		const fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					errors: { rateLimit: 'Too many requests. You have exceeded the limit.' },
+					response: []
+				})
+		});
+
+		await expect(fetchFixtures({ apiKey: 'key', fetch })).rejects.toThrow(/errors/);
+	});
+
+	it('treats an empty errors array as success (normal response shape)', async () => {
+		const fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			json: () => Promise.resolve({ errors: [], response: [groupHomeWin as ApiFixtureResponse] })
+		});
+
+		const fixtures = await fetchFixtures({ apiKey: 'key', fetch });
+		expect(fixtures).toHaveLength(1);
+	});
 });
 
 describe('fetchFinishedResults', () => {
