@@ -61,8 +61,10 @@ BETTER_AUTH_URL = "https://wc26-embark.mynameisjonas.dev"
 pattern = "wc26-embark.mynameisjonas.dev"
 custom_domain = true
 
+# Refresher staggered 30m after friends to avoid rate-limit collisions on the
+# shared api-football subscription (both run */5 result polling on the hour).
 [env.work.triggers]
-crons = ["*/5 * * * *", "0 8 * * *"]
+crons = ["*/5 * * * *", "30 8 * * *"]
 
 [env.work.observability.logs]
 enabled = true

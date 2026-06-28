@@ -4,7 +4,6 @@ import { getStage } from '$lib/stage';
 import type { DomainFixture } from './api-football/types';
 
 const RESULT_POLLER_CRON = '*/5 * * * *';
-const FIXTURE_REFRESHER_CRON = '0 8 * * *';
 const MATCH_BUFFER_MS = 2 * 60 * 60 * 1000;
 
 interface ScheduledEnv {
@@ -14,15 +13,15 @@ interface ScheduledEnv {
 }
 
 export async function handleScheduled(event: ScheduledEvent, env: ScheduledEnv): Promise<void> {
-	switch (event.cron) {
-		case RESULT_POLLER_CRON:
-			await pollResults(env);
-			break;
-		case FIXTURE_REFRESHER_CRON:
-			await refreshFixtures(env);
-			break;
-		default:
-			console.log(`Unknown cron pattern: ${event.cron}`);
+	// The result poller has a fixed, frequent schedule; everything else is the
+	// daily fixture refresher. We deliberately match on "is this the poller?"
+	// rather than an exact refresher cron string so each deployment can stagger
+	// its refresher to a different minute (avoiding rate-limit collisions on the
+	// shared api-football subscription) without touching this shared handler.
+	if (event.cron === RESULT_POLLER_CRON) {
+		await pollResults(env);
+	} else {
+		await refreshFixtures(env);
 	}
 }
 
