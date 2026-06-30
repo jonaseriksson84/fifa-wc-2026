@@ -50,6 +50,17 @@
 	);
 
 	let groupedFixtures = $derived(groupByStage(visibleFixtures));
+
+	// The first fixture that has not yet been played/scored — i.e. the next game
+	// to focus on. Fixtures arrive sorted chronologically.
+	let firstUnfinished = $derived(visibleFixtures.find((f) => f.result === null));
+
+	function scrollToFirstUnfinished() {
+		if (!firstUnfinished) return;
+		document
+			.getElementById(`fixture-${firstUnfinished.id}`)
+			?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
 </script>
 
 <svelte:head>
@@ -67,10 +78,20 @@
 			<span class="unpicked-count">
 				{data.unpickedCount} of {data.pickableCount} unpicked
 			</span>
-			<label class="filter-toggle">
-				<input type="checkbox" bind:checked={showUnpickedOnly} />
-				Show unpicked only
-			</label>
+			<div class="toolbar-controls">
+				<label class="filter-toggle">
+					<input type="checkbox" bind:checked={showUnpickedOnly} />
+					Show unpicked only
+				</label>
+				<button
+					type="button"
+					class="jump-button"
+					onclick={scrollToFirstUnfinished}
+					disabled={!firstUnfinished}
+				>
+					Jump to next game ↓
+				</button>
+			</div>
 		</div>
 
 		{#if data.fixtures.length === 0}
@@ -104,6 +125,7 @@
 								{#each mdFixtures as f}
 									{@const locked = isLocked(f.kickoff, new Date())}
 									<Sticker
+										id="fixture-{f.id}"
 										fixture={f}
 										identifier={f.identifier}
 										currentPick={f.currentPick}
@@ -120,6 +142,7 @@
 							{#each fixtures as f}
 								{@const locked = isLocked(f.kickoff, new Date())}
 								<Sticker
+									id="fixture-{f.id}"
 									fixture={f}
 									identifier={f.identifier}
 									currentPick={f.currentPick}
@@ -188,6 +211,11 @@
 	.unpicked-count {
 		color: var(--ink-mute);
 	}
+	.toolbar-controls {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
 	.filter-toggle {
 		display: flex;
 		align-items: center;
@@ -197,6 +225,25 @@
 	}
 	.filter-toggle input {
 		accent-color: var(--accent);
+	}
+	.jump-button {
+		font-family: var(--mono);
+		font-size: 12px;
+		letter-spacing: 0.05em;
+		color: var(--accent);
+		background: none;
+		border: 1.5px solid var(--ink);
+		padding: 4px 10px;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	.jump-button:hover:not(:disabled) {
+		background: var(--accent);
+		color: var(--paper);
+	}
+	.jump-button:disabled {
+		opacity: 0.4;
+		cursor: default;
 	}
 	.stage-ornament {
 		text-align: center;

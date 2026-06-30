@@ -15,7 +15,8 @@
 		picksByValue,
 		locked,
 		error,
-		guest = false
+		guest = false,
+		id
 	}: {
 		fixture: { id: number; homeTeam: string; awayTeam: string; kickoff: string; stage: string; result: string | null; finalScore: string | null };
 		identifier: string;
@@ -24,6 +25,7 @@
 		locked: boolean;
 		error: string | null;
 		guest?: boolean;
+		id?: string;
 	} = $props();
 
 	let stageInfo = $derived(getStage(fixture.stage));
@@ -52,6 +54,7 @@
 </script>
 
 <article
+	{id}
 	class="sticker {isFilled ? 'filled' : 'empty'} {foilClass}"
 	aria-label="{isTbd ? 'TBD — teams to be decided' : `${fixture.homeTeam} vs ${fixture.awayTeam}`} — {locked ? 'locked' : 'open'}{isFilled && currentPick === fixture.result ? ' — correct' : isFilled && currentPick ? ' — missed' : ''}"
 >
