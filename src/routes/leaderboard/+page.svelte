@@ -157,7 +157,7 @@
 		color: var(--paper);
 	}
 	.verdict.wrong {
-		background: var(--accent);
+		background: var(--red);
 		color: var(--paper);
 	}
 

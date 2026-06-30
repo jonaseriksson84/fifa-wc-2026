@@ -27,19 +27,17 @@
 </script>
 
 <div class="result-stamp" class:wrong={!correct}>
-	<div class="stamp-row">
-		{#if pick}
-			<span class="stamped-pick">Picked: {pickLabel}</span>
-		{:else}
-			<span class="stamped-pick">No pick</span>
-		{/if}
-		<span class="result-tag">{scoreMain}</span>
-		{#if pick}
-			<span class="verdict">{correct ? 'Correct' : 'Missed'}</span>
-		{:else}
-			<span class="verdict missed">Missed</span>
-		{/if}
-	</div>
+	{#if pick}
+		<span class="stamped-pick">{pickLabel}</span>
+	{:else}
+		<span class="stamped-pick">No pick</span>
+	{/if}
+	<span class="result-tag">{scoreMain}</span>
+	{#if pick}
+		<span class="verdict">{correct ? 'Correct' : 'Missed'}</span>
+	{:else}
+		<span class="verdict missed">Missed</span>
+	{/if}
 	{#if scoreExtra}
 		<span class="score-extra">{scoreExtra}</span>
 	{/if}
@@ -50,26 +48,26 @@
 		--correct: #2d6a4f;
 		--wrong: #c1121f;
 		margin-top: 4px;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		column-gap: 12px;
+		row-gap: 8px;
 		padding: 10px 12px;
 		border: 2px solid var(--ink);
 		background: var(--paper);
 	}
-	.stamp-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-	}
 	.result-stamp .stamped-pick {
+		grid-column: 1;
+		justify-self: start;
 		font-family: var(--headline);
 		font-size: 14px;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
 	.result-stamp .result-tag {
+		grid-column: 2;
+		justify-self: center;
 		font-family: var(--display);
 		font-size: 20px;
 		color: var(--correct);
@@ -80,7 +78,8 @@
 		color: var(--wrong);
 	}
 	.result-stamp .score-extra {
-		align-self: center;
+		grid-column: 2;
+		justify-self: center;
 		font-family: var(--display);
 		font-size: 14px;
 		color: var(--correct);
@@ -90,6 +89,8 @@
 		color: var(--wrong);
 	}
 	.result-stamp .verdict {
+		grid-column: 3;
+		justify-self: end;
 		font-family: var(--mono);
 		font-size: 10px;
 		letter-spacing: 0.15em;
