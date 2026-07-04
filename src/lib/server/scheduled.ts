@@ -1,4 +1,5 @@
 import { fetchFixtures, fetchFinishedResults } from './api-football';
+import { ApiFootballRateLimitError } from './api-football/client';
 import { matchPlaceholder, type PlaceholderRow } from './api-football/match-placeholder';
 import { getStage } from '$lib/stage';
 import type { DomainFixture } from './api-football/types';
@@ -6,10 +7,43 @@ import type { DomainFixture } from './api-football/types';
 const RESULT_POLLER_CRON = '*/5 * * * *';
 const MATCH_BUFFER_MS = 2 * 60 * 60 * 1000;
 
+// The refresher runs only once a day, and the api-football subscription is
+// shared with sibling apps, so a single top-of-the-hour burst can throttle us.
+// Without retries one rate-limited run strands every knockout fixture whose
+// teams were just decided (leaving "Winner R32.x" placeholders that can't be
+// picked) until the next day. The per-minute limit resets within 60s, so wait
+// out the window and retry rather than losing the whole daily refresh.
+const REFRESH_RETRY_DELAYS_MS = [20_000, 40_000, 60_000];
+
 interface ScheduledEnv {
 	DB: D1Database;
 	API_FOOTBALL_KEY: string;
 	__testFetchFixtures?: (opts: { apiKey: string }) => Promise<DomainFixture[]>;
+	__testSleep?: (ms: number) => Promise<void>;
+}
+
+const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+async function fetchFixturesWithRetry(
+	fetch: (opts: { apiKey: string }) => Promise<DomainFixture[]>,
+	env: ScheduledEnv
+): Promise<DomainFixture[]> {
+	const sleep = env.__testSleep ?? defaultSleep;
+	for (let attempt = 0; ; attempt++) {
+		try {
+			return await fetch({ apiKey: env.API_FOOTBALL_KEY });
+		} catch (err) {
+			if (err instanceof ApiFootballRateLimitError && attempt < REFRESH_RETRY_DELAYS_MS.length) {
+				const delay = REFRESH_RETRY_DELAYS_MS[attempt]!;
+				console.warn(
+					`Fixture refresher: rate-limited, retrying in ${delay}ms (attempt ${attempt + 1}/${REFRESH_RETRY_DELAYS_MS.length})`
+				);
+				await sleep(delay);
+				continue;
+			}
+			throw err;
+		}
+	}
 }
 
 export async function handleScheduled(event: ScheduledEvent, env: ScheduledEnv): Promise<void> {
@@ -73,7 +107,7 @@ async function pollResults(env: ScheduledEnv): Promise<void> {
 
 async function refreshFixtures(env: ScheduledEnv): Promise<void> {
 	const fetch = env.__testFetchFixtures ?? fetchFixtures;
-	const fixtures = await fetch({ apiKey: env.API_FOOTBALL_KEY });
+	const fixtures = await fetchFixturesWithRetry(fetch, env);
 
 	const groupFixtures: DomainFixture[] = [];
 	const knockoutFixtures: DomainFixture[] = [];

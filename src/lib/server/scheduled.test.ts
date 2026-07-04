@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Miniflare } from 'miniflare';
 import { handleScheduled } from './scheduled';
+import { ApiFootballRateLimitError } from './api-football/client';
 
 const FIXTURE_DDL = [
 	`CREATE TABLE fixture (id integer PRIMARY KEY AUTOINCREMENT NOT NULL, home_team text NOT NULL, away_team text NOT NULL, kickoff text NOT NULL, stage text NOT NULL, matchday integer, result text, final_score text, api_football_id integer, updated_at text NOT NULL);`,
@@ -177,5 +178,90 @@ describe('refreshFixtures – knockout routing', () => {
 			.first<Record<string, unknown>>();
 
 		expect(row!.away_team).toBe('Korea Republic');
+	});
+});
+
+describe('refreshFixtures – rate-limit retry', () => {
+	let db: D1Database;
+	let mockFetchFixtures: ReturnType<typeof vi.fn>;
+	let sleepSpy: ReturnType<typeof vi.fn>;
+
+	const resolvedFixture = {
+		apiFootballId: 99001,
+		homeTeam: 'Brazil',
+		awayTeam: 'South Korea',
+		kickoff: '2026-06-28T19:00:00.000Z',
+		stage: 'R32' as const,
+		matchday: null
+	};
+
+	beforeEach(async () => {
+		db = await getDb();
+		await seedPlaceholders(db);
+		mockFetchFixtures = vi.fn();
+		sleepSpy = vi.fn().mockResolvedValue(undefined);
+		vi.spyOn(console, 'log').mockImplementation(() => {});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+
+	it('retries after a transient rate-limit error and then resolves the placeholder', async () => {
+		mockFetchFixtures
+			.mockRejectedValueOnce(new ApiFootballRateLimitError('rate limited'))
+			.mockResolvedValueOnce([resolvedFixture]);
+
+		await handleScheduled(fakeScheduledEvent(REFRESHER_CRON), {
+			DB: db,
+			API_FOOTBALL_KEY: 'test-key',
+			__testFetchFixtures: mockFetchFixtures,
+			__testSleep: sleepSpy
+		});
+
+		expect(mockFetchFixtures).toHaveBeenCalledTimes(2);
+		expect(sleepSpy).toHaveBeenCalledTimes(1);
+
+		const row = await db
+			.prepare('SELECT * FROM fixture WHERE id = 73')
+			.first<Record<string, unknown>>();
+		expect(row!.home_team).toBe('Brazil');
+		expect(row!.api_football_id).toBe(99001);
+	});
+
+	it('gives up after exhausting retries and rethrows', async () => {
+		mockFetchFixtures.mockRejectedValue(new ApiFootballRateLimitError('rate limited'));
+
+		await expect(
+			handleScheduled(fakeScheduledEvent(REFRESHER_CRON), {
+				DB: db,
+				API_FOOTBALL_KEY: 'test-key',
+				__testFetchFixtures: mockFetchFixtures,
+				__testSleep: sleepSpy
+			})
+		).rejects.toThrow(ApiFootballRateLimitError);
+
+		// initial attempt + 3 retries
+		expect(mockFetchFixtures).toHaveBeenCalledTimes(4);
+		expect(sleepSpy).toHaveBeenCalledTimes(3);
+
+		// placeholder untouched
+		const row = await db
+			.prepare('SELECT * FROM fixture WHERE id = 73')
+			.first<Record<string, unknown>>();
+		expect(row!.home_team).toBe('Runner-up A');
+	});
+
+	it('does not retry on a non-rate-limit error', async () => {
+		mockFetchFixtures.mockRejectedValue(new Error('boom'));
+
+		await expect(
+			handleScheduled(fakeScheduledEvent(REFRESHER_CRON), {
+				DB: db,
+				API_FOOTBALL_KEY: 'test-key',
+				__testFetchFixtures: mockFetchFixtures,
+				__testSleep: sleepSpy
+			})
+		).rejects.toThrow('boom');
+
+		expect(mockFetchFixtures).toHaveBeenCalledTimes(1);
+		expect(sleepSpy).not.toHaveBeenCalled();
 	});
 });

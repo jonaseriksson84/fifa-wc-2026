@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { fetchFixtures, fetchFinishedResults } from './client';
+import { fetchFixtures, fetchFinishedResults, ApiFootballRateLimitError } from './client';
 import type { ApiFixtureResponse } from './types';
 
 import groupHomeWin from '../../../../tests/fixtures/api-football/group-home-win.json';
@@ -61,6 +61,38 @@ describe('fetchFixtures', () => {
 		});
 
 		await expect(fetchFixtures({ apiKey: 'key', fetch })).rejects.toThrow(/errors/);
+	});
+
+	it('throws a distinguishable ApiFootballRateLimitError on a rate-limit envelope', async () => {
+		// The daily refresher retries specifically on this type; a generic Error
+		// must not trigger retries, so the distinction has to survive.
+		const fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					errors: { rateLimit: 'Too many requests. You have exceeded the limit.' },
+					response: []
+				})
+		});
+
+		await expect(fetchFixtures({ apiKey: 'key', fetch })).rejects.toBeInstanceOf(
+			ApiFootballRateLimitError
+		);
+	});
+
+	it('throws a generic Error (not rate-limit) on a non-throttle errors envelope', async () => {
+		const fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					errors: { token: 'Invalid API key.' },
+					response: []
+				})
+		});
+
+		const err = await fetchFixtures({ apiKey: 'key', fetch }).catch((e) => e);
+		expect(err).toBeInstanceOf(Error);
+		expect(err).not.toBeInstanceOf(ApiFootballRateLimitError);
 	});
 
 	it('treats an empty errors array as success (normal response shape)', async () => {
