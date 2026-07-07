@@ -31,6 +31,13 @@ _Avoid_: Round, phase.
 **Admin**:
 The operator of a deployment. Enters results, manages users, regenerates anything that needs regenerating. There is no in-app role hierarchy beyond user/admin.
 
+**Recap**:
+The post-tournament summary page — the pool's shared infographic of the whole tournament (leaderboard race, pick heatmap, awards). Becomes available the moment the Final's **Result** is entered; before that, the route shows only a placeholder. One Recap per deployment; everyone sees the same page.
+_Avoid_: Wrapped (implies a per-user private flow), summary, review.
+
+**Active user**:
+A **User** whose participation is high enough to qualify for rate-based Recap awards: picks on at least 50% of settled **Fixtures**. Users below the threshold still appear in factual Recap views (heatmap, race chart) but cannot win rate-based awards.
+
 **Lock time**:
 The instant a **Fixture** stops accepting new or updated **Picks**. Equal to the fixture's scheduled kickoff time — picks are open right up to kickoff and frozen the moment the match starts.
 
