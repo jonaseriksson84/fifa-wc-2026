@@ -3,6 +3,7 @@ import { createDb } from '$lib/server/db';
 import { fixture, user } from '$lib/server/db/schema';
 import { getAllPicks } from '$lib/server/picks/pick-repository';
 import { computeScores } from '$lib/server/scoring/score';
+import { computeRecap } from '$lib/server/recap/recap';
 import { rankEntries } from '$lib/top-leaderboard';
 import { getStage } from '$lib/stage';
 
@@ -17,6 +18,11 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 
 	const fixtureById = new Map(allFixtures.map((f) => [f.id, f]));
 	const scoreMap = computeScores(allPicks, allFixtures);
+
+	// Discovery banner: surface the Recap on the leaderboard once the Final settles.
+	// The availability gate lives inside the seam, so we reuse the same three
+	// row-sets rather than re-deriving "is the Final in?" here.
+	const recapAvailable = computeRecap(allUsers, allPicks, allFixtures).available;
 
 	const entries = allUsers.map((u) => ({
 		userId: u.id,
@@ -62,6 +68,7 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	return {
 		leaderboard: ranked,
 		fixturesWithResults,
-		currentUserId
+		currentUserId,
+		recapAvailable
 	};
 };

@@ -18,6 +18,7 @@
     "dev:reset": "npx wrangler d1 execute fifa-wc-2026 --local --file=scripts/reset-dev.sql",
     "dev:fastforward": "npx wrangler d1 execute fifa-wc-2026 --local --file=scripts/fastforward-dev.sql",
     "dev:demo": "npx tsx scripts/dev-seed-demo-tournament.ts",
+    "dev:recap-preview": "npx tsx scripts/dev-recap-preview.ts",
     "verify:results": "npx tsx scripts/verify-results.ts"
   },
   "dependencies": {
