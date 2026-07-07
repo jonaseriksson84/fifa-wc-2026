@@ -20,13 +20,21 @@
 // settle step writes to the LOCAL database only.
 
 import { execSync } from 'node:child_process';
-import { writeFileSync, unlinkSync } from 'node:fs';
+import { writeFileSync, unlinkSync, rmSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const LOCAL_DB = 'fifa-wc-2026';
+// Local D1 (miniflare) state lives here — a plain SQLite file per database.
+// The remote export is a full dump with bare `CREATE TABLE`/`CREATE INDEX`
+// (no IF NOT EXISTS), so it can only load into an empty database — a second
+// run would otherwise die on "table d1_migrations already exists". Removing
+// this dir is how we actually "replace local state"; wrangler recreates it on
+// the next `d1 execute --local`.
+const LOCAL_D1_STATE = resolve(__dirname, '..', '.wrangler', 'state', 'v3', 'd1');
 const REMOTE_DB: Record<string, string> = {
 	friends: 'fifa-wc-2026-friends',
 	work: 'fifa-wc-2026-work'
@@ -41,6 +49,36 @@ function run(cmd: string, opts: { capture?: boolean } = {}): string {
 	}
 	execSync(cmd, { stdio: 'inherit' });
 	return '';
+}
+
+// Load the remote dump into the freshly-reset local D1.
+//
+// The export lists tables in sqlite_master order, so the child tables
+// (account/session/pick, each with a FOREIGN KEY → user) are created and
+// populated *before* the `user` table exists. The dump's leading
+// `PRAGMA defer_foreign_keys=TRUE` makes that work on remote D1, but wrangler's
+// local `d1 execute --file` runs each statement in isolation, so the deferral
+// is lost and the first `INSERT INTO account` dies with
+// "no such table: main.user". Restoring the dump through a single SQLite
+// connection with FK enforcement off — the canonical way to load a dump —
+// sidesteps the ordering problem entirely. The local D1 is just a plain SQLite
+// file, so we open it directly (Node's built-in node:sqlite) after wrangler
+// has recreated the empty database file.
+function loadSnapshotIntoLocalD1(sqlPath: string): void {
+	const objectsDir = resolve(LOCAL_D1_STATE, 'miniflare-D1DatabaseObject');
+	const dbFile = readdirSync(objectsDir).find(
+		(f) => f.endsWith('.sqlite') && f !== 'metadata.sqlite'
+	);
+	if (!dbFile) {
+		throw new Error(`Could not find the local D1 SQLite file in ${objectsDir}`);
+	}
+	const db = new DatabaseSync(resolve(objectsDir, dbFile));
+	try {
+		db.exec('PRAGMA foreign_keys=OFF;');
+		db.exec(readFileSync(sqlPath, 'utf8'));
+	} finally {
+		db.close();
+	}
 }
 
 // Deterministic fabricated result seeded by fixture id — knockouts never DRAW.
@@ -77,8 +115,14 @@ function main() {
 	console.log(`Exporting remote snapshot of "${remote}"...`);
 	run(`npx wrangler d1 export ${remote} --remote --output=${snapshotPath}`);
 
+	console.log('Resetting local D1 state...');
+	rmSync(LOCAL_D1_STATE, { recursive: true, force: true });
+	// Recreate the empty local D1 file at the path wrangler expects before we
+	// open it directly to load the dump.
+	run(`npx wrangler d1 execute ${LOCAL_DB} --local --command "SELECT 1"`);
+
 	console.log('Loading snapshot into local D1 (replacing local state)...');
-	run(`npx wrangler d1 execute ${LOCAL_DB} --local --file=${snapshotPath}`);
+	loadSnapshotIntoLocalD1(snapshotPath);
 	unlinkSync(snapshotPath);
 
 	console.log('Reading unresolved fixtures...');
