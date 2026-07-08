@@ -416,15 +416,18 @@ function computeAwards(
 	fixtures: RecapFixture[]
 ): RecapAward[] {
 	const settled = fixtures.filter((f) => f.result !== null);
-	const settledIds = new Set(settled.map((f) => f.id));
 	const settledCount = settled.length;
 	const fixtureById = new Map(fixtures.map((f) => [f.id, f]));
 
 	const picksByFixture = new Map<number, RecapPick[]>();
 	const picksByUser = new Map<string, RecapPick[]>();
 	for (const p of picks) {
-		(picksByFixture.get(p.fixtureId) ?? picksByFixture.set(p.fixtureId, []).get(p.fixtureId)!).push(p);
-		(picksByUser.get(p.userId) ?? picksByUser.set(p.userId, []).get(p.userId)!).push(p);
+		const forFixture = picksByFixture.get(p.fixtureId);
+		if (forFixture) forFixture.push(p);
+		else picksByFixture.set(p.fixtureId, [p]);
+		const forUser = picksByUser.get(p.userId);
+		if (forUser) forUser.push(p);
+		else picksByUser.set(p.userId, [p]);
 	}
 
 	// Per settled fixture: the plurality value(s) — the pool's most-common Pick(s),
@@ -471,9 +474,9 @@ function computeAwards(
 			if (plurality.has(p.value)) pluralityMatches++;
 			if (isCorrect) {
 				correct++;
-				const weight = getStage(f.stage).weight;
-				if (!plurality.has(p.value)) minorityPoints += weight;
-				if (getStage(f.stage).name === 'Group' && p.value === 'DRAW') drawsCalled++;
+				const stage = getStage(f.stage);
+				if (!plurality.has(p.value)) minorityPoints += stage.weight;
+				if (stage.name === 'Group' && p.value === 'DRAW') drawsCalled++;
 				if (correctCountByFixture.get(f.id) === 1) loneHits++;
 			}
 		}
