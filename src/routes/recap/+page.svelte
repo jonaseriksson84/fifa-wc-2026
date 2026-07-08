@@ -5,6 +5,10 @@
 	import RecapRaceChart from '$lib/components/RecapRaceChart.svelte';
 	import RecapHeatmap from '$lib/components/RecapHeatmap.svelte';
 	import RecapAwards from '$lib/components/RecapAwards.svelte';
+	import RecapHiveMind from '$lib/components/RecapHiveMind.svelte';
+	import RecapWhiffed from '$lib/components/RecapWhiffed.svelte';
+	import RecapFallen from '$lib/components/RecapFallen.svelte';
+	import RecapCloser from '$lib/components/RecapCloser.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -43,6 +47,14 @@
 		<RecapHeatmap heatmap={data.recap.heatmap} />
 
 		<RecapAwards awards={data.recap.awards} />
+
+		<RecapHiveMind hiveMind={data.recap.hiveMind} />
+
+		<RecapWhiffed whiffed={data.recap.whiffed} />
+
+		<RecapFallen fallen={data.recap.fallen} />
+
+		<RecapCloser closer={data.recap.closer} />
 	{/if}
 </div>
 

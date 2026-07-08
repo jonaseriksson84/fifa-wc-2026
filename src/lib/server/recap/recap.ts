@@ -141,6 +141,59 @@ export type RecapAward = {
 	tied: boolean;
 };
 
+/**
+ * The Hive Mind: the pool's majority (plurality) Pick scored as one synthetic
+ * entrant, and where that robot would have landed on the final standings.
+ */
+export type RecapHiveMind = {
+	/** Stage-weighted points the pool's plurality Pick would have scored. */
+	points: number;
+	/** Where the robot slots into the final standings (1-based; ties count above). */
+	rank: number;
+	/** Real players in the pool — the "out of N" denominator. */
+	playerCount: number;
+	/** Real players the robot strictly out-scored. */
+	beat: number;
+	/** Settled fixtures the plurality Pick got right. */
+	correct: number;
+	/** Total settled fixtures — the robot's denominator. */
+	settledCount: number;
+};
+
+/** One fixture the whole pool got wrong — nobody picked its Result. */
+export type RecapWhiffFixture = {
+	fixtureId: number;
+	stage: string;
+	result: string;
+	kickoff: string;
+};
+
+/** The collective blind spots: settled fixtures where nobody picked the Result. */
+export type RecapWhiffed = {
+	/** Whiffed fixtures in kickoff order. */
+	fixtures: RecapWhiffFixture[];
+	count: number;
+};
+
+/** A dropout — a User below the Active threshold — for the in-memoriam scroll. */
+export type RecapFallenUser = {
+	userId: string;
+	name: string;
+	/** ISO of their latest Pick's last-write time, or null if they never picked. */
+	lastSeen: string | null;
+	/** Picks they made all tournament. */
+	pickCount: number;
+};
+
+/** The gold-foil closer: the champion(s) and a coin-flip baseline one-liner. */
+export type RecapCloser = {
+	/** Final rank-1 user(s); ties share the crown. Empty for an empty pool. */
+	champions: RecapAwardWinner[];
+	tied: boolean;
+	/** Points a 50/50 (per-stage) monkey would expect over the settled fixtures. */
+	coinFlipPoints: number;
+};
+
 export type RecapData = {
 	/**
 	 * The Recap renders iff the Final Fixture has a Result (per PRD / ADR 0003:
@@ -152,6 +205,14 @@ export type RecapData = {
 	heatmap: RecapHeatmap;
 	/** The seven foil awards, in canonical order; awards with no winner are omitted. */
 	awards: RecapAward[];
+	/** The pool's majority Pick scored as one entrant, placed on the standings. */
+	hiveMind: RecapHiveMind;
+	/** Settled fixtures the whole pool got wrong. */
+	whiffed: RecapWhiffed;
+	/** Dropouts below the Active threshold; empty (beat absent) when there are none. */
+	fallen: RecapFallenUser[];
+	/** The champion in gold foil and the coin-flip baseline. */
+	closer: RecapCloser;
 };
 
 export function computeRecap(
@@ -176,7 +237,11 @@ export function computeRecap(
 		},
 		race: computeRace(users, picks, fixtures),
 		heatmap: computeHeatmap(users, picks, fixtures),
-		awards: computeAwards(users, picks, fixtures)
+		awards: computeAwards(users, picks, fixtures),
+		hiveMind: computeHiveMind(users, picks, fixtures),
+		whiffed: computeWhiffed(picks, fixtures),
+		fallen: computeFallen(users, picks, fixtures),
+		closer: computeCloser(users, picks, fixtures)
 	};
 }
 
@@ -625,6 +690,157 @@ function pushAward(awards: RecapAward[], spec: AwardSpec): void {
 		stat: spec.stat(winners[0]),
 		tied: winners.length > 1
 	});
+}
+
+// The Hive Mind beat: score the pool's majority Pick per settled fixture as one
+// synthetic entrant, then slot the robot into the final standings. Plurality ties
+// (an even split at the top) are broken deterministically by the lexicographically
+// smallest value, so the crowd's Pick never depends on row order. Correctness is
+// stage-aware for free — the plurality value is correct iff it equals the Result.
+function computeHiveMind(
+	users: RecapUser[],
+	picks: RecapPick[],
+	fixtures: RecapFixture[]
+): RecapHiveMind {
+	const settled = fixtures.filter((f) => f.result !== null);
+
+	const picksByFixture = new Map<number, RecapPick[]>();
+	for (const p of picks) {
+		const bucket = picksByFixture.get(p.fixtureId);
+		if (bucket) bucket.push(p);
+		else picksByFixture.set(p.fixtureId, [p]);
+	}
+
+	let points = 0;
+	let correct = 0;
+	for (const f of settled) {
+		const counts = new Map<string, number>();
+		for (const p of picksByFixture.get(f.id) ?? [])
+			counts.set(p.value, (counts.get(p.value) ?? 0) + 1);
+		if (counts.size === 0) continue; // nobody picked — the crowd has no say here
+
+		let max = 0;
+		for (const c of counts.values()) max = Math.max(max, c);
+		// Deterministic tie-break: the lexicographically smallest of the joint-top values.
+		let choice: string | null = null;
+		for (const [v, c] of counts) if (c === max && (choice === null || v < choice)) choice = v;
+
+		if (choice === f.result) {
+			points += getStage(f.stage).weight;
+			correct++;
+		}
+	}
+
+	// Place the robot: rank is the number of real users strictly ahead, plus one.
+	const scores = computeScores(picks, fixtures);
+	let ahead = 0;
+	let beat = 0;
+	for (const u of users) {
+		const s = scores.get(u.id) ?? 0;
+		if (s > points) ahead++;
+		else if (s < points) beat++;
+	}
+
+	return { points, rank: ahead + 1, playerCount: users.length, beat, correct, settledCount: settled.length };
+}
+
+// The we-all-whiffed beat: every settled fixture the whole pool got wrong — at
+// least one User picked it, yet nobody nailed the Result. A fixture nobody picked
+// at all is a ghost, not a collective whiff, so it's excluded. Chronological order.
+function computeWhiffed(picks: RecapPick[], fixtures: RecapFixture[]): RecapWhiffed {
+	const anyPick = new Map<number, boolean>();
+	const anyCorrect = new Map<number, boolean>();
+	const resultByFixture = new Map(fixtures.map((f) => [f.id, f.result]));
+	for (const p of picks) {
+		anyPick.set(p.fixtureId, true);
+		if (p.value === resultByFixture.get(p.fixtureId)) anyCorrect.set(p.fixtureId, true);
+	}
+
+	const whiffs = fixtures
+		.filter((f) => f.result !== null && anyPick.get(f.id) && !anyCorrect.get(f.id))
+		.sort((a, b) => {
+			const t = new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
+			return t !== 0 ? t : a.id - b.id;
+		})
+		.map((f) => ({ fixtureId: f.id, stage: f.stage, result: f.result!, kickoff: f.kickoff }));
+
+	return { fixtures: whiffs, count: whiffs.length };
+}
+
+// The Fallen beat: an in-memoriam scroll of dropouts — Users below the Active
+// threshold (Picks on ≥50% of settled Fixtures) — with a last-seen date from
+// their latest Pick's write time. Empty when the pool is fully committed (the
+// friends pool), so the page simply doesn't render the beat. When nothing has
+// settled we can't judge activity, so nobody has fallen. Most recent departure
+// first; the never-seen (zero-Pick) sink to the bottom.
+function computeFallen(
+	users: RecapUser[],
+	picks: RecapPick[],
+	fixtures: RecapFixture[]
+): RecapFallenUser[] {
+	const settledIds = new Set(fixtures.filter((f) => f.result !== null).map((f) => f.id));
+	const settledCount = settledIds.size;
+	if (settledCount === 0) return [];
+
+	const picksByUser = new Map<string, RecapPick[]>();
+	for (const p of picks) {
+		const bucket = picksByUser.get(p.userId);
+		if (bucket) bucket.push(p);
+		else picksByUser.set(p.userId, [p]);
+	}
+
+	const fallen: RecapFallenUser[] = [];
+	for (const u of users) {
+		const mine = picksByUser.get(u.id) ?? [];
+		const answered = mine.filter((p) => settledIds.has(p.fixtureId)).length;
+		if (answered * 2 >= settledCount) continue; // Active — belongs in the awards, not here
+
+		let lastSeen: string | null = null;
+		for (const p of mine) {
+			if (p.updatedAt && (lastSeen === null || p.updatedAt > lastSeen)) lastSeen = p.updatedAt;
+		}
+		fallen.push({ userId: u.id, name: displayName(u), lastSeen, pickCount: mine.length });
+	}
+
+	// Most recently seen first; never-seen (null) last, then stable by name.
+	return fallen.sort((a, b) => {
+		if (a.lastSeen === b.lastSeen) return a.name.localeCompare(b.name);
+		if (a.lastSeen === null) return 1;
+		if (b.lastSeen === null) return -1;
+		return b.lastSeen.localeCompare(a.lastSeen);
+	});
+}
+
+// The closer beat: the champion(s) in gold foil and the coin-flip baseline. The
+// champion is whoever holds final rank 1 (ties share the crown). The baseline is
+// what a 50/50-per-stage monkey would expect over the settled fixtures — a Group
+// pick is 1 in 3 (HOME/AWAY/DRAW), a knockout 1 in 2 (no DRAW) — rounded to a
+// whole number for the one-liner.
+function computeCloser(
+	users: RecapUser[],
+	picks: RecapPick[],
+	fixtures: RecapFixture[]
+): RecapCloser {
+	const scores = computeScores(picks, fixtures);
+	const ranked = rankEntries(
+		users.map((u) => ({ userId: u.id, name: displayName(u), points: scores.get(u.id) ?? 0 }))
+	);
+	const champions = ranked
+		.filter((e) => e.rank === 1)
+		.map((e) => ({ userId: e.userId, name: e.name }));
+
+	let expected = 0;
+	for (const f of fixtures) {
+		if (f.result === null) continue;
+		const stage = getStage(f.stage);
+		expected += stage.weight * (stage.isKnockout ? 1 / 2 : 1 / 3);
+	}
+
+	return {
+		champions,
+		tied: champions.length > 1,
+		coinFlipPoints: Math.round(expected)
+	};
 }
 
 function median(values: number[]): number {

@@ -26,7 +26,33 @@ const awards = readFileSync(
 	resolve(__dirname, '../../lib/components/RecapAwards.svelte'),
 	'utf-8'
 );
-const pageHtml = pageSvelte + titleCard + scrollReveal + raceChart + heatmap + awards;
+const hiveMind = readFileSync(
+	resolve(__dirname, '../../lib/components/RecapHiveMind.svelte'),
+	'utf-8'
+);
+const whiffed = readFileSync(
+	resolve(__dirname, '../../lib/components/RecapWhiffed.svelte'),
+	'utf-8'
+);
+const fallen = readFileSync(
+	resolve(__dirname, '../../lib/components/RecapFallen.svelte'),
+	'utf-8'
+);
+const closer = readFileSync(
+	resolve(__dirname, '../../lib/components/RecapCloser.svelte'),
+	'utf-8'
+);
+const pageHtml =
+	pageSvelte +
+	titleCard +
+	scrollReveal +
+	raceChart +
+	heatmap +
+	awards +
+	hiveMind +
+	whiffed +
+	fallen +
+	closer;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
 
@@ -159,6 +185,108 @@ describe('recap page — awards beat', () => {
 
 	it('never uses the forbidden vocabulary', () => {
 		const lower = awards.toLowerCase();
+		expect(lower).not.toMatch(/\bbet\b/);
+		expect(lower).not.toMatch(/\bguess\b/);
+		expect(lower).not.toMatch(/\bwrapped\b/);
+	});
+});
+
+describe('recap page — Hive Mind beat', () => {
+	it('renders the Hive Mind beat fed from the seam', () => {
+		expect(pageSvelte).toContain('RecapHiveMind');
+		expect(pageSvelte).toContain('recap.hiveMind');
+	});
+
+	it('places the robot on the standings with its points and accuracy', () => {
+		expect(hiveMind).toContain('hiveMind');
+		expect(hiveMind).toContain('rank');
+		expect(hiveMind).toContain('points');
+		expect(hiveMind).toContain('playerCount');
+		expect(hiveMind.toLowerCase()).toContain('crowd');
+	});
+
+	it('reveals on scroll and respects reduced motion', () => {
+		expect(hiveMind).toContain('IntersectionObserver');
+		expect(hiveMind).toContain('prefers-reduced-motion');
+	});
+
+	it('never uses the forbidden vocabulary', () => {
+		const lower = hiveMind.toLowerCase();
+		expect(lower).not.toMatch(/\bbet\b/);
+		expect(lower).not.toMatch(/\bguess\b/);
+	});
+});
+
+describe('recap page — we-all-whiffed beat', () => {
+	it('renders the whiffed beat fed from the seam', () => {
+		expect(pageSvelte).toContain('RecapWhiffed');
+		expect(pageSvelte).toContain('recap.whiffed');
+	});
+
+	it('aggregates the zero-correct fixtures into a single beat', () => {
+		expect(whiffed).toContain('whiffed');
+		expect(whiffed).toContain('fixtures');
+		expect(whiffed).toContain('count');
+		expect(whiffed.toLowerCase()).toContain('whiff');
+	});
+
+	it('reveals on scroll and respects reduced motion', () => {
+		expect(whiffed).toContain('IntersectionObserver');
+		expect(whiffed).toContain('prefers-reduced-motion');
+	});
+
+	it('never uses the forbidden vocabulary', () => {
+		const lower = whiffed.toLowerCase();
+		expect(lower).not.toMatch(/\bbet\b/);
+		expect(lower).not.toMatch(/\bguess\b/);
+	});
+});
+
+describe('recap page — The Fallen beat', () => {
+	it('renders The Fallen beat fed from the seam', () => {
+		expect(pageSvelte).toContain('RecapFallen');
+		expect(pageSvelte).toContain('recap.fallen');
+	});
+
+	it('lists dropouts with a last-seen date and is guarded when empty', () => {
+		expect(fallen).toContain('fallen');
+		expect(fallen).toContain('lastSeen');
+		expect(fallen.toLowerCase()).toContain('last seen');
+		// The whole section is guarded so an empty pool renders nothing.
+		expect(fallen).toMatch(/#if fallen\.length/);
+	});
+
+	it('reveals on scroll and respects reduced motion', () => {
+		expect(fallen).toContain('IntersectionObserver');
+		expect(fallen).toContain('prefers-reduced-motion');
+	});
+
+	it('never uses the forbidden vocabulary', () => {
+		const lower = fallen.toLowerCase();
+		expect(lower).not.toMatch(/\bbet\b/);
+		expect(lower).not.toMatch(/\bguess\b/);
+	});
+});
+
+describe('recap page — gold-foil closer', () => {
+	it('renders the closer fed from the seam', () => {
+		expect(pageSvelte).toContain('RecapCloser');
+		expect(pageSvelte).toContain('recap.closer');
+	});
+
+	it('crowns the champion in gold/legendary foil and signs off to 2030', () => {
+		expect(closer).toContain('champions');
+		expect(closer).toMatch(/foil-(gold|legendary)/);
+		expect(closer).toContain('2030');
+	});
+
+	it('shimmers in on scroll and respects reduced motion', () => {
+		expect(closer).toContain('IntersectionObserver');
+		expect(closer).toContain('prefers-reduced-motion');
+	});
+
+	it('never uses the forbidden vocabulary', () => {
+		const lower = closer.toLowerCase();
 		expect(lower).not.toMatch(/\bbet\b/);
 		expect(lower).not.toMatch(/\bguess\b/);
 		expect(lower).not.toMatch(/\bwrapped\b/);

@@ -604,6 +604,257 @@ describe('computeRecap — foil awards', () => {
 	});
 });
 
+describe('computeRecap — Hive Mind', () => {
+	it("scores the pool's majority Pick and places the robot on the final standings", () => {
+		const users = [makeUser('a'), makeUser('b'), makeUser('c')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'AWAY', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// f1 plurality HOME (a,b) → correct (+1); f2 plurality HOME (b,c) → wrong;
+			// f3 plurality HOME (a,b) → correct (+6). Robot = 7, right on 2 of 3.
+			makePick('a', 1, 'HOME'),
+			makePick('a', 2, 'AWAY'),
+			makePick('a', 3, 'HOME'),
+			makePick('b', 1, 'HOME'),
+			makePick('b', 2, 'HOME'),
+			makePick('b', 3, 'HOME'),
+			makePick('c', 1, 'AWAY'),
+			makePick('c', 2, 'HOME'),
+			makePick('c', 3, 'AWAY')
+		];
+
+		const { hiveMind } = computeRecap(users, picks, fixtures);
+
+		// Users: a=8, b=7, c=0. Robot=7 → beaten only by a → rank 2, beats c.
+		expect(hiveMind.points).toBe(7);
+		expect(hiveMind.correct).toBe(2);
+		expect(hiveMind.settledCount).toBe(3);
+		expect(hiveMind.rank).toBe(2);
+		expect(hiveMind.beat).toBe(1);
+		expect(hiveMind.playerCount).toBe(3);
+	});
+
+	it('breaks plurality ties deterministically', () => {
+		const users = [makeUser('a'), makeUser('b')];
+		const fixtures = [
+			// Split 1-1 between AWAY and HOME. The tie-break must be deterministic;
+			// choosing the lexicographically smaller value (AWAY) here lands correct.
+			makeFixture({ id: 1, stage: 'Group', result: 'AWAY', kickoff: '2026-06-11T18:00:00.000Z' })
+		];
+		const picks = [makePick('a', 1, 'HOME'), makePick('b', 1, 'AWAY')];
+
+		const { hiveMind } = computeRecap(users, picks, fixtures);
+
+		expect(hiveMind.points).toBe(1);
+		expect(hiveMind.correct).toBe(1);
+	});
+
+	it('ignores unsettled fixtures for partially settled data', () => {
+		const users = [makeUser('a')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: null, kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [makePick('a', 1, 'HOME'), makePick('a', 2, 'HOME')];
+
+		const { hiveMind } = computeRecap(users, picks, fixtures);
+
+		expect(hiveMind.settledCount).toBe(1);
+		expect(hiveMind.points).toBe(1);
+	});
+});
+
+describe('computeRecap — we all whiffed', () => {
+	it('aggregates the settled fixtures where nobody picked the Result', () => {
+		const users = [makeUser('a'), makeUser('b')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Final', result: 'AWAY', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// f1: both wrong → whiff. f2: a correct → not a whiff. f3: both wrong → whiff.
+			makePick('a', 1, 'AWAY'),
+			makePick('b', 1, 'AWAY'),
+			makePick('a', 2, 'HOME'),
+			makePick('b', 2, 'AWAY'),
+			makePick('a', 3, 'HOME'),
+			makePick('b', 3, 'HOME')
+		];
+
+		const { whiffed } = computeRecap(users, picks, fixtures);
+
+		expect(whiffed.count).toBe(2);
+		expect(whiffed.fixtures.map((f) => f.fixtureId)).toEqual([1, 3]);
+		expect(whiffed.fixtures[1].result).toBe('AWAY');
+	});
+
+	it('does not count a fixture nobody picked (a ghosted fixture is not a whiff)', () => {
+		const users = [makeUser('a')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		// Only fixture 1 has a pick (correct). Fixture 2 has no picks at all.
+		const picks = [makePick('a', 1, 'HOME')];
+
+		const { whiffed } = computeRecap(users, picks, fixtures);
+
+		expect(whiffed.count).toBe(0);
+	});
+
+	it('returns an empty whiffed aggregate for an empty pool', () => {
+		const { whiffed } = computeRecap([], [], []);
+		expect(whiffed.count).toBe(0);
+		expect(whiffed.fixtures).toEqual([]);
+	});
+});
+
+describe('computeRecap — The Fallen', () => {
+	it('lists dropouts below the Active threshold with a last-seen date', () => {
+		const users = [makeUser('faithful'), makeUser('dropout'), makeUser('never')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Group', result: 'HOME', kickoff: '2026-06-13T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// faithful: 4 of 4 → Active, not fallen.
+			makePick('faithful', 1, 'HOME'),
+			makePick('faithful', 2, 'HOME'),
+			makePick('faithful', 3, 'HOME'),
+			makePick('faithful', 4, 'HOME'),
+			// dropout: 1 of 4 → below threshold → fallen, last seen at its pick time.
+			makePickAt('dropout', 1, 'HOME', '2026-06-11T17:00:00.000Z')
+			// never: zero picks → fallen with no last-seen date.
+		];
+
+		const { fallen } = computeRecap(users, picks, fixtures);
+
+		const ids = fallen.map((f) => f.userId);
+		expect(ids).toContain('dropout');
+		expect(ids).toContain('never');
+		expect(ids).not.toContain('faithful');
+		const dropout = fallen.find((f) => f.userId === 'dropout')!;
+		expect(dropout.lastSeen).toBe('2026-06-11T17:00:00.000Z');
+		expect(dropout.pickCount).toBe(1);
+		const never = fallen.find((f) => f.userId === 'never')!;
+		expect(never.lastSeen).toBeNull();
+		expect(never.pickCount).toBe(0);
+	});
+
+	it('derives last-seen from the latest Pick timestamp', () => {
+		const users = [makeUser('faithful'), makeUser('dropout')];
+		const fixtures = [1, 2, 3, 4, 5].map((id) =>
+			makeFixture({
+				id,
+				stage: id === 5 ? 'Final' : 'Group',
+				result: 'HOME',
+				kickoff: `2026-06-1${id}T18:00:00.000Z`
+			})
+		);
+		const picks = [
+			makePick('faithful', 1, 'HOME'),
+			makePick('faithful', 2, 'HOME'),
+			makePick('faithful', 3, 'HOME'),
+			makePick('faithful', 4, 'HOME'),
+			makePick('faithful', 5, 'HOME'),
+			// dropout: 2 of 5 → below threshold; last-seen is the later of its two picks.
+			makePickAt('dropout', 1, 'HOME', '2026-06-11T12:00:00.000Z'),
+			makePickAt('dropout', 2, 'HOME', '2026-06-12T20:00:00.000Z')
+		];
+
+		const { fallen } = computeRecap(users, picks, fixtures);
+
+		const dropout = fallen.find((f) => f.userId === 'dropout')!;
+		expect(dropout.lastSeen).toBe('2026-06-12T20:00:00.000Z');
+	});
+
+	it('degrades gracefully to empty when everyone is Active', () => {
+		const users = [makeUser('a'), makeUser('b')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('a', 1, 'HOME'),
+			makePick('a', 2, 'HOME'),
+			makePick('b', 1, 'HOME'),
+			makePick('b', 2, 'HOME')
+		];
+
+		const { fallen } = computeRecap(users, picks, fixtures);
+
+		expect(fallen).toEqual([]);
+	});
+
+	it('returns no Fallen when nothing has settled yet', () => {
+		const users = [makeUser('a')];
+		const fixtures = [makeFixture({ id: 1, stage: 'Final', result: null })];
+
+		const { fallen } = computeRecap(users, [], fixtures);
+
+		expect(fallen).toEqual([]);
+	});
+});
+
+describe('computeRecap — closer', () => {
+	it('crowns the champion (final rank 1) for the gold-foil closer', () => {
+		const users = [makeUser('champ'), makeUser('other')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('champ', 1, 'HOME'),
+			makePick('champ', 2, 'HOME'),
+			makePick('other', 1, 'HOME')
+		];
+
+		const { closer } = computeRecap(users, picks, fixtures);
+
+		expect(closer.champions.map((c) => c.userId)).toEqual(['champ']);
+		expect(closer.tied).toBe(false);
+	});
+
+	it('shares the crown on a tie for first', () => {
+		const users = [makeUser('a'), makeUser('b')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [makePick('a', 1, 'HOME'), makePick('b', 1, 'HOME')];
+
+		const { closer } = computeRecap(users, picks, fixtures);
+
+		expect(closer.champions.map((c) => c.userId).sort()).toEqual(['a', 'b']);
+		expect(closer.tied).toBe(true);
+	});
+
+	it('reports a coin-flip baseline from the settled fixtures', () => {
+		const users = [makeUser('a')];
+		const fixtures = [
+			// One Final only: a 50/50 monkey expects 0.5 × 6 = 3 pts.
+			makeFixture({ id: 1, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [makePick('a', 1, 'HOME')];
+
+		const { closer } = computeRecap(users, picks, fixtures);
+
+		expect(closer.coinFlipPoints).toBe(3);
+	});
+
+	it('returns an empty closer for an empty pool without throwing', () => {
+		const { closer } = computeRecap([], [], []);
+		expect(closer.champions).toEqual([]);
+		expect(closer.tied).toBe(false);
+		expect(closer.coinFlipPoints).toBe(0);
+	});
+});
+
 describe('computeRecap — lead changes', () => {
 	it('detects a lead change and reports how long each leader held the crown', () => {
 		const users = [makeUser('u1'), makeUser('u2')];
