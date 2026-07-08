@@ -99,9 +99,12 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
+		/* A plot of headstones rather than one tall column — reads more like a
+		   graveyard and keeps the beat dense when a pool has several dropouts.
+		   Collapses to a single column on the narrowest phones. */
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+		gap: 10px;
 	}
 	.stone {
 		display: flex;
@@ -111,7 +114,7 @@
 		border: 2px solid var(--ink);
 		border-radius: 40px 40px 6px 6px;
 		background: var(--paper-card);
-		padding: 22px 18px 16px;
+		padding: 18px 14px 14px;
 		opacity: 0;
 		transform: translateY(14px);
 	}
