@@ -22,7 +22,11 @@ const heatmap = readFileSync(
 	resolve(__dirname, '../../lib/components/RecapHeatmap.svelte'),
 	'utf-8'
 );
-const pageHtml = pageSvelte + titleCard + scrollReveal + raceChart + heatmap;
+const awards = readFileSync(
+	resolve(__dirname, '../../lib/components/RecapAwards.svelte'),
+	'utf-8'
+);
+const pageHtml = pageSvelte + titleCard + scrollReveal + raceChart + heatmap + awards;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
 
@@ -124,6 +128,40 @@ describe('recap page — heatmap beat', () => {
 		const lower = heatmap.toLowerCase();
 		expect(lower).not.toMatch(/\bbet\b/);
 		expect(lower).not.toMatch(/\bguess\b/);
+	});
+});
+
+describe('recap page — awards beat', () => {
+	it('renders the awards beat fed from the seam', () => {
+		expect(pageSvelte).toContain('RecapAwards');
+		expect(pageSvelte).toContain('recap.awards');
+	});
+
+	it('renders each award as a foil card with winner, stat and subtitle', () => {
+		expect(awards).toContain('award');
+		expect(awards).toContain('winner');
+		expect(awards).toContain('stat');
+		expect(awards).toContain('subtitle');
+		expect(awards).toContain('tier');
+		// Foil tiers from the sticker album language.
+		expect(awards).toMatch(/foil-(paper|pearl|holo|gold|legendary)/);
+	});
+
+	it('shimmers the cards in on scroll and respects reduced motion', () => {
+		expect(awards).toContain('IntersectionObserver');
+		expect(awards).toContain('prefers-reduced-motion');
+		expect(awards.toLowerCase()).toContain('shine');
+	});
+
+	it('marks tied awards as shared', () => {
+		expect(awards).toContain('tied');
+	});
+
+	it('never uses the forbidden vocabulary', () => {
+		const lower = awards.toLowerCase();
+		expect(lower).not.toMatch(/\bbet\b/);
+		expect(lower).not.toMatch(/\bguess\b/);
+		expect(lower).not.toMatch(/\bwrapped\b/);
 	});
 });
 

@@ -15,6 +15,19 @@ function makePick(userId: string, fixtureId: number, value: string): RecapPick {
 	return { userId, fixtureId, value };
 }
 
+function makePickAt(
+	userId: string,
+	fixtureId: number,
+	value: string,
+	updatedAt: string
+): RecapPick {
+	return { userId, fixtureId, value, updatedAt };
+}
+
+function awardByKey(recap: ReturnType<typeof computeRecap>, key: string) {
+	return recap.awards.find((a) => a.key === key);
+}
+
 describe('computeRecap — availability gate', () => {
 	it('is unavailable when the Final fixture has no Result yet', () => {
 		const fixtures = [
@@ -338,6 +351,256 @@ describe('computeRecap — heatmap grid', () => {
 		expect(heatmap.columns).toEqual([]);
 		expect(heatmap.rows).toEqual([]);
 		expect(heatmap.stageGroups).toEqual([]);
+	});
+});
+
+describe('computeRecap — foil awards', () => {
+	it('The Oracle goes to the highest accuracy % among Active users', () => {
+		const users = [makeUser('sharp'), makeUser('lucky')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Group', result: 'HOME', kickoff: '2026-06-13T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// sharp: 3/4 correct = 75%, Active (4 of 4 settled).
+			makePick('sharp', 1, 'HOME'),
+			makePick('sharp', 2, 'HOME'),
+			makePick('sharp', 3, 'HOME'),
+			makePick('sharp', 4, 'AWAY'),
+			// lucky: one correct Pick = 100%, but only 1 of 4 settled → not Active.
+			makePick('lucky', 1, 'HOME')
+		];
+
+		const oracle = awardByKey(computeRecap(users, picks, fixtures), 'oracle')!;
+
+		expect(oracle.winners.map((w) => w.userId)).toEqual(['sharp']);
+		expect(oracle.stat).toBe('75%');
+		expect(oracle.tied).toBe(false);
+	});
+
+	it('shares an award between tied winners and marks it tied', () => {
+		const users = [makeUser('a'), makeUser('b')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('a', 1, 'HOME'),
+			makePick('a', 2, 'HOME'),
+			makePick('b', 1, 'HOME'),
+			makePick('b', 2, 'HOME')
+		];
+
+		const oracle = awardByKey(computeRecap(users, picks, fixtures), 'oracle')!;
+
+		expect(oracle.winners.map((w) => w.userId).sort()).toEqual(['a', 'b']);
+		expect(oracle.tied).toBe(true);
+	});
+
+	it('omits an award entirely when no user qualifies', () => {
+		const users = [makeUser('u1')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'R16', result: 'HOME', kickoff: '2026-06-28T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		// No group-stage DRAW anywhere → Draw Whisperer has no candidate.
+		const picks = [makePick('u1', 1, 'HOME'), makePick('u1', 2, 'HOME')];
+
+		expect(awardByKey(computeRecap(users, picks, fixtures), 'draw-whisperer')).toBeUndefined();
+	});
+
+	it('The Sheep goes to the highest agreement with the pool plurality Pick', () => {
+		const users = [makeUser('sheep'), makeUser('rebel'), makeUser('c'), makeUser('d')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		// Plurality on all three is HOME (three pick HOME, rebel picks AWAY).
+		const picks = [
+			makePick('sheep', 1, 'HOME'),
+			makePick('sheep', 2, 'HOME'),
+			makePick('sheep', 3, 'HOME'),
+			makePick('rebel', 1, 'AWAY'),
+			makePick('rebel', 2, 'AWAY'),
+			makePick('rebel', 3, 'AWAY'),
+			makePick('c', 1, 'HOME'),
+			makePick('c', 2, 'HOME'),
+			makePick('c', 3, 'HOME'),
+			makePick('d', 1, 'HOME'),
+			makePick('d', 2, 'HOME'),
+			makePick('d', 3, 'HOME')
+		];
+
+		const sheep = awardByKey(computeRecap(users, picks, fixtures), 'sheep')!;
+
+		expect(sheep.winners.map((w) => w.userId)).toContain('sheep');
+		expect(sheep.winners.map((w) => w.userId)).not.toContain('rebel');
+	});
+
+	it('The Contrarian counts points from correct minority Picks only', () => {
+		const users = [makeUser('bold'), makeUser('a'), makeUser('b')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Final', result: 'AWAY', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		// Everyone else picked HOME (plurality); bold alone picked the correct AWAY.
+		const picks = [
+			makePick('bold', 1, 'AWAY'),
+			makePick('a', 1, 'HOME'),
+			makePick('b', 1, 'HOME')
+		];
+
+		const contrarian = awardByKey(computeRecap(users, picks, fixtures), 'contrarian')!;
+
+		expect(contrarian.winners.map((w) => w.userId)).toEqual(['bold']);
+		// Final is legendary/6 pts.
+		expect(contrarian.stat).toBe('6 pts');
+	});
+
+	it('Draw Whisperer counts correct group-stage DRAWs only, never knockout picks', () => {
+		const users = [makeUser('whisper'), makeUser('other')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'DRAW', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'DRAW', kickoff: '2026-06-12T18:00:00.000Z' }),
+			// A knockout fixture can never resolve to DRAW; a DRAW pick here must not count.
+			makeFixture({ id: 3, stage: 'R16', result: 'HOME', kickoff: '2026-06-28T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('whisper', 1, 'DRAW'),
+			makePick('whisper', 2, 'DRAW'),
+			makePick('whisper', 3, 'DRAW'), // knockout DRAW — never valid, never scores
+			makePick('whisper', 4, 'HOME'),
+			makePick('other', 1, 'DRAW'),
+			makePick('other', 2, 'HOME')
+		];
+
+		const draw = awardByKey(computeRecap(users, picks, fixtures), 'draw-whisperer')!;
+
+		expect(draw.winners.map((w) => w.userId)).toEqual(['whisper']);
+		expect(draw.stat).toBe('2 draws');
+	});
+
+	it('Deadline Demon goes to the shortest median gap between Pick time and Lock time', () => {
+		const users = [makeUser('demon'), makeUser('early')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' })
+		];
+		const picks = [
+			// demon writes ~5 min before each kickoff.
+			makePickAt('demon', 1, 'HOME', '2026-06-11T17:55:00.000Z'),
+			makePickAt('demon', 2, 'HOME', '2026-06-12T17:55:00.000Z'),
+			// early writes days ahead.
+			makePickAt('early', 1, 'HOME', '2026-06-01T12:00:00.000Z'),
+			makePickAt('early', 2, 'HOME', '2026-06-02T12:00:00.000Z')
+		];
+
+		const demon = awardByKey(computeRecap(users, picks, fixtures), 'deadline-demon')!;
+
+		expect(demon.winners.map((w) => w.userId)).toEqual(['demon']);
+		expect(demon.stat).toBe('5 min');
+	});
+
+	it('The Lone Genius goes to the most sole-correct-picker fixtures', () => {
+		const users = [makeUser('genius'), makeUser('a'), makeUser('b')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'AWAY', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'AWAY', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// genius alone right on 1 & 2; everyone right on 3 (not a lone hit).
+			makePick('genius', 1, 'AWAY'),
+			makePick('genius', 2, 'AWAY'),
+			makePick('genius', 3, 'HOME'),
+			makePick('a', 1, 'HOME'),
+			makePick('a', 2, 'HOME'),
+			makePick('a', 3, 'HOME'),
+			makePick('b', 1, 'HOME'),
+			makePick('b', 2, 'HOME'),
+			makePick('b', 3, 'HOME')
+		];
+
+		const lone = awardByKey(computeRecap(users, picks, fixtures), 'lone-genius')!;
+
+		expect(lone.winners.map((w) => w.userId)).toEqual(['genius']);
+		expect(lone.stat).toBe('2×');
+	});
+
+	it('The Ghost goes to the most missed Picks among Active users, not dropouts', () => {
+		const users = [makeUser('ghost'), makeUser('faithful'), makeUser('fallen')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Group', result: 'HOME', kickoff: '2026-06-13T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// ghost: 2 of 4 → Active, but missed 2.
+			makePick('ghost', 1, 'HOME'),
+			makePick('ghost', 2, 'HOME'),
+			// faithful: all 4, missed 0.
+			makePick('faithful', 1, 'HOME'),
+			makePick('faithful', 2, 'HOME'),
+			makePick('faithful', 3, 'HOME'),
+			makePick('faithful', 4, 'HOME'),
+			// fallen: 1 of 4 → not Active, missed 3 but excluded (that's The Fallen's turf).
+			makePick('fallen', 1, 'HOME')
+		];
+
+		const ghost = awardByKey(computeRecap(users, picks, fixtures), 'ghost')!;
+
+		expect(ghost.winners.map((w) => w.userId)).toEqual(['ghost']);
+		expect(ghost.stat).toBe('2 missed');
+	});
+
+	it('returns the seven awards in canonical order when all have winners', () => {
+		const users = [makeUser('a'), makeUser('b'), makeUser('c')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'DRAW', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'AWAY', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Group', result: 'HOME', kickoff: '2026-06-13T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// a: draw caller + a sole-correct minority AWAY, always on time.
+			makePickAt('a', 1, 'DRAW', '2026-06-11T17:50:00.000Z'),
+			makePickAt('a', 2, 'AWAY', '2026-06-12T17:50:00.000Z'),
+			makePickAt('a', 3, 'HOME', '2026-06-13T17:50:00.000Z'),
+			makePickAt('a', 4, 'HOME', '2026-07-19T17:50:00.000Z'),
+			// b: follows the flock, early, misses one.
+			makePickAt('b', 1, 'HOME', '2026-06-01T12:00:00.000Z'),
+			makePickAt('b', 3, 'HOME', '2026-06-03T12:00:00.000Z'),
+			makePickAt('b', 4, 'HOME', '2026-06-04T12:00:00.000Z'),
+			// c: fills the pool out so plurality and Active thresholds are meaningful.
+			makePickAt('c', 1, 'HOME', '2026-06-01T12:00:00.000Z'),
+			makePickAt('c', 2, 'HOME', '2026-06-02T12:00:00.000Z'),
+			makePickAt('c', 3, 'HOME', '2026-06-03T12:00:00.000Z'),
+			makePickAt('c', 4, 'HOME', '2026-06-04T12:00:00.000Z')
+		];
+
+		const { awards } = computeRecap(users, picks, fixtures);
+
+		expect(awards.map((a) => a.key)).toEqual([
+			'oracle',
+			'sheep',
+			'contrarian',
+			'draw-whisperer',
+			'deadline-demon',
+			'lone-genius',
+			'ghost'
+		]);
+		// Every card carries a title, a snarky subtitle, a foil tier and a stat.
+		for (const a of awards) {
+			expect(a.title.length).toBeGreaterThan(0);
+			expect(a.subtitle.length).toBeGreaterThan(0);
+			expect(a.tier.length).toBeGreaterThan(0);
+			expect(a.stat.length).toBeGreaterThan(0);
+			expect(a.winners.length).toBeGreaterThan(0);
+		}
 	});
 });
 

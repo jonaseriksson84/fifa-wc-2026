@@ -4,7 +4,7 @@
 // slice adds the race chart beat (per-user cumulative points + lead changes).
 // Later beats (heatmap, awards, …) keep growing the RecapData shape behind this
 // same seam without changing the loader.
-import { getStage } from '$lib/stage';
+import { getStage, type FoilTier } from '$lib/stage';
 import { rankEntries } from '$lib/top-leaderboard';
 import { displayName } from '$lib/display-name';
 import { computeScores } from '$lib/server/scoring/score';
@@ -16,7 +16,8 @@ export type RecapUser = {
 	displayName?: string | null;
 };
 
-export type RecapPick = { userId: string; fixtureId: number; value: string };
+/** `updatedAt` (ISO) is the Pick's last-write time — the Deadline Demon input. */
+export type RecapPick = { userId: string; fixtureId: number; value: string; updatedAt?: string };
 
 export type RecapFixture = {
 	id: number;
@@ -112,6 +113,34 @@ export type RecapHeatmap = {
 	stageGroups: RecapHeatStageGroup[];
 };
 
+/** The seven award identifiers, in the order the foil cards appear. */
+export type RecapAwardKey =
+	| 'oracle'
+	| 'sheep'
+	| 'contrarian'
+	| 'draw-whisperer'
+	| 'deadline-demon'
+	| 'lone-genius'
+	| 'ghost';
+
+/** A winner of an award (usually one; more than one on a tie). */
+export type RecapAwardWinner = { userId: string; name: string };
+
+/** One foil award card: name, winner(s), one number, one snarky subtitle. */
+export type RecapAward = {
+	key: RecapAwardKey;
+	title: string;
+	/** Snarky one-liner under the winner. */
+	subtitle: string;
+	/** Foil tier for the card's visual language (paper…legendary). */
+	tier: FoilTier;
+	/** Winner(s). Ties share the card; an award with no qualifying user is omitted. */
+	winners: RecapAwardWinner[];
+	/** The one number, pre-formatted for display (e.g. "92%", "14 pts", "3×"). */
+	stat: string;
+	tied: boolean;
+};
+
 export type RecapData = {
 	/**
 	 * The Recap renders iff the Final Fixture has a Result (per PRD / ADR 0003:
@@ -121,6 +150,8 @@ export type RecapData = {
 	title: RecapTitle;
 	race: RecapRace;
 	heatmap: RecapHeatmap;
+	/** The seven foil awards, in canonical order; awards with no winner are omitted. */
+	awards: RecapAward[];
 };
 
 export function computeRecap(
@@ -144,7 +175,8 @@ export function computeRecap(
 			lastKickoff
 		},
 		race: computeRace(users, picks, fixtures),
-		heatmap: computeHeatmap(users, picks, fixtures)
+		heatmap: computeHeatmap(users, picks, fixtures),
+		awards: computeAwards(users, picks, fixtures)
 	};
 }
 
@@ -336,4 +368,272 @@ function computeLeadSegments(
 		);
 		return { userId: run.userId, name: nameById.get(run.userId)!, fromKickoff, toKickoff, days };
 	});
+}
+
+// The awards beat: seven foil trading cards, each with a winner, one number, and a
+// snarky subtitle. Everything a card renders is computed here in the seam.
+//
+// Rate-based awards (Oracle, Sheep, Deadline Demon) draw only from Active users
+// — Picks on ≥50% of settled Fixtures (CONTEXT.md) — so a lucky handful of Picks
+// can't steal a rate title. The Ghost is explicitly among Active users too (a
+// forgetful regular, not a dropout — that's The Fallen's territory). The absolute
+// counts (Contrarian points, Draw Whisperer draws, Lone Genius hits) can't be
+// inflated by low participation, so they draw from everyone.
+//
+// Correctness is stage-aware for free: a Pick is correct iff it equals the Result,
+// which already encodes who advanced. DRAW is never a valid knockout value — the
+// Result there is HOME/AWAY, so a DRAW Pick simply never scores, and Draw
+// Whisperer only ever looks at Group fixtures.
+
+const EPS = 1e-9;
+
+/** Per-user tallies over the settled tournament — the raw material for every award. */
+type AwardAgg = {
+	userId: string;
+	name: string;
+	active: boolean;
+	/** Picks made on settled fixtures — the rate denominator. */
+	answered: number;
+	/** Correct picks on settled fixtures. */
+	correct: number;
+	/** Picks that matched their fixture's plurality (most-common) value. */
+	pluralityMatches: number;
+	/** Points from correct picks that were NOT the plurality value. */
+	minorityPoints: number;
+	/** Correct DRAW picks in the group stage. */
+	drawsCalled: number;
+	/** Settled fixtures on which this user was the sole correct picker. */
+	loneHits: number;
+	/** Settled fixtures with no pick from this user. */
+	missed: number;
+	/** Gaps (ms) between each Pick's last-write time and its fixture's Lock time. */
+	deadlineGaps: number[];
+};
+
+function computeAwards(
+	users: RecapUser[],
+	picks: RecapPick[],
+	fixtures: RecapFixture[]
+): RecapAward[] {
+	const settled = fixtures.filter((f) => f.result !== null);
+	const settledIds = new Set(settled.map((f) => f.id));
+	const settledCount = settled.length;
+	const fixtureById = new Map(fixtures.map((f) => [f.id, f]));
+
+	const picksByFixture = new Map<number, RecapPick[]>();
+	const picksByUser = new Map<string, RecapPick[]>();
+	for (const p of picks) {
+		(picksByFixture.get(p.fixtureId) ?? picksByFixture.set(p.fixtureId, []).get(p.fixtureId)!).push(p);
+		(picksByUser.get(p.userId) ?? picksByUser.set(p.userId, []).get(p.userId)!).push(p);
+	}
+
+	// Per settled fixture: the plurality value(s) — the pool's most-common Pick(s),
+	// tied tops included — and how many pickers got it right (for Lone Genius).
+	const pluralityByFixture = new Map<number, Set<string>>();
+	const correctCountByFixture = new Map<number, number>();
+	for (const f of settled) {
+		const counts = new Map<string, number>();
+		let correctCount = 0;
+		for (const p of picksByFixture.get(f.id) ?? []) {
+			counts.set(p.value, (counts.get(p.value) ?? 0) + 1);
+			if (p.value === f.result) correctCount++;
+		}
+		let max = 0;
+		for (const c of counts.values()) max = Math.max(max, c);
+		const top = new Set<string>();
+		if (max > 0) for (const [v, c] of counts) if (c === max) top.add(v);
+		pluralityByFixture.set(f.id, top);
+		correctCountByFixture.set(f.id, correctCount);
+	}
+
+	const aggs: AwardAgg[] = users.map((u) => {
+		const name = displayName(u);
+		const mine = picksByUser.get(u.id) ?? [];
+		const byFixture = new Map(mine.map((p) => [p.fixtureId, p]));
+
+		let answered = 0;
+		let correct = 0;
+		let pluralityMatches = 0;
+		let minorityPoints = 0;
+		let drawsCalled = 0;
+		let loneHits = 0;
+		let missed = 0;
+
+		for (const f of settled) {
+			const p = byFixture.get(f.id);
+			if (!p) {
+				missed++;
+				continue;
+			}
+			answered++;
+			const isCorrect = p.value === f.result;
+			const plurality = pluralityByFixture.get(f.id)!;
+			if (plurality.has(p.value)) pluralityMatches++;
+			if (isCorrect) {
+				correct++;
+				const weight = getStage(f.stage).weight;
+				if (!plurality.has(p.value)) minorityPoints += weight;
+				if (getStage(f.stage).name === 'Group' && p.value === 'DRAW') drawsCalled++;
+				if (correctCountByFixture.get(f.id) === 1) loneHits++;
+			}
+		}
+
+		// Deadline gaps span every timed Pick (Lock time applies to all fixtures).
+		const deadlineGaps: number[] = [];
+		for (const p of mine) {
+			const f = fixtureById.get(p.fixtureId);
+			if (!f || !p.updatedAt) continue;
+			deadlineGaps.push(new Date(f.kickoff).getTime() - new Date(p.updatedAt).getTime());
+		}
+
+		const active = settledCount > 0 && answered * 2 >= settledCount;
+		return {
+			userId: u.id,
+			name,
+			active,
+			answered,
+			correct,
+			pluralityMatches,
+			minorityPoints,
+			drawsCalled,
+			loneHits,
+			missed,
+			deadlineGaps
+		};
+	});
+
+	const active = aggs.filter((a) => a.active);
+	const awards: RecapAward[] = [];
+
+	// The Oracle — highest accuracy % (Active users, ≥1 correct pick).
+	pushAward(awards, {
+		key: 'oracle',
+		title: 'The Oracle',
+		subtitle: 'Saw it all coming.',
+		tier: 'legendary',
+		candidates: active.filter((a) => a.answered > 0 && a.correct > 0),
+		score: (a) => a.correct / a.answered,
+		direction: 'max',
+		stat: (a) => `${Math.round((a.correct / a.answered) * 100)}%`
+	});
+
+	// The Sheep — highest agreement with the pool's plurality Pick (Active users).
+	pushAward(awards, {
+		key: 'sheep',
+		title: 'The Sheep',
+		subtitle: 'Baa. Went with the flock.',
+		tier: 'paper',
+		candidates: active.filter((a) => a.answered > 0 && a.pluralityMatches > 0),
+		score: (a) => a.pluralityMatches / a.answered,
+		direction: 'max',
+		stat: (a) => `${Math.round((a.pluralityMatches / a.answered) * 100)}%`
+	});
+
+	// The Contrarian — most points from minority Picks (everyone; absolute total).
+	pushAward(awards, {
+		key: 'contrarian',
+		title: 'The Contrarian',
+		subtitle: 'Points nobody else dared to take.',
+		tier: 'holo',
+		candidates: aggs.filter((a) => a.minorityPoints > 0),
+		score: (a) => a.minorityPoints,
+		direction: 'max',
+		stat: (a) => `${a.minorityPoints} pt${a.minorityPoints === 1 ? '' : 's'}`
+	});
+
+	// Draw Whisperer — most correct DRAW Picks, group stage only (everyone).
+	pushAward(awards, {
+		key: 'draw-whisperer',
+		title: 'Draw Whisperer',
+		subtitle: 'Called the stalemates nobody else could.',
+		tier: 'gold',
+		candidates: aggs.filter((a) => a.drawsCalled > 0),
+		score: (a) => a.drawsCalled,
+		direction: 'max',
+		stat: (a) => `${a.drawsCalled} draw${a.drawsCalled === 1 ? '' : 's'}`
+	});
+
+	// Deadline Demon — shortest median gap between Pick time and Lock time (Active).
+	pushAward(awards, {
+		key: 'deadline-demon',
+		title: 'Deadline Demon',
+		subtitle: 'Picked with the clock at zero.',
+		tier: 'pearl',
+		candidates: active.filter((a) => a.deadlineGaps.length > 0),
+		score: (a) => median(a.deadlineGaps),
+		direction: 'min',
+		stat: (a) => formatGap(median(a.deadlineGaps))
+	});
+
+	// The Lone Genius — most times the sole correct picker on a Fixture (everyone).
+	pushAward(awards, {
+		key: 'lone-genius',
+		title: 'The Lone Genius',
+		subtitle: 'The only soul who saw it.',
+		tier: 'holo',
+		candidates: aggs.filter((a) => a.loneHits > 0),
+		score: (a) => a.loneHits,
+		direction: 'max',
+		stat: (a) => `${a.loneHits}×`
+	});
+
+	// The Ghost — most missed Picks among Active users (forgetful, not fallen).
+	pushAward(awards, {
+		key: 'ghost',
+		title: 'The Ghost',
+		subtitle: 'Present in name, absent in Picks.',
+		tier: 'paper',
+		candidates: active.filter((a) => a.missed > 0),
+		score: (a) => a.missed,
+		direction: 'max',
+		stat: (a) => `${a.missed} missed`
+	});
+
+	return awards;
+}
+
+type AwardSpec = {
+	key: RecapAwardKey;
+	title: string;
+	subtitle: string;
+	tier: FoilTier;
+	candidates: AwardAgg[];
+	score: (a: AwardAgg) => number;
+	direction: 'max' | 'min';
+	stat: (a: AwardAgg) => string;
+};
+
+// Select the winner(s) for one award and, if any qualify, push its card. Ties
+// share the card; an award with no qualifying candidate is simply omitted.
+function pushAward(awards: RecapAward[], spec: AwardSpec): void {
+	if (spec.candidates.length === 0) return;
+	const scored = spec.candidates.map((a) => ({ a, s: spec.score(a) }));
+	let best = scored[0].s;
+	for (const { s } of scored) {
+		if (spec.direction === 'max' ? s > best : s < best) best = s;
+	}
+	const winners = scored.filter(({ s }) => Math.abs(s - best) < EPS).map(({ a }) => a);
+	awards.push({
+		key: spec.key,
+		title: spec.title,
+		subtitle: spec.subtitle,
+		tier: spec.tier,
+		winners: winners.map((a) => ({ userId: a.userId, name: a.name })),
+		stat: spec.stat(winners[0]),
+		tied: winners.length > 1
+	});
+}
+
+function median(values: number[]): number {
+	const sorted = [...values].sort((a, b) => a - b);
+	const mid = Math.floor(sorted.length / 2);
+	return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+// A gap between Pick time and Lock time, rendered compactly: minutes under two
+// hours, whole hours otherwise. Negative (a post-kickoff last write) clamps to 0.
+function formatGap(ms: number): string {
+	const mins = Math.max(0, Math.round(ms / 60_000));
+	if (mins < 120) return `${mins} min`;
+	return `${Math.round(mins / 60)} hr`;
 }
