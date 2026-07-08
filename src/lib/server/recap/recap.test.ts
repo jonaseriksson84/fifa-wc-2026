@@ -95,4 +95,191 @@ describe('computeRecap — empty-data safety', () => {
 		expect(recap.title.firstKickoff).toBeNull();
 		expect(recap.title.lastKickoff).toBeNull();
 	});
+
+	it('returns an empty race for an empty pool without throwing', () => {
+		const recap = computeRecap([], [], []);
+
+		expect(recap.race.steps).toEqual([]);
+		expect(recap.race.series).toEqual([]);
+		expect(recap.race.leadSegments).toEqual([]);
+		expect(recap.race.leadChanges).toBe(0);
+		expect(recap.race.maxPoints).toBe(0);
+	});
+});
+
+describe('computeRecap — race series', () => {
+	it('accumulates stage-weighted points per user over settled fixtures in kickoff order', () => {
+		const users = [makeUser('u1'), makeUser('u2')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'AWAY', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Group', result: 'HOME', kickoff: '2026-06-13T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('u1', 1, 'HOME'), // +1
+			makePick('u1', 2, 'HOME'), // wrong
+			makePick('u1', 3, 'HOME'), // +1
+			makePick('u1', 4, 'HOME'), // +6 (Final is legendary/6 pts)
+			makePick('u2', 1, 'AWAY'), // wrong
+			makePick('u2', 2, 'AWAY'), // +1
+			makePick('u2', 3, 'AWAY'), // wrong
+			makePick('u2', 4, 'AWAY') // wrong
+		];
+
+		const { race } = computeRecap(users, picks, fixtures);
+
+		expect(race.steps.map((s) => s.fixtureId)).toEqual([1, 2, 3, 4]);
+		const u1 = race.series.find((s) => s.userId === 'u1')!;
+		const u2 = race.series.find((s) => s.userId === 'u2')!;
+		expect(u1.cumulative).toEqual([1, 1, 2, 8]);
+		expect(u2.cumulative).toEqual([0, 1, 1, 1]);
+		expect(u1.finalPoints).toBe(8);
+		expect(u2.finalPoints).toBe(1);
+		expect(race.maxPoints).toBe(8);
+	});
+
+	it('includes every user, even those with zero Picks, as a flat line', () => {
+		const users = [makeUser('u1'), makeUser('u2'), makeUser('ghost')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME' })
+		];
+		const picks = [makePick('u1', 1, 'HOME'), makePick('u1', 2, 'HOME')];
+
+		const { race } = computeRecap(users, picks, fixtures);
+
+		const ghost = race.series.find((s) => s.userId === 'ghost')!;
+		expect(ghost).toBeTruthy();
+		expect(ghost.cumulative).toEqual([0, 0]);
+		expect(ghost.finalPoints).toBe(0);
+		expect(race.series).toHaveLength(3);
+	});
+
+	it('sorts the series by final rank and marks the top three as the podium', () => {
+		const users = [makeUser('a'), makeUser('b'), makeUser('c'), makeUser('d')];
+		const fixtures = [makeFixture({ id: 1, stage: 'Final', result: 'HOME' })];
+		// a=6, b=6? no — spread them so ranks are distinct: use group fixtures too.
+		const groupFixtures = [
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'Group', result: 'HOME', kickoff: '2026-06-13T18:00:00.000Z' })
+		];
+		const allFixtures = [...groupFixtures, ...fixtures];
+		const picks = [
+			// a: Final + 3 groups = 6 + 3 = 9
+			makePick('a', 1, 'HOME'),
+			makePick('a', 2, 'HOME'),
+			makePick('a', 3, 'HOME'),
+			makePick('a', 4, 'HOME'),
+			// b: Final only = 6
+			makePick('b', 1, 'HOME'),
+			// c: 2 groups = 2
+			makePick('c', 2, 'HOME'),
+			makePick('c', 3, 'HOME'),
+			// d: 1 group = 1
+			makePick('d', 2, 'HOME')
+		];
+
+		const { race } = computeRecap(users, picks, allFixtures);
+
+		expect(race.series.map((s) => s.userId)).toEqual(['a', 'b', 'c', 'd']);
+		expect(race.series.map((s) => s.rank)).toEqual([1, 2, 3, 4]);
+		expect(race.series.map((s) => s.isPodium)).toEqual([true, true, true, false]);
+	});
+
+	it('handles ties in the final standings — tied users share a rank and podium spot', () => {
+		const users = [makeUser('u1'), makeUser('u2')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('u1', 1, 'HOME'),
+			makePick('u1', 2, 'HOME'),
+			makePick('u2', 1, 'HOME'),
+			makePick('u2', 2, 'HOME')
+		];
+
+		const { race } = computeRecap(users, picks, fixtures);
+
+		expect(race.series.map((s) => s.rank)).toEqual([1, 1]);
+		expect(race.series.every((s) => s.tied)).toBe(true);
+		expect(race.series.every((s) => s.isPodium)).toBe(true);
+	});
+
+	it('only steps through settled fixtures for partially settled data', () => {
+		const users = [makeUser('u1')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME' }),
+			makeFixture({ id: 2, stage: 'Group', result: null }),
+			makeFixture({ id: 3, stage: 'Final', result: null })
+		];
+		const picks = [makePick('u1', 1, 'HOME'), makePick('u1', 2, 'HOME')];
+
+		const { race, available } = computeRecap(users, picks, fixtures);
+
+		expect(available).toBe(false);
+		expect(race.steps.map((s) => s.fixtureId)).toEqual([1]);
+		expect(race.series[0].cumulative).toEqual([1]);
+	});
+});
+
+describe('computeRecap — lead changes', () => {
+	it('detects a lead change and reports how long each leader held the crown', () => {
+		const users = [makeUser('u1'), makeUser('u2')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-06-20T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('u1', 1, 'HOME'), // u1 leads 1-0 from Jun 11
+			makePick('u1', 2, 'AWAY'), // wrong
+			makePick('u2', 1, 'AWAY'), // wrong
+			makePick('u2', 2, 'HOME') // u2 overtakes 6-1 on Jun 20
+		];
+
+		const { race } = computeRecap(users, picks, fixtures);
+
+		expect(race.leadChanges).toBe(1);
+		expect(race.leadSegments).toHaveLength(2);
+		expect(race.leadSegments[0].userId).toBe('u1');
+		expect(race.leadSegments[0].days).toBe(9);
+		expect(race.leadSegments[1].userId).toBe('u2');
+	});
+
+	it('reports a single uninterrupted leader as one segment with no lead changes', () => {
+		const users = [makeUser('u1'), makeUser('u2')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-06-20T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('u1', 1, 'HOME'),
+			makePick('u1', 2, 'HOME'),
+			makePick('u2', 1, 'AWAY')
+		];
+
+		const { race } = computeRecap(users, picks, fixtures);
+
+		expect(race.leadChanges).toBe(0);
+		expect(race.leadSegments).toHaveLength(1);
+		expect(race.leadSegments[0].userId).toBe('u1');
+	});
+
+	it('does not crown a leader while every user is still on zero points', () => {
+		const users = [makeUser('u1'), makeUser('u2')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-06-20T18:00:00.000Z' })
+		];
+		// Nobody picks the first fixture correctly; both flat at 0 after step 1.
+		const picks = [makePick('u1', 1, 'AWAY'), makePick('u2', 1, 'AWAY'), makePick('u1', 2, 'HOME')];
+
+		const { race } = computeRecap(users, picks, fixtures);
+
+		// Only u1 ever scores (on the Final), so exactly one lead segment.
+		expect(race.leadSegments).toHaveLength(1);
+		expect(race.leadSegments[0].userId).toBe('u1');
+	});
 });

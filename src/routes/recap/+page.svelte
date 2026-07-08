@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import ScrollReveal from '$lib/components/ScrollReveal.svelte';
 	import RecapTitleCard from '$lib/components/RecapTitleCard.svelte';
+	import RecapRaceChart from '$lib/components/RecapRaceChart.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -32,6 +33,10 @@
 		</ScrollReveal>
 
 		<p class="scroll-hint">Scroll on ↓</p>
+
+		<ScrollReveal>
+			<RecapRaceChart race={data.recap.race} />
+		</ScrollReveal>
 	{/if}
 </div>
 
