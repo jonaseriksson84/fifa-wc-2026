@@ -225,6 +225,122 @@ describe('computeRecap — race series', () => {
 	});
 });
 
+describe('computeRecap — heatmap grid', () => {
+	it('builds one row per user sorted by final rank, one column per fixture', () => {
+		const users = [makeUser('a'), makeUser('b')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			// b outscores a → b ranks first
+			makePick('a', 1, 'HOME'),
+			makePick('b', 1, 'HOME'),
+			makePick('b', 2, 'HOME')
+		];
+
+		const { heatmap } = computeRecap(users, picks, fixtures);
+
+		expect(heatmap.rows.map((r) => r.userId)).toEqual(['b', 'a']);
+		expect(heatmap.rows.map((r) => r.rank)).toEqual([1, 2]);
+		expect(heatmap.columns.map((c) => c.fixtureId)).toEqual([1, 2]);
+		expect(heatmap.rows[0].cells).toHaveLength(2);
+	});
+
+	it('marks each cell correct / wrong / missing from the pick against the result', () => {
+		const users = [makeUser('u1')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'AWAY', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 3, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [
+			makePick('u1', 1, 'HOME'), // correct
+			makePick('u1', 2, 'HOME') // wrong; no pick on fixture 3
+		];
+
+		const { heatmap } = computeRecap(users, picks, fixtures);
+
+		const row = heatmap.rows[0];
+		expect(row.cells).toEqual(['correct', 'wrong', 'missing']);
+		expect(row.correctCount).toBe(1);
+		expect(row.pickCount).toBe(2);
+	});
+
+	it('is knockout stage-aware — the pick equals the stage-aware Result (who advanced)', () => {
+		const users = [makeUser('u1')];
+		const fixtures = [
+			// A knockout fixture whose Result encodes the team that advanced.
+			makeFixture({ id: 1, stage: 'R16', result: 'BRAZIL', kickoff: '2026-06-28T18:00:00.000Z' })
+		];
+		const picks = [makePick('u1', 1, 'BRAZIL')];
+
+		const { heatmap } = computeRecap(users, picks, fixtures);
+
+		expect(heatmap.rows[0].cells).toEqual(['correct']);
+	});
+
+	it('renders a zero-pick user as an all-missing row', () => {
+		const users = [makeUser('u1'), makeUser('ghost')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [makePick('u1', 1, 'HOME'), makePick('u1', 2, 'HOME')];
+
+		const { heatmap } = computeRecap(users, picks, fixtures);
+
+		const ghost = heatmap.rows.find((r) => r.userId === 'ghost')!;
+		expect(ghost.cells).toEqual(['missing', 'missing']);
+		expect(ghost.correctCount).toBe(0);
+		expect(ghost.pickCount).toBe(0);
+	});
+
+	it('orders columns by stage then kickoff and groups them by stage', () => {
+		const users = [makeUser('u1')];
+		const fixtures = [
+			makeFixture({ id: 3, stage: 'Final', result: 'HOME', kickoff: '2026-07-19T18:00:00.000Z' }),
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-12T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 4, stage: 'R16', result: 'HOME', kickoff: '2026-06-28T18:00:00.000Z' })
+		];
+
+		const { heatmap } = computeRecap(users, [], fixtures);
+
+		// Group (kickoff-sorted) → R16 → Final.
+		expect(heatmap.columns.map((c) => c.fixtureId)).toEqual([2, 1, 4, 3]);
+		expect(heatmap.stageGroups).toEqual([
+			{ stage: 'Group', startIndex: 0, count: 2 },
+			{ stage: 'R16', startIndex: 2, count: 1 },
+			{ stage: 'Final', startIndex: 3, count: 1 }
+		]);
+	});
+
+	it('marks cells for an unsettled fixture as pending so partial data renders', () => {
+		const users = [makeUser('u1')];
+		const fixtures = [
+			makeFixture({ id: 1, stage: 'Group', result: 'HOME', kickoff: '2026-06-11T18:00:00.000Z' }),
+			makeFixture({ id: 2, stage: 'Final', result: null, kickoff: '2026-07-19T18:00:00.000Z' })
+		];
+		const picks = [makePick('u1', 1, 'HOME'), makePick('u1', 2, 'HOME')];
+
+		const { heatmap } = computeRecap(users, picks, fixtures);
+
+		expect(heatmap.rows[0].cells).toEqual(['correct', 'pending']);
+		// A pending fixture doesn't count toward correct or answered picks.
+		expect(heatmap.rows[0].correctCount).toBe(1);
+		expect(heatmap.rows[0].pickCount).toBe(1);
+	});
+
+	it('returns an empty heatmap for an empty pool without throwing', () => {
+		const { heatmap } = computeRecap([], [], []);
+
+		expect(heatmap.columns).toEqual([]);
+		expect(heatmap.rows).toEqual([]);
+		expect(heatmap.stageGroups).toEqual([]);
+	});
+});
+
 describe('computeRecap — lead changes', () => {
 	it('detects a lead change and reports how long each leader held the crown', () => {
 		const users = [makeUser('u1'), makeUser('u2')];

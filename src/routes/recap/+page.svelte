@@ -3,6 +3,7 @@
 	import ScrollReveal from '$lib/components/ScrollReveal.svelte';
 	import RecapTitleCard from '$lib/components/RecapTitleCard.svelte';
 	import RecapRaceChart from '$lib/components/RecapRaceChart.svelte';
+	import RecapHeatmap from '$lib/components/RecapHeatmap.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -37,6 +38,8 @@
 		<ScrollReveal>
 			<RecapRaceChart race={data.recap.race} />
 		</ScrollReveal>
+
+		<RecapHeatmap heatmap={data.recap.heatmap} />
 	{/if}
 </div>
 

@@ -18,7 +18,11 @@ const raceChart = readFileSync(
 	resolve(__dirname, '../../lib/components/RecapRaceChart.svelte'),
 	'utf-8'
 );
-const pageHtml = pageSvelte + titleCard + scrollReveal + raceChart;
+const heatmap = readFileSync(
+	resolve(__dirname, '../../lib/components/RecapHeatmap.svelte'),
+	'utf-8'
+);
+const pageHtml = pageSvelte + titleCard + scrollReveal + raceChart + heatmap;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
 
@@ -83,6 +87,41 @@ describe('recap race chart beat', () => {
 
 	it('never uses the forbidden vocabulary', () => {
 		const lower = raceChart.toLowerCase();
+		expect(lower).not.toMatch(/\bbet\b/);
+		expect(lower).not.toMatch(/\bguess\b/);
+	});
+});
+
+describe('recap page — heatmap beat', () => {
+	it('renders the heatmap beat fed from the seam', () => {
+		expect(pageSvelte).toContain('RecapHeatmap');
+		expect(pageSvelte).toContain('recap.heatmap');
+	});
+
+	it('draws a cell grid coloured by pick state from the seam rows and columns', () => {
+		expect(heatmap).toContain('heatmap');
+		expect(heatmap).toContain('rows');
+		expect(heatmap).toContain('columns');
+		expect(heatmap).toContain('cells');
+		expect(heatmap).toMatch(/cell (correct|wrong|missing)/);
+	});
+
+	it('groups columns by stage', () => {
+		expect(heatmap).toContain('stageGroups');
+	});
+
+	it('cascades rows in on scroll and respects reduced motion', () => {
+		expect(heatmap).toContain('IntersectionObserver');
+		expect(heatmap).toContain('prefers-reduced-motion');
+	});
+
+	it('offers a zoom/scroll escape hatch for reading individual cells', () => {
+		expect(heatmap.toLowerCase()).toContain('zoom');
+		expect(heatmap).toContain('overflow-x');
+	});
+
+	it('never uses the forbidden vocabulary', () => {
+		const lower = heatmap.toLowerCase();
 		expect(lower).not.toMatch(/\bbet\b/);
 		expect(lower).not.toMatch(/\bguess\b/);
 	});

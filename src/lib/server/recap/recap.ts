@@ -7,6 +7,7 @@
 import { getStage } from '$lib/stage';
 import { rankEntries } from '$lib/top-leaderboard';
 import { displayName } from '$lib/display-name';
+import { computeScores } from '$lib/server/scoring/score';
 
 export type RecapUser = {
 	id: string;
@@ -72,6 +73,45 @@ export type RecapRace = {
 	maxPoints: number;
 };
 
+/** The state of one User × Fixture cell in the heatmap. */
+export type RecapHeatCellState = 'correct' | 'wrong' | 'missing' | 'pending';
+
+/** One column of the heatmap — a single Fixture, in kickoff-within-stage order. */
+export type RecapHeatColumn = {
+	fixtureId: number;
+	stage: string;
+	kickoff: string;
+};
+
+/** One row of the heatmap — a single User, sorted by final rank. */
+export type RecapHeatRow = {
+	userId: string;
+	name: string;
+	rank: number;
+	/** Cell state per column; aligned 1:1 with `heatmap.columns`. */
+	cells: RecapHeatCellState[];
+	/** Correct Picks on settled fixtures (the row's "greenness"). */
+	correctCount: number;
+	/** Picks made on settled fixtures — the denominator behind the texture. */
+	pickCount: number;
+};
+
+/** A contiguous run of columns belonging to one Stage, for rendering headers. */
+export type RecapHeatStageGroup = {
+	stage: string;
+	startIndex: number;
+	count: number;
+};
+
+export type RecapHeatmap = {
+	/** Every Fixture, grouped by Stage then kickoff. */
+	columns: RecapHeatColumn[];
+	/** One per User, sorted by final rank (champion first). */
+	rows: RecapHeatRow[];
+	/** Stage runs over `columns`, for the grouped column headers. */
+	stageGroups: RecapHeatStageGroup[];
+};
+
 export type RecapData = {
 	/**
 	 * The Recap renders iff the Final Fixture has a Result (per PRD / ADR 0003:
@@ -80,6 +120,7 @@ export type RecapData = {
 	available: boolean;
 	title: RecapTitle;
 	race: RecapRace;
+	heatmap: RecapHeatmap;
 };
 
 export function computeRecap(
@@ -102,8 +143,76 @@ export function computeRecap(
 			firstKickoff,
 			lastKickoff
 		},
-		race: computeRace(users, picks, fixtures)
+		race: computeRace(users, picks, fixtures),
+		heatmap: computeHeatmap(users, picks, fixtures)
 	};
+}
+
+// The heatmap beat: a GitHub-contribution-graph grid — one row per User (sorted
+// by final rank), one column per Fixture (grouped by Stage, kickoff order within
+// each), every cell coloured correct / wrong / missing. It reads as texture: the
+// champion's greener row, a dropout fading to grey, vertical red stripes where
+// everyone whiffed. Everyone appears, including sub-threshold and zero-Pick users.
+// Correctness is stage-aware for free — a Pick is correct iff it equals the
+// Result, which already encodes who advanced (no scoring reimplemented here).
+function computeHeatmap(
+	users: RecapUser[],
+	picks: RecapPick[],
+	fixtures: RecapFixture[]
+): RecapHeatmap {
+	// Columns: every Fixture, grouped by Stage (sortIndex) then kickoff. Sorting
+	// stage-first keeps each stage's columns contiguous even if kickoffs overlap.
+	const ordered = [...fixtures].sort((a, b) => {
+		const s = getStage(a.stage).sortIndex - getStage(b.stage).sortIndex;
+		if (s !== 0) return s;
+		const t = new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
+		return t !== 0 ? t : a.id - b.id;
+	});
+	const columns: RecapHeatColumn[] = ordered.map((f) => ({
+		fixtureId: f.id,
+		stage: f.stage,
+		kickoff: f.kickoff
+	}));
+
+	const resultByFixture = new Map(fixtures.map((f) => [f.id, f.result]));
+	const pickByUserFixture = new Map<string, string>();
+	for (const p of picks) pickByUserFixture.set(`${p.userId}:${p.fixtureId}`, p.value);
+
+	// Rank rows by the same stage-weighted totals as the leaderboard / race chart.
+	const scores = computeScores(picks, fixtures);
+	const ranked = rankEntries(
+		users.map((u) => ({ userId: u.id, name: displayName(u), points: scores.get(u.id) ?? 0 }))
+	);
+
+	const rows: RecapHeatRow[] = ranked.map((e) => {
+		let correctCount = 0;
+		let pickCount = 0;
+		const cells = columns.map<RecapHeatCellState>((col) => {
+			const result = resultByFixture.get(col.fixtureId);
+			if (result == null) return 'pending';
+			const pick = pickByUserFixture.get(`${e.userId}:${col.fixtureId}`);
+			if (pick === undefined) return 'missing';
+			pickCount++;
+			if (pick === result) {
+				correctCount++;
+				return 'correct';
+			}
+			return 'wrong';
+		});
+		return { userId: e.userId, name: e.name, rank: e.rank, cells, correctCount, pickCount };
+	});
+
+	const stageGroups: RecapHeatStageGroup[] = [];
+	for (let i = 0; i < columns.length; i++) {
+		const last = stageGroups[stageGroups.length - 1];
+		if (!last || last.stage !== columns[i].stage) {
+			stageGroups.push({ stage: columns[i].stage, startIndex: i, count: 1 });
+		} else {
+			last.count++;
+		}
+	}
+
+	return { columns, rows, stageGroups };
 }
 
 // The race chart beat: cumulative points per User across every settled fixture in
