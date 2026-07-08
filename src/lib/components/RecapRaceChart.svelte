@@ -46,8 +46,7 @@
 	// Non-podium lines render first (underneath, faint); the podium renders last so
 	// the top three sit on top and read as the reveal.
 	const backLines = $derived(race.series.filter((s) => !s.isPodium));
-	const podiumLines = $derived(race.series.filter((s) => s.isPodium));
-	const podium = $derived(race.series.filter((s) => s.rank <= 3));
+	const podium = $derived(race.series.filter((s) => s.isPodium));
 	const champions = $derived(race.series.filter((s) => s.rank === 1));
 
 	function endY(s: { cumulative: number[] }): number {
@@ -101,7 +100,7 @@
 					<polyline class="line back" pathLength="1" points={pointsFor(s.cumulative)} />
 				{/each}
 
-				{#each podiumLines as s (s.userId)}
+				{#each podium as s (s.userId)}
 					<polyline
 						class="line podium"
 						pathLength="1"
@@ -110,7 +109,7 @@
 					/>
 				{/each}
 
-				{#each podiumLines as s (s.userId)}
+				{#each podium as s (s.userId)}
 					<circle class="end-dot" cx={x(n)} cy={endY(s)} r="3" style="fill: {podiumColor[Math.min(s.rank, 3)]}" />
 					<text class="end-label" x={x(n) + 6} y={endY(s)} dominant-baseline="middle">{s.name}</text>
 				{/each}
