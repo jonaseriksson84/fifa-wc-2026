@@ -5,7 +5,7 @@
 	// committed), so the whole section is guarded on a non-empty list. Reveals row
 	// by row on scroll; reduced motion shows it flat.
 	import { onMount } from 'svelte';
-	import { formatKickoff } from '$lib/kickoff-format';
+	import { formatKickoffDate } from '$lib/kickoff-format';
 	import type { RecapFallenUser } from '$lib/server/recap/recap';
 
 	let { fallen }: { fallen: RecapFallenUser[] } = $props();
@@ -13,8 +13,7 @@
 	function lastSeenLabel(user: RecapFallenUser): string {
 		if (user.pickCount === 0) return 'Never made a Pick';
 		if (!user.lastSeen) return `${user.pickCount} Pick${user.pickCount === 1 ? '' : 's'}`;
-		const date = formatKickoff(user.lastSeen).replace(/\s+\d{2}:\d{2}$/, '');
-		return `Last seen ${date}`;
+		return `Last seen ${formatKickoffDate(user.lastSeen)}`;
 	}
 
 	let el = $state<HTMLElement>();

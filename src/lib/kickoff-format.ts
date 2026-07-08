@@ -8,17 +8,26 @@ function ordinal(n: number): string {
 	}
 }
 
-export function formatKickoff(iso: string, timeZone?: string): string {
+export function formatKickoffDate(iso: string, timeZone?: string): string {
 	const parts = new Intl.DateTimeFormat('en-US', {
 		timeZone,
 		weekday: 'short',
 		month: 'long',
-		day: 'numeric',
+		day: 'numeric'
+	}).formatToParts(new Date(iso));
+	const get = (type: Intl.DateTimeFormatPartTypes) =>
+		parts.find((p) => p.type === type)?.value ?? '';
+	return `${get('weekday')} ${get('month')} ${ordinal(Number(get('day')))}`;
+}
+
+export function formatKickoff(iso: string, timeZone?: string): string {
+	const parts = new Intl.DateTimeFormat('en-US', {
+		timeZone,
 		hour: '2-digit',
 		minute: '2-digit',
 		hourCycle: 'h23'
 	}).formatToParts(new Date(iso));
 	const get = (type: Intl.DateTimeFormatPartTypes) =>
 		parts.find((p) => p.type === type)?.value ?? '';
-	return `${get('weekday')} ${get('month')} ${ordinal(Number(get('day')))} ${get('hour')}:${get('minute')}`;
+	return `${formatKickoffDate(iso, timeZone)} ${get('hour')}:${get('minute')}`;
 }

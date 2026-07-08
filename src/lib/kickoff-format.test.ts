@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatKickoff } from './kickoff-format';
+import { formatKickoff, formatKickoffDate } from './kickoff-format';
 
 describe('formatKickoff', () => {
 	it('formats a Thursday evening kickoff', () => {
@@ -65,5 +65,16 @@ describe('formatKickoff', () => {
 	it('rolls back the date for timezones behind UTC', () => {
 		// New York is UTC-4 in July (EDT): midnight Sunday UTC is Saturday evening
 		expect(formatKickoff('2026-07-19T00:00:00.000Z', 'America/New_York')).toBe('Sat July 18th 20:00');
+	});
+});
+
+describe('formatKickoffDate', () => {
+	it('drops the time, keeping the weekday-month-ordinal date', () => {
+		expect(formatKickoffDate('2026-06-11T21:00:00.000Z', 'UTC')).toBe('Thu June 11th');
+	});
+
+	it('uses the given timezone when the time crosses midnight', () => {
+		// 23:00Z Thursday becomes Friday the 12th in Stockholm
+		expect(formatKickoffDate('2026-06-11T23:00:00.000Z', 'Europe/Stockholm')).toBe('Fri June 12th');
 	});
 });

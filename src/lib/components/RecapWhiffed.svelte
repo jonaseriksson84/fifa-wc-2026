@@ -6,14 +6,11 @@
 	// quiet "clean sheet" line when the pool somehow whiffed on nothing.
 	import { onMount } from 'svelte';
 	import { getStage } from '$lib/stage';
-	import { formatKickoff } from '$lib/kickoff-format';
+	import { formatKickoffDate } from '$lib/kickoff-format';
 	import type { RecapWhiffed } from '$lib/server/recap/recap';
 
 	let { whiffed }: { whiffed: RecapWhiffed } = $props();
 
-	function asDate(iso: string): string {
-		return formatKickoff(iso).replace(/\s+\d{2}:\d{2}$/, '');
-	}
 	function stageName(stage: string): string {
 		return getStage(stage).displayName;
 	}
@@ -68,7 +65,7 @@
 					<span class="mark">✗</span>
 					<span class="meta">
 						<span class="stage">{stageName(f.stage)}</span>
-						<span class="date">{asDate(f.kickoff)}</span>
+						<span class="date">{formatKickoffDate(f.kickoff)}</span>
 					</span>
 					<span class="result">{f.result}</span>
 				</li>
