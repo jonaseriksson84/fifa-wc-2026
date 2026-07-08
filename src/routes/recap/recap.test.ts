@@ -14,7 +14,11 @@ const scrollReveal = readFileSync(
 	resolve(__dirname, '../../lib/components/ScrollReveal.svelte'),
 	'utf-8'
 );
-const pageHtml = pageSvelte + titleCard + scrollReveal;
+const raceChart = readFileSync(
+	resolve(__dirname, '../../lib/components/RecapRaceChart.svelte'),
+	'utf-8'
+);
+const pageHtml = pageSvelte + titleCard + scrollReveal + raceChart;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
 
@@ -45,6 +49,42 @@ describe('recap page content', () => {
 
 	it('plays the title card in with the scroll-reveal primitive', () => {
 		expect(pageHtml).toContain('ScrollReveal');
+	});
+
+	it('renders the race chart beat fed from the seam', () => {
+		expect(pageSvelte).toContain('RecapRaceChart');
+		expect(pageSvelte).toContain('recap.race');
+	});
+});
+
+describe('recap race chart beat', () => {
+	it('draws one animated line per user from the cumulative series', () => {
+		// SVG polyline/path per user, drawn from the seam's cumulative points.
+		expect(raceChart).toContain('series');
+		expect(raceChart).toContain('cumulative');
+		expect(raceChart).toMatch(/<svg/);
+		expect(raceChart).toMatch(/polyline|path/);
+	});
+
+	it('animates the draw when it scrolls into view and respects reduced motion', () => {
+		expect(raceChart).toContain('IntersectionObserver');
+		expect(raceChart).toContain('prefers-reduced-motion');
+	});
+
+	it('lights up the podium — the top three — as the reveal', () => {
+		expect(raceChart).toContain('isPodium');
+		expect(raceChart.toLowerCase()).toContain('podium');
+	});
+
+	it('annotates lead changes with how long each leader held the crown', () => {
+		expect(raceChart).toContain('leadSegments');
+		expect(raceChart).toMatch(/led for|days/i);
+	});
+
+	it('never uses the forbidden vocabulary', () => {
+		const lower = raceChart.toLowerCase();
+		expect(lower).not.toMatch(/\bbet\b/);
+		expect(lower).not.toMatch(/\bguess\b/);
 	});
 });
 
