@@ -170,53 +170,6 @@
 		z-index: 5;
 	}
 
-	/* Filled */
-	.sticker.filled {
-		background: var(--paper-deep);
-	}
-	.sticker.filled.foil-pearl {
-		background-image:
-			linear-gradient(135deg,
-				rgba(255, 230, 150, 0.12) 0%,
-				rgba(220, 180, 240, 0.08) 50%,
-				rgba(150, 220, 230, 0.12) 100%);
-		background-color: var(--paper-deep);
-	}
-	.sticker.filled.foil-holo {
-		background-image:
-			linear-gradient(135deg,
-				rgba(255, 200, 130, 0.18) 0%,
-				rgba(255, 150, 200, 0.14) 35%,
-				rgba(180, 200, 255, 0.16) 70%,
-				rgba(160, 240, 200, 0.16) 100%);
-		background-color: var(--paper-deep);
-	}
-	.sticker.filled.foil-gold {
-		background-image:
-			linear-gradient(135deg,
-				rgba(255, 215, 100, 0.30) 0%,
-				rgba(255, 165, 70, 0.22) 50%,
-				rgba(255, 215, 100, 0.30) 100%);
-		background-color: var(--paper-deep);
-		border-color: #6b3d0e;
-	}
-	.sticker.filled.foil-legendary {
-		background:
-			conic-gradient(from 45deg,
-				rgba(255, 209, 102, 0.30),
-				rgba(239, 71, 111, 0.25),
-				rgba(179, 136, 255, 0.30),
-				rgba(6, 214, 160, 0.25),
-				rgba(255, 247, 154, 0.25),
-				rgba(255, 209, 102, 0.30));
-		background-color: var(--paper-deep);
-		border: 4px solid var(--ink);
-		box-shadow:
-			0 0 0 3px var(--paper),
-			0 0 0 5px var(--ink),
-			6px 6px 0 var(--ink);
-	}
-
 	/* Empty */
 	.sticker.empty {
 		background:
@@ -313,6 +266,10 @@
 			0 0 0 3px var(--paper),
 			0 0 0 5px var(--ink),
 			6px 6px 0 var(--ink);
+	}
+	/* Settlement changes the collected-card base without muting its foil tier. */
+	.sticker.filled {
+		background-color: var(--paper-deep);
 	}
 	.sticker.foil-legendary::before {
 		content: "";

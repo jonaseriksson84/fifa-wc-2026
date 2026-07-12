@@ -167,11 +167,8 @@ describe('Sticker foil class names', () => {
 		expect(stickerSvelte).not.toContain('foil-final');
 	});
 
-	it('preserves foil background on filled stickers', () => {
-		expect(stickerSvelte).toContain('.sticker.filled.foil-pearl');
-		expect(stickerSvelte).toContain('.sticker.filled.foil-holo');
-		expect(stickerSvelte).toContain('.sticker.filled.foil-gold');
-		expect(stickerSvelte).toContain('.sticker.filled.foil-legendary');
+	it('uses the same foil treatment before and after settlement', () => {
+		expect(stickerSvelte).not.toMatch(/\.sticker\.filled\.foil-(pearl|holo|gold|legendary)/);
 	});
 
 	it('gates legendary shine animation on prefers-reduced-motion', () => {
