@@ -13,7 +13,7 @@
 	let {
 		children,
 		once = true,
-		threshold = 0.2
+		threshold = 0.28
 	}: { children: Snippet; once?: boolean; threshold?: number } = $props();
 
 	let el = $state<HTMLElement>();
@@ -53,8 +53,8 @@
 		opacity: 0;
 		transform: translateY(28px);
 		transition:
-			opacity 0.7s ease,
-			transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+			opacity 0.9s ease,
+			transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 		will-change: opacity, transform;
 	}
 	.scroll-reveal.revealed {

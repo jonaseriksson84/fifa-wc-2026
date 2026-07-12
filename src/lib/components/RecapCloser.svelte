@@ -31,7 +31,7 @@
 					}
 				}
 			},
-			{ threshold: 0.3 }
+			{ threshold: 0.35 }
 		);
 		obs.observe(el);
 		return () => obs.disconnect();
@@ -71,8 +71,8 @@
 		opacity: 1;
 		transform: none;
 		transition:
-			opacity 0.7s ease,
-			transform 0.7s cubic-bezier(0.22, 0.9, 0.36, 1);
+			opacity 0.85s ease,
+			transform 0.9s cubic-bezier(0.22, 0.9, 0.36, 1);
 	}
 
 	.crown-card {

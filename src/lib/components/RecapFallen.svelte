@@ -32,7 +32,7 @@
 					}
 				}
 			},
-			{ threshold: 0.15 }
+			{ threshold: 0.2 }
 		);
 		obs.observe(el);
 		return () => obs.disconnect();
@@ -122,8 +122,8 @@
 		opacity: 1;
 		transform: none;
 		transition:
-			opacity 0.5s ease,
-			transform 0.55s cubic-bezier(0.22, 0.9, 0.36, 1);
+			opacity 0.65s ease,
+			transform 0.7s cubic-bezier(0.22, 0.9, 0.36, 1);
 		transition-delay: calc(var(--i) * 90ms);
 	}
 	.cross {

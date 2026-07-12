@@ -31,7 +31,7 @@
 					}
 				}
 			},
-			{ threshold: 0.15 }
+			{ threshold: 0.2 }
 		);
 		obs.observe(el);
 		return () => obs.disconnect();
@@ -135,8 +135,8 @@
 		opacity: 1;
 		transform: none;
 		transition:
-			opacity 0.4s ease,
-			transform 0.5s cubic-bezier(0.22, 0.9, 0.36, 1);
+			opacity 0.55s ease,
+			transform 0.65s cubic-bezier(0.22, 0.9, 0.36, 1);
 		transition-delay: calc(var(--i) * 70ms);
 	}
 	.mark {
@@ -190,6 +190,17 @@
 		color: var(--paper);
 		padding: 4px 8px;
 		white-space: nowrap;
+	}
+	@media (min-width: 760px) {
+		.list {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+		.row {
+			box-sizing: border-box;
+			flex: 0 1 calc((100% - 16px) / 3);
+		}
 	}
 
 	@media (max-width: 359px) {

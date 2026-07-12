@@ -10,7 +10,6 @@
 	// at that width. Reduced motion drops the flip and the sweep and shows the cards
 	// flat. Awards with no qualifying winner are omitted upstream, so we render
 	// whatever the seam hands us — an empty list degrades to a quiet note.
-	import { onMount } from 'svelte';
 	import type { RecapAward } from '$lib/server/recap/recap';
 
 	let { awards }: { awards: RecapAward[] } = $props();
@@ -37,33 +36,30 @@
 		return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
 	}
 
-	// Cards flip/shimmer in one by one on scroll; the observer flips `revealed` and
-	// CSS staggers each card with an index-based delay. Reduced motion shows them at
-	// once (handled in the stylesheet).
-	let el = $state<HTMLElement>();
-	let revealed = $state(false);
-	onMount(() => {
-		if (typeof IntersectionObserver === 'undefined' || !el) {
-			revealed = true;
+	// Each card owns its observer so a long single-column stack reveals as the
+	// reader reaches it, rather than animating every off-screen card at once.
+	function revealCard(node: HTMLElement) {
+		if (typeof IntersectionObserver === 'undefined') {
+			node.classList.add('card-visible');
 			return;
 		}
 		const obs = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
 					if (entry.isIntersecting) {
-						revealed = true;
-						obs.disconnect();
+						node.classList.add('card-visible');
+						obs.unobserve(node);
 					}
 				}
 			},
-			{ threshold: 0.1 }
+			{ threshold: 0.3, rootMargin: '0px 0px -4% 0px' }
 		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	});
+		obs.observe(node);
+		return { destroy: () => obs.disconnect() };
+	}
 </script>
 
-<section class="awards" bind:this={el} class:revealed data-scroll-reveal>
+<section class="awards" data-scroll-reveal>
 	<header class="beat-head">
 		<span class="kicker">The Awards</span>
 		<h2>Seven foil crowns</h2>
@@ -77,6 +73,7 @@
 			{#each awards as award, i (award.key)}
 				<article
 					class="card foil-{award.tier}"
+					use:revealCard
 					style="--i: {i}"
 					aria-label="{award.title} — {winnerLine(award)} — {award.stat}"
 				>
@@ -133,10 +130,16 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 20px;
+		max-width: 560px;
+		margin: 0 auto;
 	}
-	@media (min-width: 480px) {
-		.cards {
-			grid-template-columns: repeat(2, 1fr);
+	@media (min-width: 760px) {
+		.card {
+			box-sizing: border-box;
+			min-height: 360px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
 		}
 	}
 
@@ -154,14 +157,12 @@
 		transform: perspective(700px) rotateY(28deg) translateY(10px);
 		transform-origin: center;
 	}
-	.revealed .card {
+	.card.card-visible {
 		opacity: 1;
 		transform: none;
 		transition:
-			opacity 0.5s ease,
-			transform 0.6s cubic-bezier(0.22, 0.9, 0.36, 1);
-		/* Cards flip in one by one. */
-		transition-delay: calc(var(--i) * 120ms);
+			opacity 0.7s ease,
+			transform 0.8s cubic-bezier(0.22, 0.9, 0.36, 1);
 	}
 
 	/* Foil sheen: a diagonal highlight sweeps across every card. Its timing is
@@ -342,9 +343,8 @@
 			opacity: 1;
 			transform: none;
 		}
-		.revealed .card {
+		.card.card-visible {
 			transition: none;
-			transition-delay: 0ms;
 		}
 		.card::before {
 			animation: none;

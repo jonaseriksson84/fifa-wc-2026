@@ -108,21 +108,27 @@
 				role="img"
 				aria-label="Cumulative points per player over the tournament"
 			>
+				<defs>
+					<clipPath id="race-reveal">
+						<rect class="reveal-clip" x={padL} y="0" width={plotW} height={H} />
+					</clipPath>
+				</defs>
 				<!-- baseline -->
 				<line class="axis" x1={x(0)} y1={y(0)} x2={x(n)} y2={y(0)} />
 
-				{#each backLines as s (s.userId)}
-					<polyline class="line back{lineClass(s.userId)}" pathLength="1" points={pointsFor(s.cumulative)} />
-				{/each}
+				<g clip-path="url(#race-reveal)">
+					{#each backLines as s (s.userId)}
+						<polyline class="line back{lineClass(s.userId)}" points={pointsFor(s.cumulative)} />
+					{/each}
 
-				{#each podium as s (s.userId)}
-					<polyline
-						class="line podium{lineClass(s.userId)}"
-						pathLength="1"
-						points={pointsFor(s.cumulative)}
-						style="stroke: {podiumColor[Math.min(s.rank, 3)]}"
-					/>
-				{/each}
+					{#each podium as s (s.userId)}
+						<polyline
+							class="line podium{lineClass(s.userId)}"
+							points={pointsFor(s.cumulative)}
+							style="stroke: {podiumColor[Math.min(s.rank, 3)]}"
+						/>
+					{/each}
+				</g>
 				{#if selected && !selected.isPodium}
 					<circle class="end-dot selected-dot" cx={x(n)} cy={endY(selected)} r="3" />
 				{/if}
@@ -260,9 +266,15 @@
 		stroke-linecap: round;
 		stroke-linejoin: round;
 		vector-effect: non-scaling-stroke;
-		/* draw-on animation: hide the stroke, then run it in left-to-right */
-		stroke-dasharray: 1;
-		stroke-dashoffset: 1;
+	}
+	.reveal-clip {
+		transform: scaleX(0);
+		transform-origin: left center;
+		transform-box: fill-box;
+	}
+	.drawn .reveal-clip {
+		transform: scaleX(1);
+		transition: transform 4.5s cubic-bezier(0.35, 0, 0.15, 1);
 	}
 	.line.back {
 		stroke: var(--ink);
@@ -284,17 +296,14 @@
 		filter: drop-shadow(0 1px 0 rgba(24, 20, 13, 0.3));
 	}
 	.selected-dot { fill: var(--danger, #c0392b); }
-	.drawn .line {
-		stroke-dashoffset: 0;
-		transition: stroke-dashoffset 4.5s cubic-bezier(0.35, 0, 0.15, 1), opacity 0.2s ease, stroke-width 0.2s ease;
-	}
+	.drawn .line { transition: opacity 0.2s ease, stroke-width 0.2s ease; }
 
 	.end-dot {
 		opacity: 0;
 	}
 	.drawn .end-dot {
 		opacity: 1;
-		transition: opacity 0.5s ease 4.3s;
+		transition: opacity 0.5s ease 4.55s;
 	}
 	@media (min-width: 760px) {
 		svg { height: 260px; }
@@ -397,12 +406,9 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.line {
-			stroke-dashoffset: 0;
-		}
-		.drawn .line {
-			transition: none;
-		}
+		.reveal-clip,
+		.drawn .reveal-clip { transform: scaleX(1); transition: none; }
+		.drawn .line { transition: none; }
 		.end-dot,
 		.drawn .end-dot {
 			opacity: 1;

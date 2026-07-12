@@ -50,7 +50,7 @@
 					}
 				}
 			},
-			{ threshold: 0.25 }
+			{ threshold: 0.3 }
 		);
 		obs.observe(el);
 		return () => obs.disconnect();
@@ -95,8 +95,8 @@
 		opacity: 1;
 		transform: none;
 		transition:
-			opacity 0.6s ease,
-			transform 0.6s cubic-bezier(0.22, 0.9, 0.36, 1);
+			opacity 0.75s ease,
+			transform 0.8s cubic-bezier(0.22, 0.9, 0.36, 1);
 	}
 
 	.beat-head {

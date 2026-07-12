@@ -164,6 +164,9 @@
 		margin: 0 auto;
 		padding: 28px 24px 80px;
 	}
+	@media (min-width: 760px) {
+		.recap-page { max-width: 900px; }
+	}
 	.preview-ribbon {
 		width: fit-content;
 		margin: 0 auto 28px;

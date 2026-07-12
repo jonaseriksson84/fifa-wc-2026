@@ -64,6 +64,9 @@
 		margin: 0 auto;
 		padding: 48px 24px 80px;
 	}
+	@media (min-width: 760px) {
+		.recap-page { max-width: 900px; }
+	}
 
 	/* Placeholder (Final not settled) */
 	.placeholder {

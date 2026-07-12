@@ -107,6 +107,9 @@ describe('recap race chart beat', () => {
 	it('animates the draw when it scrolls into view and respects reduced motion', () => {
 		expect(raceChart).toContain('IntersectionObserver');
 		expect(raceChart).toContain('prefers-reduced-motion');
+		expect(raceChart).toContain('race-reveal');
+		expect(raceChart).toContain('reveal-clip');
+		expect(raceChart).not.toContain('stroke-dasharray');
 	});
 
 	it('lets a player be highlighted and gives the race room on wide screens', () => {
@@ -199,6 +202,8 @@ describe('recap page — awards beat', () => {
 
 	it('shimmers the cards in on scroll and respects reduced motion', () => {
 		expect(awards).toContain('IntersectionObserver');
+		expect(awards).toContain('use:revealCard');
+		expect(awards).toContain('card-visible');
 		expect(awards).toContain('prefers-reduced-motion');
 		expect(awards.toLowerCase()).toContain('shine');
 	});
