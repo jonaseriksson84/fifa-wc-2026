@@ -18,6 +18,16 @@
 	const columns = $derived(heatmap.columns);
 
 	let zoomed = $state(false);
+	let selectedUserId = $state('');
+	function selectRow(userId: string): void {
+		selectedUserId = selectedUserId === userId ? '' : userId;
+	}
+	function handleRowKey(event: KeyboardEvent, userId: string): void {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			selectRow(userId);
+		}
+	}
 
 	// Short, legible column-band labels (the stage prefixes like "M" / "FNL" read
 	// cryptically). Falls back to the raw stage for anything unexpected.
@@ -84,38 +94,65 @@
 
 		<div class="grid-scroll">
 			<div class="grid" style="--cols: {columns.length}">
-				<!-- Stage header band aligned to the column groups. -->
-				<div class="stage-band" style="grid-template-columns: repeat({columns.length}, var(--cell));">
-					{#each heatmap.stageGroups as g (g.stage + g.startIndex)}
-						<div class="stage-tag" style="grid-column: span {g.count}" title={g.stage}>
-							<span>{stageLabel(g.stage)}</span>
+				{#if zoomed}
+					<div class="numbered-line">
+						<span class="row-number" aria-hidden="true">#</span>
+						<div class="stage-band" style="grid-template-columns: repeat({columns.length}, var(--cell));">
+							{#each heatmap.stageGroups as g (g.stage + g.startIndex)}
+								<div class="stage-tag" style="grid-column: span {g.count}" title={g.stage}>
+									<span>{stageLabel(g.stage)}</span>
+								</div>
+							{/each}
+						</div>
+					</div>
+					{#each rows as row, r (row.userId)}
+						<div
+							class="numbered-line interactive"
+							class:muted={selectedUserId && selectedUserId !== row.userId}
+							role="button"
+							tabindex="0"
+							aria-label="Highlight {row.name}"
+							aria-pressed={selectedUserId === row.userId}
+							onclick={() => selectRow(row.userId)}
+							onkeydown={(event) => handleRowKey(event, row.userId)}
+						>
+							<span class="row-number">{r + 1}</span>
+							<div class="row" style="--r: {r}; grid-template-columns: repeat({columns.length}, var(--cell));">
+								{#each row.cells as state, c (columns[c].fixtureId)}
+									<i class="cell {state}" title="{row.name} · {stageLabel(columns[c].stage)} · {state}"></i>
+								{/each}
+							</div>
 						</div>
 					{/each}
-				</div>
-
-				{#each rows as row, r (row.userId)}
-					<div
-						class="row"
-						style="--r: {r}; grid-template-columns: repeat({columns.length}, var(--cell));"
-					>
-						{#each row.cells as state, c (columns[c].fixtureId)}
-							<i
-								class="cell {state}"
-								title="{row.name} · {stageLabel(columns[c].stage)} · {state}"
-							></i>
+				{:else}
+					<!-- Fit mode deliberately keeps the original direct grid structure. -->
+					<div class="stage-band" style="grid-template-columns: repeat({columns.length}, var(--cell));">
+						{#each heatmap.stageGroups as g (g.stage + g.startIndex)}
+							<div class="stage-tag" style="grid-column: span {g.count}" title={g.stage}>
+								<span>{stageLabel(g.stage)}</span>
+							</div>
 						{/each}
 					</div>
-				{/each}
+					{#each rows as row, r (row.userId)}
+						<div class="row" class:muted={selectedUserId && selectedUserId !== row.userId} style="--r: {r}; grid-template-columns: repeat({columns.length}, var(--cell));">
+							{#each row.cells as state, c (columns[c].fixtureId)}
+								<i class="cell {state}" title="{row.name} · {stageLabel(columns[c].stage)} · {state}"></i>
+							{/each}
+						</div>
+					{/each}
+				{/if}
 			</div>
 		</div>
 
 		<!-- Rank/name rail read alongside the grid; kept compact so the grid owns width. -->
 		<ol class="rail">
 			{#each rows as row (row.userId)}
-				<li>
-					<span class="rank">{row.rank}</span>
-					<span class="name">{row.name}</span>
-					<span class="tally">{row.correctCount}/{row.pickCount}</span>
+				<li class:muted={selectedUserId && selectedUserId !== row.userId} class:selected={selectedUserId === row.userId}>
+					<button class="rail-select" type="button" onclick={() => selectRow(row.userId)} aria-pressed={selectedUserId === row.userId}>
+						<span class="rank">{row.rank}</span>
+						<span class="name">{row.name}</span>
+						<span class="tally">{row.correctCount}/{row.pickCount}</span>
+					</button>
 				</li>
 			{/each}
 		</ol>
@@ -222,6 +259,30 @@
 		--gap: 2px;
 		min-width: max-content;
 	}
+	.numbered-line {
+		display: grid;
+		grid-template-columns: 18px max-content;
+		align-items: stretch;
+		gap: 4px;
+		transition: opacity 0.18s ease;
+	}
+	.numbered-line.muted { opacity: 0.12; }
+	.numbered-line.interactive {
+		cursor: pointer;
+		outline: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+	.row-number {
+		display: grid;
+		place-items: center;
+		border: 0;
+		padding: 0;
+		background: transparent;
+		color: var(--ink);
+		font-family: var(--mono);
+		font-size: 8px;
+		cursor: pointer;
+	}
 
 	.stage-band {
 		display: grid;
@@ -249,6 +310,7 @@
 		gap: var(--gap);
 		opacity: 0;
 		transform: translateX(-6px);
+		transition: opacity 0.18s ease;
 	}
 	.revealed .row {
 		opacity: 1;
@@ -259,6 +321,7 @@
 		/* cascade rows in by rank */
 		transition-delay: calc(var(--r) * 45ms);
 	}
+	.revealed .row.muted { opacity: 0.12; }
 
 	.cell {
 		display: block;
@@ -289,12 +352,24 @@
 		gap: 2px;
 	}
 	.rail li {
+		font-family: var(--body);
+		font-size: 13px;
+		transition: opacity 0.18s ease, background 0.18s ease;
+	}
+	.rail li.muted { opacity: 0.24; }
+	.rail li.selected { background: rgba(192, 57, 43, 0.08); }
+	.rail-select {
 		display: flex;
 		align-items: baseline;
 		gap: 10px;
-		font-family: var(--body);
-		font-size: 13px;
+		width: 100%;
 		padding: 2px 4px;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
 	}
 	.rail .rank {
 		font-family: var(--mono);

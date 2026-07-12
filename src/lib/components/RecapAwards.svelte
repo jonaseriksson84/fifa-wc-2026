@@ -88,6 +88,7 @@
 						{#if award.tied}<span class="tie-note">tied</span>{/if}
 					</p>
 					<p class="subtitle">{award.subtitle}</p>
+					<p class="description">{award.description}</p>
 				</article>
 			{/each}
 		</div>
@@ -141,7 +142,8 @@
 
 	.card {
 		position: relative;
-		overflow: hidden;
+		/* Let the award tab break the card edge like the album's pick stickers. */
+		overflow: visible;
 		border: 3px solid var(--ink);
 		box-shadow: 4px 4px 0 var(--ink);
 		padding: 20px 18px 18px;
@@ -313,6 +315,19 @@
 		line-height: 1.4;
 		opacity: 0.85;
 		margin: 10px 0 0;
+	}
+	.description {
+		position: relative;
+		z-index: 1;
+		max-width: 34ch;
+		margin: 8px auto 0;
+		padding-top: 8px;
+		border-top: 1px solid rgba(24, 20, 13, 0.25);
+		font-family: var(--mono);
+		font-size: 9px;
+		line-height: 1.45;
+		letter-spacing: 0.03em;
+		opacity: 0.72;
 	}
 
 	.empty {

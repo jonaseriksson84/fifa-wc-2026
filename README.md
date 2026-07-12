@@ -50,7 +50,12 @@ Set once per env before first deploy:
 npx wrangler secret put RESEND_API_KEY      --env <env>
 npx wrangler secret put BETTER_AUTH_SECRET  --env <env>   # openssl rand -base64 32
 npx wrangler secret put API_FOOTBALL_KEY    --env <env>
+npx wrangler secret put RECAP_PREVIEW_PASSWORD --env <env>
 ```
+
+The unlinked `/recap-preview-7f3k9` route uses `RECAP_PREVIEW_PASSWORD` and renders
+the Recap from current tournament data before the Final gate opens. If the secret
+is unset, the route returns 404. The normal `/recap` availability gate is unchanged.
 
 ### Deploy
 

@@ -55,6 +55,10 @@ const pageHtml =
 	closer;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
+const loadRecapTs = readFileSync(
+	resolve(__dirname, '../../lib/server/recap/load-recap.ts'),
+	'utf-8'
+);
 
 describe('recap page content', () => {
 	it('uses domain language and never the forbidden vocabulary', () => {
@@ -105,6 +109,13 @@ describe('recap race chart beat', () => {
 		expect(raceChart).toContain('prefers-reduced-motion');
 	});
 
+	it('lets a player be highlighted and gives the race room on wide screens', () => {
+		expect(raceChart).toContain('Highlight a player');
+		expect(raceChart).toContain('selectedUserId');
+		expect(raceChart).toContain('4.5s');
+		expect(raceChart).toContain('@media (min-width: 760px)');
+	});
+
 	it('lights up the podium — the top three — as the reveal', () => {
 		expect(raceChart).toContain('isPodium');
 		expect(raceChart.toLowerCase()).toContain('podium');
@@ -150,6 +161,17 @@ describe('recap page — heatmap beat', () => {
 		expect(heatmap).toContain('overflow-x');
 	});
 
+	it('maps tappable player names to highlighted grid rows', () => {
+		expect(heatmap).toContain('selectRow');
+		expect(heatmap).toContain('rail-select');
+		expect(heatmap).toContain('class:muted');
+		expect(heatmap).toContain('{#if zoomed}');
+		expect(heatmap).toContain('numbered-line');
+		expect(heatmap).toContain('row-number');
+		expect(heatmap).toContain('handleRowKey');
+		expect(heatmap).toContain('numbered-line interactive');
+	});
+
 	it('never uses the forbidden vocabulary', () => {
 		const lower = heatmap.toLowerCase();
 		expect(lower).not.toMatch(/\bbet\b/);
@@ -168,9 +190,11 @@ describe('recap page — awards beat', () => {
 		expect(awards).toContain('winner');
 		expect(awards).toContain('stat');
 		expect(awards).toContain('subtitle');
+		expect(awards).toContain('description');
 		expect(awards).toContain('tier');
 		// Foil tiers from the sticker album language.
 		expect(awards).toMatch(/foil-(paper|pearl|holo|gold|legendary)/);
+		expect(awards).toContain('overflow: visible');
 	});
 
 	it('shimmers the cards in on scroll and respects reduced motion', () => {
@@ -227,6 +251,8 @@ describe('recap page — we-all-whiffed beat', () => {
 		expect(whiffed).toContain('whiffed');
 		expect(whiffed).toContain('fixtures');
 		expect(whiffed).toContain('count');
+		expect(whiffed).toContain('homeTeam');
+		expect(whiffed).toContain('awayTeam');
 		expect(whiffed.toLowerCase()).toContain('whiff');
 	});
 
@@ -310,13 +336,14 @@ describe('recap scroll-reveal primitive', () => {
 
 describe('recap page server — thin adapter', () => {
 	it('delegates all Recap logic to the computeRecap seam', () => {
-		expect(serverTs).toContain('computeRecap');
+		expect(serverTs).toContain('loadRecap');
+		expect(loadRecapTs).toContain('computeRecap');
 	});
 
 	it('reads users, picks, and fixtures like the leaderboard loader', () => {
-		expect(serverTs).toContain('fixture');
-		expect(serverTs).toContain('getAllPicks');
-		expect(serverTs).toContain('user');
+		expect(loadRecapTs).toContain('fixture');
+		expect(loadRecapTs).toContain('getAllPicks');
+		expect(loadRecapTs).toContain('user');
 	});
 
 	it('does NOT guard the route behind a session (public-after-lock data)', () => {

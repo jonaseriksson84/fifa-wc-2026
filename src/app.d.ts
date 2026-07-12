@@ -32,6 +32,7 @@ declare global {
 				GOOGLE_CLIENT_ID?: string;
 				GOOGLE_CLIENT_SECRET?: string;
 				E2E_TEST?: string;
+				RECAP_PREVIEW_PASSWORD?: string;
 			};
 			context: {
 				waitUntil(promise: Promise<unknown>): void;

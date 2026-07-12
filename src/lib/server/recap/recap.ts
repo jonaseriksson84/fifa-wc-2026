@@ -21,6 +21,8 @@ export type RecapPick = { userId: string; fixtureId: number; value: string; upda
 
 export type RecapFixture = {
 	id: number;
+	homeTeam: string;
+	awayTeam: string;
 	stage: string;
 	result: string | null;
 	kickoff: string;
@@ -132,6 +134,8 @@ export type RecapAward = {
 	title: string;
 	/** Snarky one-liner under the winner. */
 	subtitle: string;
+	/** Plain-language explanation of exactly how the winner is chosen. */
+	description: string;
 	/** Foil tier for the card's visual language (paper…legendary). */
 	tier: FoilTier;
 	/** Winner(s). Ties share the card; an award with no qualifying user is omitted. */
@@ -166,6 +170,8 @@ export type RecapWhiffFixture = {
 	stage: string;
 	result: string;
 	kickoff: string;
+	homeTeam: string;
+	awayTeam: string;
 };
 
 /** The collective blind spots: settled fixtures where nobody picked the Result. */
@@ -578,6 +584,7 @@ function computeAwards(
 		key: 'oracle',
 		title: 'The Oracle',
 		subtitle: 'Saw it all coming.',
+		description: 'Highest percentage of correct picks among active players.',
 		tier: 'legendary',
 		candidates: active.filter((a) => a.answered > 0 && a.correct > 0),
 		score: (a) => a.correct / a.answered,
@@ -590,6 +597,7 @@ function computeAwards(
 		key: 'sheep',
 		title: 'The Sheep',
 		subtitle: 'Baa. Went with the flock.',
+		description: 'Most often picked the same result as the pool majority.',
 		tier: 'paper',
 		candidates: active.filter((a) => a.answered > 0 && a.pluralityMatches > 0),
 		score: (a) => a.pluralityMatches / a.answered,
@@ -602,6 +610,7 @@ function computeAwards(
 		key: 'contrarian',
 		title: 'The Contrarian',
 		subtitle: 'Points nobody else dared to take.',
+		description: 'Most points won from results picked by a minority of the pool.',
 		tier: 'holo',
 		candidates: aggs.filter((a) => a.minorityPoints > 0),
 		score: (a) => a.minorityPoints,
@@ -614,6 +623,7 @@ function computeAwards(
 		key: 'draw-whisperer',
 		title: 'Draw Whisperer',
 		subtitle: 'Called the stalemates nobody else could.',
+		description: 'Most correct draw picks during the group stage.',
 		tier: 'gold',
 		candidates: aggs.filter((a) => a.drawsCalled > 0),
 		score: (a) => a.drawsCalled,
@@ -626,6 +636,7 @@ function computeAwards(
 		key: 'deadline-demon',
 		title: 'Deadline Demon',
 		subtitle: 'Picked with the clock at zero.',
+		description: 'Shortest typical time between making a pick and its deadline.',
 		tier: 'pearl',
 		candidates: active.filter((a) => a.deadlineGaps.length > 0),
 		score: (a) => median(a.deadlineGaps),
@@ -638,6 +649,7 @@ function computeAwards(
 		key: 'lone-genius',
 		title: 'The Lone Genius',
 		subtitle: 'The only soul who saw it.',
+		description: 'Most fixtures where they were the only player to pick correctly.',
 		tier: 'holo',
 		candidates: aggs.filter((a) => a.loneHits > 0),
 		score: (a) => a.loneHits,
@@ -650,6 +662,7 @@ function computeAwards(
 		key: 'ghost',
 		title: 'The Ghost',
 		subtitle: 'Present in name, absent in Picks.',
+		description: 'Most missed picks among players active for at least half the tournament.',
 		tier: 'paper',
 		candidates: active.filter((a) => a.missed > 0),
 		score: (a) => a.missed,
@@ -664,6 +677,7 @@ type AwardSpec = {
 	key: RecapAwardKey;
 	title: string;
 	subtitle: string;
+	description: string;
 	tier: FoilTier;
 	candidates: AwardAgg[];
 	score: (a: AwardAgg) => number;
@@ -685,6 +699,7 @@ function pushAward(awards: RecapAward[], spec: AwardSpec): void {
 		key: spec.key,
 		title: spec.title,
 		subtitle: spec.subtitle,
+		description: spec.description,
 		tier: spec.tier,
 		winners: winners.map((a) => ({ userId: a.userId, name: a.name })),
 		stat: spec.stat(winners[0]),
@@ -762,7 +777,14 @@ function computeWhiffed(picks: RecapPick[], fixtures: RecapFixture[]): RecapWhif
 			const t = new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
 			return t !== 0 ? t : a.id - b.id;
 		})
-		.map((f) => ({ fixtureId: f.id, stage: f.stage, result: f.result!, kickoff: f.kickoff }));
+		.map((f) => ({
+			fixtureId: f.id,
+			stage: f.stage,
+			result: f.result!,
+			kickoff: f.kickoff,
+			homeTeam: f.homeTeam,
+			awayTeam: f.awayTeam
+		}));
 
 	return { fixtures: whiffs, count: whiffs.length };
 }

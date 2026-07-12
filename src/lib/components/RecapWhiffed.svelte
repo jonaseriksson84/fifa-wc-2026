@@ -65,6 +65,7 @@
 					<span class="mark">✗</span>
 					<span class="meta">
 						<span class="stage">{stageName(f.stage)}</span>
+						<span class="fixture">{f.homeTeam} <small>vs</small> {f.awayTeam}</span>
 						<span class="date">{formatKickoffDate(f.kickoff)}</span>
 					</span>
 					<span class="result">{f.result}</span>
@@ -113,20 +114,22 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 		gap: 8px;
 	}
 	.row {
-		display: flex;
+		display: grid;
+		grid-template-columns: auto 1fr;
 		align-items: center;
-		gap: 14px;
+		column-gap: 9px;
+		row-gap: 8px;
 		border: 2px solid var(--ink);
-		border-left: 6px solid var(--danger, #c0392b);
+		border-top: 5px solid var(--danger, #c0392b);
 		background: var(--paper-card);
-		padding: 12px 16px;
+		padding: 10px 11px 11px;
 		opacity: 0;
-		transform: translateX(-12px);
+		transform: translateY(10px);
 	}
 	.revealed .row {
 		opacity: 1;
@@ -138,7 +141,7 @@
 	}
 	.mark {
 		font-family: var(--display);
-		font-size: 22px;
+		font-size: 18px;
 		color: var(--danger, #c0392b);
 		line-height: 1;
 	}
@@ -162,15 +165,44 @@
 		opacity: 0.6;
 		margin-top: 2px;
 	}
-	.result {
-		font-family: var(--mono);
+	.fixture {
+		font-family: var(--body);
 		font-size: 12px;
+		line-height: 1.2;
+		color: var(--ink);
+		margin-top: 2px;
+	}
+	.fixture small {
+		font-family: var(--mono);
+		font-size: 8px;
+		text-transform: uppercase;
+		opacity: 0.55;
+	}
+	.result {
+		grid-column: 1 / -1;
+		justify-self: stretch;
+		font-family: var(--mono);
+		font-size: 10px;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
+		text-align: center;
 		background: var(--ink);
 		color: var(--paper);
-		padding: 4px 10px;
+		padding: 4px 8px;
 		white-space: nowrap;
+	}
+
+	@media (max-width: 359px) {
+		.list {
+			grid-template-columns: 1fr;
+		}
+		.row {
+			grid-template-columns: auto 1fr auto;
+		}
+		.result {
+			grid-column: auto;
+			justify-self: end;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

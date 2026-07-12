@@ -17,6 +17,10 @@ API_FOOTBALL_KEY=
 # Generate with: openssl rand -base64 32
 BETTER_AUTH_SECRET=
 
+# Shared password for the unlinked /recap-preview-7f3k9 route.
+# If unset, the preview route returns 404.
+RECAP_PREVIEW_PASSWORD=
+
 # Better Auth — public base URL for callbacks.
 # Local dev default is http://localhost:5173; in production set to the
 # deployed Worker URL (e.g. https://fifa-wc-2026-friends.<account>.workers.dev).

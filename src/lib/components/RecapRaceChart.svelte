@@ -15,7 +15,7 @@
 	const W = 340;
 	const H = 190;
 	const padL = 8;
-	const padR = 64; // room for the podium end-labels
+	const padR = 8;
 	const padT = 12;
 	const padB = 10;
 	const plotW = W - padL - padR;
@@ -48,6 +48,12 @@
 	const backLines = $derived(race.series.filter((s) => !s.isPodium));
 	const podium = $derived(race.series.filter((s) => s.isPodium));
 	const champions = $derived(race.series.filter((s) => s.rank === 1));
+	let selectedUserId = $state('');
+	const selected = $derived(race.series.find((s) => s.userId === selectedUserId));
+	function lineClass(userId: string): string {
+		if (!selectedUserId) return '';
+		return userId === selectedUserId ? ' selected' : ' muted';
+	}
 
 	function endY(s: { cumulative: number[] }): number {
 		return s.cumulative.length > 0 ? y(s.cumulative[s.cumulative.length - 1]) : y(0);
@@ -86,6 +92,15 @@
 	{#if n === 0}
 		<p class="empty">No settled fixtures to chart yet.</p>
 	{:else}
+		<label class="player-picker">
+			<span>Highlight a player</span>
+			<select bind:value={selectedUserId}>
+				<option value="">Everyone</option>
+				{#each race.series as s (s.userId)}
+					<option value={s.userId}>{s.rank}. {s.name} — {s.finalPoints} pts</option>
+				{/each}
+			</select>
+		</label>
 		<div class="chart-frame">
 			<svg
 				viewBox="0 0 {W} {H}"
@@ -97,21 +112,29 @@
 				<line class="axis" x1={x(0)} y1={y(0)} x2={x(n)} y2={y(0)} />
 
 				{#each backLines as s (s.userId)}
-					<polyline class="line back" pathLength="1" points={pointsFor(s.cumulative)} />
+					<polyline class="line back{lineClass(s.userId)}" pathLength="1" points={pointsFor(s.cumulative)} />
 				{/each}
 
 				{#each podium as s (s.userId)}
 					<polyline
-						class="line podium"
+						class="line podium{lineClass(s.userId)}"
 						pathLength="1"
 						points={pointsFor(s.cumulative)}
 						style="stroke: {podiumColor[Math.min(s.rank, 3)]}"
 					/>
 				{/each}
+				{#if selected && !selected.isPodium}
+					<circle class="end-dot selected-dot" cx={x(n)} cy={endY(selected)} r="3" />
+				{/if}
 
 				{#each podium as s (s.userId)}
-					<circle class="end-dot" cx={x(n)} cy={endY(s)} r="3" style="fill: {podiumColor[Math.min(s.rank, 3)]}" />
-					<text class="end-label" x={x(n) + 6} y={endY(s)} dominant-baseline="middle">{s.name}</text>
+					<circle
+						class="end-dot"
+						cx={x(n)}
+						cy={endY(s)}
+						r="3"
+						style="fill: {podiumColor[Math.min(s.rank, 3)]}"
+					/>
 				{/each}
 			</svg>
 		</div>
@@ -198,6 +221,26 @@
 		box-shadow: 4px 4px 0 rgba(24, 20, 13, 0.12);
 		padding: 12px 10px;
 	}
+	.player-picker {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 10px;
+		font-family: var(--mono);
+		font-size: 10px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+	.player-picker select {
+		min-width: 0;
+		width: 100%;
+		border: 1.5px solid var(--ink);
+		background: var(--paper-card);
+		color: var(--ink);
+		font: inherit;
+		padding: 7px 28px 7px 9px;
+	}
 	svg {
 		display: block;
 		width: 100%;
@@ -231,24 +274,31 @@
 		opacity: 0.95;
 		filter: drop-shadow(0 1px 0 rgba(24, 20, 13, 0.25));
 	}
+	.line.muted {
+		opacity: 0.07;
+	}
+	.line.selected {
+		stroke: var(--danger, #c0392b) !important;
+		stroke-width: 4;
+		opacity: 1;
+		filter: drop-shadow(0 1px 0 rgba(24, 20, 13, 0.3));
+	}
+	.selected-dot { fill: var(--danger, #c0392b); }
 	.drawn .line {
 		stroke-dashoffset: 0;
-		transition: stroke-dashoffset 1.7s cubic-bezier(0.5, 0, 0.2, 1);
+		transition: stroke-dashoffset 4.5s cubic-bezier(0.35, 0, 0.15, 1), opacity 0.2s ease, stroke-width 0.2s ease;
 	}
 
 	.end-dot {
 		opacity: 0;
 	}
-	.end-label {
-		font-family: var(--mono);
-		font-size: 9px;
-		fill: var(--ink);
-		opacity: 0;
-	}
-	.drawn .end-dot,
-	.drawn .end-label {
+	.drawn .end-dot {
 		opacity: 1;
-		transition: opacity 0.5s ease 1.6s;
+		transition: opacity 0.5s ease 4.3s;
+	}
+	@media (min-width: 760px) {
+		svg { height: 260px; }
+		.chart-frame { padding: 16px 14px; }
 	}
 
 	.podium-list {
@@ -354,9 +404,7 @@
 			transition: none;
 		}
 		.end-dot,
-		.end-label,
-		.drawn .end-dot,
-		.drawn .end-label {
+		.drawn .end-dot {
 			opacity: 1;
 			transition: none;
 		}

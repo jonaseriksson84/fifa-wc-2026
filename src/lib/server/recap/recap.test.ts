@@ -8,7 +8,13 @@ function makeUser(id: string, name = id): RecapUser {
 function makeFixture(
 	overrides: Partial<RecapFixture> & { id: number; stage: string }
 ): RecapFixture {
-	return { result: null, kickoff: '2026-06-11T18:00:00.000Z', ...overrides };
+	return {
+		result: null,
+		kickoff: '2026-06-11T18:00:00.000Z',
+		homeTeam: 'Home',
+		awayTeam: 'Away',
+		...overrides
+	};
 }
 
 function makePick(userId: string, fixtureId: number, value: string): RecapPick {
@@ -690,6 +696,7 @@ describe('computeRecap — we all whiffed', () => {
 		expect(whiffed.count).toBe(2);
 		expect(whiffed.fixtures.map((f) => f.fixtureId)).toEqual([1, 3]);
 		expect(whiffed.fixtures[1].result).toBe('AWAY');
+		expect(whiffed.fixtures[1]).toMatchObject({ homeTeam: 'Home', awayTeam: 'Away' });
 	});
 
 	it('does not count a fixture nobody picked (a ghosted fixture is not a whiff)', () => {
