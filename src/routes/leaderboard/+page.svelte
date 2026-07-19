@@ -14,7 +14,19 @@
 	<div class="panel">
 		<span class="overhang">STANDINGS</span>
 
-		<Standings entries={data.leaderboard} currentUserId={data.currentUserId} />
+		<Standings
+			entries={data.leaderboard}
+			currentUserId={data.currentUserId}
+			winnerBet={{
+				enabled: true,
+				tagLabel: 'MY BET 🏆',
+				eligibleIds: data.leaderboard
+					.filter((entry) => entry.canStillWin)
+					.map((entry) => entry.userId),
+				myBet: data.myWinnerBet,
+				locked: data.winnerBetLocked
+			}}
+		/>
 
 		<StickerTiersLegend />
 	</div>

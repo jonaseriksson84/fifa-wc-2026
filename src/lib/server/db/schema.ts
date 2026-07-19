@@ -76,6 +76,23 @@ export const pick = sqliteTable(
 	(table) => [uniqueIndex('pick_user_fixture_idx').on(table.userId, table.fixtureId)]
 );
 
+export const winnerBet = sqliteTable(
+	'winner_bet',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id),
+		pickedUserId: text('picked_user_id')
+			.notNull()
+			.references(() => user.id),
+		updatedAt: text('updated_at')
+			.notNull()
+			.$defaultFn(() => new Date().toISOString())
+	},
+	(table) => [uniqueIndex('winner_bet_user_idx').on(table.userId)]
+);
+
 export const verification = sqliteTable('verification', {
 	id: text('id').primaryKey(),
 	identifier: text('identifier').notNull(),

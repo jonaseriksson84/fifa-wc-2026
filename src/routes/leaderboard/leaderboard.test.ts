@@ -1,7 +1,25 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+const mocks = vi.hoisted(() => ({
+	createDb: vi.fn(),
+	getAllPicks: vi.fn(),
+	deleteWinnerBet: vi.fn(),
+	getWinnerBet: vi.fn(),
+	upsertWinnerBet: vi.fn()
+}));
+
+vi.mock('$lib/server/db', () => ({ createDb: mocks.createDb }));
+vi.mock('$lib/server/picks/pick-repository', () => ({ getAllPicks: mocks.getAllPicks }));
+vi.mock('$lib/server/winner-bet/winner-bet-repository', () => ({
+	deleteWinnerBet: mocks.deleteWinnerBet,
+	getWinnerBet: mocks.getWinnerBet,
+	upsertWinnerBet: mocks.upsertWinnerBet
+}));
+
+import { actions } from './+page.server';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const standingsSvelte = readFileSync(
@@ -16,12 +34,13 @@ const pageHtml =
 	readFileSync(resolve(__dirname, '+page.svelte'), 'utf-8') + standingsSvelte + tiersSvelte;
 const pageLower = pageHtml.toLowerCase();
 const serverTs = readFileSync(resolve(__dirname, '+page.server.ts'), 'utf-8');
+const loadServerTs = serverTs.split('export const actions')[0];
 
 describe('leaderboard page content', () => {
-	it('uses domain language — User and points, never score-as-verb or bet', () => {
+	it('uses domain language — User, points, and winner bet, never guess', () => {
 		expect(pageHtml).toContain('User');
 		expect(pageHtml).toContain('points');
-		expect(pageLower).not.toMatch(/\bbet\b/);
+		expect(pageLower).toMatch(/\bbet\b/);
 		expect(pageLower).not.toMatch(/\bguess\b/);
 	});
 
@@ -40,6 +59,14 @@ describe('leaderboard page content', () => {
 	it('renders user rows with points', () => {
 		expect(pageHtml).toContain('entry.points');
 		expect(pageHtml).toContain('entry.rank');
+	});
+
+	it('puts winner-bet controls and status tags directly on standings rows', () => {
+		expect(pageHtml).toContain('?/winnerBet');
+		expect(pageHtml).toContain('MY BET 🏆');
+		expect(pageHtml).toContain('OUT');
+		expect(pageHtml).toContain('◎');
+		expect(pageHtml).toContain('use:enhance');
 	});
 });
 
@@ -97,7 +124,7 @@ describe('leaderboard Panini aesthetic', () => {
 
 describe('leaderboard page server — guest access', () => {
 	it('does NOT redirect guests away from /leaderboard (no auth guard on load)', () => {
-		expect(serverTs).not.toMatch(/load[\s\S]*?if\s*\(\s*!locals\.user\s*\)\s*throw\s+redirect/);
+		expect(loadServerTs).not.toMatch(/if\s*\(\s*!locals\.user\s*\)\s*throw\s+redirect/);
 	});
 
 	it('returns null currentUserId for guests', () => {
@@ -130,5 +157,82 @@ describe('leaderboard page server', () => {
 
 	it('delegates ranking and tie detection to the shared rankEntries utility', () => {
 		expect(serverTs).toContain('rankEntries');
+	});
+
+	it('returns winner-bet eligibility, the current bet, and lock state', () => {
+		expect(serverTs).toContain('canStillWin');
+		expect(serverTs).toContain('myWinnerBet:');
+		expect(serverTs).toContain('winnerBetLocked:');
+	});
+});
+
+function actionEvent(pickedUserId: string) {
+	const formData = new FormData();
+	formData.set('pickedUserId', pickedUserId);
+
+	return {
+		request: new Request('http://localhost/leaderboard?/winnerBet', {
+			method: 'POST',
+			body: formData
+		}),
+		locals: { user: { id: 'bettor' } },
+		platform: { env: { DB: {} } }
+	};
+}
+
+function dbReturning(...results: unknown[]) {
+	const from = vi.fn();
+	for (const result of results) from.mockResolvedValueOnce(result);
+	return { select: vi.fn(() => ({ from })) };
+}
+
+describe('leaderboard winnerBet action', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('rejects changes after the Final has kicked off', async () => {
+		mocks.createDb.mockReturnValue(
+			dbReturning([
+				{
+					id: 64,
+					stage: 'Final',
+					kickoff: '2000-01-01T00:00:00.000Z',
+					result: null
+				}
+			])
+		);
+
+		const result = await actions.winnerBet!(actionEvent('target') as never);
+
+		expect(result).toMatchObject({ status: 403 });
+		expect(mocks.upsertWinnerBet).not.toHaveBeenCalled();
+	});
+
+	it('rejects a target whose maximum possible points are below the leader', async () => {
+		mocks.createDb.mockReturnValue(
+			dbReturning(
+				[
+					{
+						id: 1,
+						stage: 'QF',
+						kickoff: '2000-01-01T00:00:00.000Z',
+						result: 'HOME'
+					}
+				],
+				[
+					{ id: 'leader', name: 'Leader', email: 'leader@example.com', displayName: null },
+					{ id: 'target', name: 'Target', email: 'target@example.com', displayName: null }
+				]
+			)
+		);
+		mocks.getAllPicks.mockResolvedValue([
+			{ id: 1, userId: 'leader', fixtureId: 1, value: 'HOME', updatedAt: '' }
+		]);
+
+		const result = await actions.winnerBet!(actionEvent('target') as never);
+
+		expect(result).toMatchObject({ status: 403 });
+		expect(mocks.upsertWinnerBet).not.toHaveBeenCalled();
 	});
 });
