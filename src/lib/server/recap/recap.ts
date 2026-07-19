@@ -28,6 +28,12 @@ export type RecapFixture = {
 	kickoff: string;
 };
 
+export type RecapAvailabilityFixture = Pick<RecapFixture, 'stage' | 'result'>;
+
+export function recapAvailable(fixtures: RecapAvailabilityFixture[]): boolean {
+	return fixtures.some((fixture) => fixture.stage === 'Final' && fixture.result != null);
+}
+
 export type RecapTitle = {
 	fixtureCount: number;
 	playerCount: number;
@@ -226,15 +232,12 @@ export function computeRecap(
 	picks: RecapPick[],
 	fixtures: RecapFixture[]
 ): RecapData {
-	const final = fixtures.find((f) => f.stage === 'Final');
-	const available = final != null && final.result != null;
-
 	const kickoffs = fixtures.map((f) => f.kickoff).sort();
 	const firstKickoff = kickoffs.length > 0 ? kickoffs[0] : null;
 	const lastKickoff = kickoffs.length > 0 ? kickoffs[kickoffs.length - 1] : null;
 
 	return {
-		available,
+		available: recapAvailable(fixtures),
 		title: {
 			fixtureCount: fixtures.length,
 			playerCount: users.length,

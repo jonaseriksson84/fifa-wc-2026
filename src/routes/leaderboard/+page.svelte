@@ -11,18 +11,6 @@
 </svelte:head>
 
 <div class="leaderboard-page">
-	{#if data.recapAvailable}
-		<a href="/recap" class="recap-banner">
-			<span class="recap-shine"></span>
-			<span class="recap-kicker">New</span>
-			<span class="recap-copy">
-				<strong>The Recap is live</strong>
-				<span>The whole tournament, played back</span>
-			</span>
-			<span class="recap-go">Open →</span>
-		</a>
-	{/if}
-
 	<div class="panel">
 		<span class="overhang">STANDINGS</span>
 
@@ -70,104 +58,6 @@
 		max-width: 600px;
 		margin: 0 auto;
 		padding: 40px 24px 60px;
-	}
-
-	/* Recap discovery banner (only rendered when the Recap is available) */
-	.recap-banner {
-		position: relative;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		margin-bottom: 28px;
-		padding: 16px 18px;
-		border: 3px solid var(--ink);
-		box-shadow:
-			0 0 0 3px var(--paper),
-			0 0 0 5px var(--ink),
-			6px 6px 0 var(--ink);
-		text-decoration: none;
-		color: var(--ink);
-		background:
-			conic-gradient(
-				from 45deg,
-				rgba(255, 209, 102, 0.55),
-				rgba(239, 71, 111, 0.5),
-				rgba(179, 136, 255, 0.55),
-				rgba(6, 214, 160, 0.5),
-				rgba(255, 247, 154, 0.5),
-				rgba(255, 209, 102, 0.55)
-			);
-		background-color: var(--paper-empty);
-		transition: transform 0.15s ease;
-	}
-	.recap-banner:hover {
-		transform: translate(-1px, -1px);
-	}
-	.recap-shine {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			60deg,
-			transparent 35%,
-			rgba(255, 255, 255, 0.6) 50%,
-			transparent 65%
-		);
-		background-size: 250% 250%;
-		animation: recap-shine 3.5s ease-in-out infinite;
-		pointer-events: none;
-		mix-blend-mode: overlay;
-	}
-	@keyframes recap-shine {
-		0% {
-			background-position: 100% 100%;
-		}
-		50% {
-			background-position: 0% 0%;
-		}
-		100% {
-			background-position: 100% 100%;
-		}
-	}
-	.recap-kicker {
-		flex-shrink: 0;
-		font-family: var(--mono);
-		font-size: 10px;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		background: var(--ink);
-		color: var(--paper);
-		padding: 4px 8px;
-	}
-	.recap-copy {
-		display: flex;
-		flex-direction: column;
-		line-height: 1.2;
-	}
-	.recap-copy strong {
-		font-family: var(--headline);
-		font-size: 17px;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-	}
-	.recap-copy span {
-		font-family: var(--mono);
-		font-size: 11px;
-		letter-spacing: 0.04em;
-		opacity: 0.8;
-	}
-	.recap-go {
-		margin-left: auto;
-		flex-shrink: 0;
-		font-family: var(--headline);
-		font-size: 14px;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.recap-shine {
-			animation: none;
-		}
 	}
 
 	/* Panel */

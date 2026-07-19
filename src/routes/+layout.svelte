@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { displayName } from '$lib/display-name';
+	import RecapLiveBanner from '$lib/components/RecapLiveBanner.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -17,6 +18,10 @@
 </script>
 
 <div style:--accent={data.poolAccentHex}>
+	{#if data.recapAvailable && currentPath !== '/recap'}
+		<RecapLiveBanner />
+	{/if}
+
 	<header class="masthead">
 		<div class="title-block">
 			<div class="crest">

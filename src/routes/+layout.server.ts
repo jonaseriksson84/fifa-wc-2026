@@ -5,11 +5,12 @@ import { fixture, user } from '$lib/server/db/schema';
 import { albumProgress } from '$lib/album-progress';
 import { isOpenForPicks } from '$lib/lock-time';
 import { getPicksForUser } from '$lib/server/picks/pick-repository';
+import { recapAvailable } from '$lib/server/recap/recap';
 
 export const load: LayoutServerLoad = async ({ locals, platform }) => {
 	const db = createDb(platform!.env.DB);
 	const fixtures = await db
-		.select({ id: fixture.id, kickoff: fixture.kickoff, result: fixture.result })
+		.select({ id: fixture.id, kickoff: fixture.kickoff, stage: fixture.stage, result: fixture.result })
 		.from(fixture);
 	const progress = albumProgress(fixtures);
 
@@ -36,6 +37,7 @@ export const load: LayoutServerLoad = async ({ locals, platform }) => {
 		poolName: platform!.env.POOL_NAME,
 		poolAccentHex: platform!.env.POOL_ACCENT_HEX,
 		albumProgress: progress,
-		openCount
+		openCount,
+		recapAvailable: recapAvailable(fixtures)
 	};
 };

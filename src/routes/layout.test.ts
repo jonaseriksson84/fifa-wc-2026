@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const layoutHtml = readFileSync(resolve(__dirname, '+layout.svelte'), 'utf-8');
+const layoutServerTs = readFileSync(resolve(__dirname, '+layout.server.ts'), 'utf-8');
+const recapBannerHtml = readFileSync(
+	resolve(__dirname, '../lib/components/RecapLiveBanner.svelte'),
+	'utf-8'
+);
 
 describe('site layout', () => {
 	it('contains a link to the FAQ page', () => {
@@ -47,5 +52,25 @@ describe('masthead tab pills', () => {
 		expect(layoutHtml).toContain('.badge');
 		const badgeSection = layoutHtml.slice(layoutHtml.indexOf('.badge'));
 		expect(badgeSection).toMatch(/background:.*var\(--accent\)/);
+	});
+});
+
+describe('site-wide Recap live banner', () => {
+	it('only renders the banner when the Recap is available', () => {
+		expect(layoutHtml).toContain('data.recapAvailable');
+		expect(layoutHtml).toContain('<RecapLiveBanner />');
+	});
+
+	it('links to the /recap route', () => {
+		expect(recapBannerHtml).toContain('href="/recap"');
+	});
+
+	it('hides the banner on the /recap path', () => {
+		expect(layoutHtml).toContain("currentPath !== '/recap'");
+	});
+
+	it('derives availability from the recapAvailable seam', () => {
+		expect(layoutServerTs).toContain("import { recapAvailable } from '$lib/server/recap/recap'");
+		expect(layoutServerTs).toContain('recapAvailable: recapAvailable(fixtures)');
 	});
 });

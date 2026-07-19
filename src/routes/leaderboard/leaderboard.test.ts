@@ -115,21 +115,6 @@ describe('leaderboard page — guest view', () => {
 	});
 });
 
-describe('leaderboard Recap discovery banner', () => {
-	it('only renders the banner when the Recap is available', () => {
-		expect(pageHtml).toContain('data.recapAvailable');
-	});
-
-	it('links the banner to the /recap route', () => {
-		expect(pageHtml).toContain('href="/recap"');
-	});
-
-	it('derives availability from the computeRecap seam, not a bespoke check', () => {
-		expect(serverTs).toContain('computeRecap');
-		expect(serverTs).toContain('recapAvailable');
-	});
-});
-
 describe('leaderboard page server', () => {
 	it('delegates scoring to the scoring module', () => {
 		expect(serverTs).toContain('computeScores');

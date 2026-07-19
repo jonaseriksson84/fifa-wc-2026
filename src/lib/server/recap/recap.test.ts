@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computeRecap, type RecapUser, type RecapPick, type RecapFixture } from './recap';
+import {
+	computeRecap,
+	recapAvailable,
+	type RecapUser,
+	type RecapPick,
+	type RecapFixture
+} from './recap';
 
 function makeUser(id: string, name = id): RecapUser {
 	return { id, name, email: `${id}@local.test`, displayName: null };
@@ -34,35 +40,29 @@ function awardByKey(recap: ReturnType<typeof computeRecap>, key: string) {
 	return recap.awards.find((a) => a.key === key);
 }
 
-describe('computeRecap — availability gate', () => {
+describe('recapAvailable', () => {
 	it('is unavailable when the Final fixture has no Result yet', () => {
 		const fixtures = [
-			makeFixture({ id: 1, stage: 'Group', result: 'HOME' }),
-			makeFixture({ id: 2, stage: 'Final', result: null })
+			{ stage: 'Group', result: 'HOME' },
+			{ stage: 'Final', result: null }
 		];
 
-		const recap = computeRecap([makeUser('u1')], [], fixtures);
-
-		expect(recap.available).toBe(false);
+		expect(recapAvailable(fixtures)).toBe(false);
 	});
 
 	it('is available the moment the Final fixture has a Result', () => {
 		const fixtures = [
-			makeFixture({ id: 1, stage: 'Group', result: 'HOME' }),
-			makeFixture({ id: 2, stage: 'Final', result: 'AWAY' })
+			{ stage: 'Group', result: 'HOME' },
+			{ stage: 'Final', result: 'AWAY' }
 		];
 
-		const recap = computeRecap([makeUser('u1')], [], fixtures);
-
-		expect(recap.available).toBe(true);
+		expect(recapAvailable(fixtures)).toBe(true);
 	});
 
 	it('is unavailable when there is no Final fixture at all', () => {
-		const fixtures = [makeFixture({ id: 1, stage: 'Group', result: 'HOME' })];
+		const fixtures = [{ stage: 'Group', result: 'HOME' }];
 
-		const recap = computeRecap([makeUser('u1')], [], fixtures);
-
-		expect(recap.available).toBe(false);
+		expect(recapAvailable(fixtures)).toBe(false);
 	});
 });
 
