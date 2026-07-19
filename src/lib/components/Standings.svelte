@@ -17,6 +17,7 @@
 		eligibleIds: string[];
 		myBet: string | null;
 		locked: boolean;
+		bets?: { bettorId: string; pickedUserId: string }[];
 	};
 
 	let { entries, currentUserId, compact = false, winnerBet }: {
@@ -28,16 +29,32 @@
 
 	const eligibleIds = $derived(new Set(winnerBet?.eligibleIds ?? []));
 	const pickedEntry = $derived(entries.find((entry) => entry.userId === winnerBet?.myBet) ?? null);
+	const entryById = $derived(new Map(entries.map((entry) => [entry.userId, entry])));
+	const backersByPickedUserId = $derived.by(() => {
+		const backers = new Map<string, Entry[]>();
+		if (!winnerBet?.locked) return backers;
+
+		for (const winnerPick of winnerBet.bets ?? []) {
+			const bettor = entryById.get(winnerPick.bettorId);
+			if (!bettor) continue;
+
+			const pickedBackers = backers.get(winnerPick.pickedUserId) ?? [];
+			pickedBackers.push(bettor);
+			backers.set(winnerPick.pickedUserId, pickedBackers);
+		}
+
+		return backers;
+	});
 </script>
 
 {#if winnerBet?.enabled && entries.length > 0}
 	<p class="winner-hint">
 		{#if pickedEntry}
 			Your winner pick: <strong>{displayName(pickedEntry)}</strong>{winnerBet.locked
-				? ' — picks are frozen.'
+				? " — bets are frozen. 🎫 shows who's backing whom."
 				: ' — tap ◉ to clear or ◎ to change.'}
 		{:else if winnerBet.locked}
-			Winner picks are frozen. No pick placed.
+			Bets are frozen. No pick placed. 🎫 shows who's backing whom.
 		{:else if currentUserId}
 			Tap ◎ to pick who wins the pool. Just for fun.
 		{:else}
@@ -55,6 +72,7 @@
 				{@const isYou = entry.userId === currentUserId}
 				{@const isBet = winnerBet?.enabled && entry.userId === winnerBet.myBet}
 				{@const canStillWin = !winnerBet?.enabled || eligibleIds.has(entry.userId)}
+				{@const backers = backersByPickedUserId.get(entry.userId) ?? []}
 				<tr class:you={isYou} class:eliminated={!canStillWin}>
 					<td class="rank-cell">
 						<span class="rank">{entry.rank}</span>
@@ -68,6 +86,15 @@
 							</span>
 						{:else}
 							<span class="who">{displayName(entry)}</span>
+						{/if}
+						{#if backers.length > 0}
+							<span class="backer-line">
+								🎫
+								{#each backers as backer, index}<span
+										class="backer"
+										class:me={backer.userId === currentUserId}>{displayName(backer)}</span
+									>{index < backers.length - 1 ? ', ' : ''}{/each}
+							</span>
 						{/if}
 					</td>
 					<td class="pts-cell">
@@ -192,6 +219,20 @@
 	}
 	.who-line .who {
 		min-width: 0;
+	}
+	.backer-line {
+		display: block;
+		margin-top: 4px;
+		font-family: var(--mono);
+		font-size: 10px;
+		letter-spacing: 0.04em;
+		line-height: 1.6;
+		opacity: 0.75;
+	}
+	.backer.me {
+		background: var(--green);
+		color: var(--paper);
+		padding: 1px 4px;
 	}
 	.winner-tag,
 	.out-tag {

@@ -24,7 +24,8 @@
 					.filter((entry) => entry.canStillWin)
 					.map((entry) => entry.userId),
 				myBet: data.myWinnerBet,
-				locked: data.winnerBetLocked
+				locked: data.winnerBetLocked,
+				bets: data.winnerBets
 			}}
 		/>
 

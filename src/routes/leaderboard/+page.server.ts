@@ -6,6 +6,7 @@ import { getAllPicks } from '$lib/server/picks/pick-repository';
 import { computeScores } from '$lib/server/scoring/score';
 import {
 	deleteWinnerBet,
+	getAllWinnerBets,
 	getWinnerBet,
 	upsertWinnerBet
 } from '$lib/server/winner-bet/winner-bet-repository';
@@ -71,6 +72,13 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 	const entries = buildLeaderboardEntries(allUsers, allPicks, allFixtures);
 	const ranked = rankEntries(entries);
 	const finalKickoff = allFixtures.find((f) => f.stage === 'Final')?.kickoff ?? null;
+	const winnerBetLocked = isWinnerBetLocked(finalKickoff, new Date());
+	const winnerBets = winnerBetLocked
+		? (await getAllWinnerBets(db)).map((bet) => ({
+				bettorId: bet.userId,
+				pickedUserId: bet.pickedUserId
+			}))
+		: [];
 
 	const currentUserId = locals.user?.id ?? null;
 	const pickMap = new Map<number, { value: string; correct: boolean | null }>();
@@ -109,7 +117,8 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 		fixturesWithResults,
 		currentUserId,
 		myWinnerBet: myWinnerBet?.pickedUserId ?? null,
-		winnerBetLocked: isWinnerBetLocked(finalKickoff, new Date())
+		winnerBetLocked,
+		winnerBets
 	};
 };
 

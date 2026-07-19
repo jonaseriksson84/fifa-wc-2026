@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
 	createDb: vi.fn(),
 	getAllPicks: vi.fn(),
 	deleteWinnerBet: vi.fn(),
+	getAllWinnerBets: vi.fn(),
 	getWinnerBet: vi.fn(),
 	upsertWinnerBet: vi.fn()
 }));
@@ -15,11 +16,12 @@ vi.mock('$lib/server/db', () => ({ createDb: mocks.createDb }));
 vi.mock('$lib/server/picks/pick-repository', () => ({ getAllPicks: mocks.getAllPicks }));
 vi.mock('$lib/server/winner-bet/winner-bet-repository', () => ({
 	deleteWinnerBet: mocks.deleteWinnerBet,
+	getAllWinnerBets: mocks.getAllWinnerBets,
 	getWinnerBet: mocks.getWinnerBet,
 	upsertWinnerBet: mocks.upsertWinnerBet
 }));
 
-import { actions } from './+page.server';
+import { actions, load } from './+page.server';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const standingsSvelte = readFileSync(
@@ -67,6 +69,14 @@ describe('leaderboard page content', () => {
 		expect(pageHtml).toContain('OUT');
 		expect(pageHtml).toContain('◎');
 		expect(pageHtml).toContain('use:enhance');
+	});
+
+	it('reveals backer display names on backed rows once bets are locked', () => {
+		expect(pageHtml).toContain('🎫');
+		expect(pageHtml).toContain('backersByPickedUserId');
+		expect(pageHtml).toContain('displayName(backer)');
+		expect(pageHtml).toContain('class:me={backer.userId === currentUserId}');
+		expect(pageHtml).toContain('if (!winnerBet?.locked) return backers');
 	});
 });
 
@@ -162,7 +172,67 @@ describe('leaderboard page server', () => {
 	it('returns winner-bet eligibility, the current bet, and lock state', () => {
 		expect(serverTs).toContain('canStillWin');
 		expect(serverTs).toContain('myWinnerBet:');
-		expect(serverTs).toContain('winnerBetLocked:');
+		expect(serverTs).toContain('winnerBetLocked');
+	});
+});
+
+function loadEvent() {
+	return {
+		locals: { user: { id: 'bettor' } },
+		platform: { env: { DB: {} } }
+	};
+}
+
+function finalFixture(kickoff: string) {
+	return {
+		id: 64,
+		stage: 'Final',
+		kickoff,
+		result: null
+	};
+}
+
+describe('leaderboard winner-bet reveal', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mocks.getAllPicks.mockResolvedValue([]);
+		mocks.getWinnerBet.mockResolvedValue(null);
+	});
+
+	it('does not fetch or expose other users\' bets before the lock', async () => {
+		mocks.createDb.mockReturnValue(
+			dbReturning(
+				[finalFixture('2999-01-01T00:00:00.000Z')],
+				[{ id: 'bettor', name: 'Bettor', email: 'bettor@example.com', displayName: null }]
+			)
+		);
+		mocks.getAllWinnerBets.mockResolvedValue([
+			{ userId: 'someone-else', pickedUserId: 'bettor', updatedAt: '' }
+		]);
+
+		const result = (await load(loadEvent() as never)) as { winnerBets: unknown[] };
+
+		expect(result.winnerBets).toEqual([]);
+		expect(mocks.getAllWinnerBets).not.toHaveBeenCalled();
+	});
+
+	it('returns all mapped bets after the lock', async () => {
+		mocks.createDb.mockReturnValue(
+			dbReturning(
+				[finalFixture('2000-01-01T00:00:00.000Z')],
+				[{ id: 'bettor', name: 'Bettor', email: 'bettor@example.com', displayName: null }]
+			)
+		);
+		mocks.getAllWinnerBets.mockResolvedValue([
+			{ userId: 'bettor', pickedUserId: 'target', updatedAt: '2000-01-01T00:00:00.000Z' }
+		]);
+
+		const result = (await load(loadEvent() as never)) as {
+			winnerBets: { bettorId: string; pickedUserId: string }[];
+		};
+
+		expect(result.winnerBets).toEqual([{ bettorId: 'bettor', pickedUserId: 'target' }]);
+		expect(mocks.getAllWinnerBets).toHaveBeenCalledOnce();
 	});
 });
 
