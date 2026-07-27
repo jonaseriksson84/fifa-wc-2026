@@ -10,6 +10,7 @@ import { rankEntries, topN } from '$lib/top-leaderboard';
 import { fixtureIdentifier } from '$lib/fixture-identifier';
 import { isTBDFixture } from '$lib/is-known-team';
 import { isOpenForPicks } from '$lib/lock-time';
+import { isPoolFrozen, POOL_FROZEN_MESSAGE } from '$lib/server/pool-frozen';
 import { pickRevealIndex } from '$lib/pick-reveal';
 import { getStage } from '$lib/stage';
 
@@ -78,6 +79,10 @@ const validValues = new Set(['HOME', 'DRAW', 'AWAY']);
 export const actions: Actions = {
 	pick: async ({ request, locals, platform }) => {
 		if (!locals.user) throw redirect(302, '/login?then=/');
+
+		if (isPoolFrozen(platform!.env.POOL_FROZEN)) {
+			return fail(403, { error: POOL_FROZEN_MESSAGE, fixtureId: 0 });
+		}
 
 		const data = await request.formData();
 		const fixtureIdStr = data.get('fixtureId');

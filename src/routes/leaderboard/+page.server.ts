@@ -13,6 +13,7 @@ import {
 import { rankEntries } from '$lib/top-leaderboard';
 import { getStage } from '$lib/stage';
 import { isWinnerBetLocked, withCanStillWin } from '$lib/winner-bet';
+import { isPoolFrozen, POOL_FROZEN_MESSAGE } from '$lib/server/pool-frozen';
 
 type LeaderboardUser = {
 	id: string;
@@ -125,6 +126,10 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 export const actions: Actions = {
 	winnerBet: async ({ request, locals, platform }) => {
 		if (!locals.user) throw redirect(302, '/login?then=/leaderboard');
+
+		if (isPoolFrozen(platform!.env.POOL_FROZEN)) {
+			return fail(403, { error: POOL_FROZEN_MESSAGE });
+		}
 
 		const data = await request.formData();
 		const pickedUserId = data.get('pickedUserId');

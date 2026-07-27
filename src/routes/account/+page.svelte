@@ -23,9 +23,13 @@
 				maxlength="24"
 				placeholder="How others see you"
 				class="display-name-input"
+				disabled={data.frozen}
 			/>
-			<button type="submit" class="display-name-save">Save</button>
+			<button type="submit" class="display-name-save" disabled={data.frozen}>Save</button>
 		</form>
+		{#if data.frozen}
+			<p class="account-frozen">The pool is frozen — the tournament is over and names are final.</p>
+		{/if}
 	</div>
 
 	<form method="POST" action="/logout">
@@ -102,6 +106,22 @@
 	}
 	.display-name-save:hover {
 		background: var(--ink);
+	}
+	.display-name-save:disabled,
+	.display-name-input:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.display-name-save:disabled:hover {
+		background: var(--accent);
+	}
+
+	.account-frozen {
+		font-family: var(--mono);
+		font-size: 12px;
+		line-height: 1.5;
+		color: var(--ink-mute);
+		margin: 12px 0 0;
 	}
 
 	.account-signout {

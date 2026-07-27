@@ -44,6 +44,15 @@ The instant a **Fixture** stops accepting new or updated **Picks**. Equal to the
 **Score weight**:
 The point value of a correct **Pick** for a given **Fixture**, derived from its **Stage**. Group = 1pt, R32/R16 = 2pt, QF/SF = 3pt, 3rd-place = 4pt, Final = 6pt. Each foil tier (paper/pearl/holo/gold/legendary) maps 1:1 to a single point value. The 3rd-place bump is a deliberate catch-up mechanic giving trailing players one last swing before the Final.
 
+**Frozen**:
+The end state of a deployment: the tournament is over and the pool's data is
+final. A frozen deployment accepts no writes at all — no new **Users**, no
+**Picks**, no winner bets, no profile edits, and no scheduled **Fixture** or
+**Result** writes. Existing **Users** can still sign in and read everything,
+including the **Recap**. Distinct from **Lock time**, which freezes one fixture's
+picks; freezing closes the whole pool.
+_Avoid_: Closed, archived, locked (reserved for **Lock time**).
+
 ## Relationships
 
 - A **User** submits zero or more **Picks**, at most one per **Fixture**.

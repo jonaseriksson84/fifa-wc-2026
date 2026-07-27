@@ -24,6 +24,9 @@ name = "fifa-wc-2026-friends"
 [env.friends.vars]
 POOL_NAME = "WC26 Jobbiga Bets"
 POOL_ACCENT_HEX = "#0369A1"
+# Tournament over — no sign-ups, no picks, no scheduled writes. Set to "false"
+# (or remove) to thaw.
+POOL_FROZEN = "true"
 SENDER_EMAIL = "noreply@mynameisjonas.dev"
 BETTER_AUTH_URL = "https://wc26.mynameisjonas.dev"
 
@@ -53,6 +56,9 @@ name = "fifa-wc-2026-work"
 [env.work.vars]
 POOL_NAME = "WC26 Office Picks"
 POOL_ACCENT_HEX = "#0284C7"
+# Tournament over — no sign-ups, no picks, no scheduled writes. Set to "false"
+# (or remove) to thaw.
+POOL_FROZEN = "true"
 SENDER_EMAIL = "noreply@mynameisjonas.dev"
 ALLOWED_EMAIL_DOMAINS = "embark-studios.com"
 BETTER_AUTH_URL = "https://wc26-embark.mynameisjonas.dev"

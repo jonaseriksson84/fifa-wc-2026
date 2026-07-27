@@ -2,6 +2,7 @@ import { fetchFixtures, fetchFinishedResults } from './api-football';
 import { ApiFootballRateLimitError } from './api-football/client';
 import { matchPlaceholder, type PlaceholderRow } from './api-football/match-placeholder';
 import { getStage } from '$lib/stage';
+import { isPoolFrozen } from './pool-frozen';
 import type { DomainFixture } from './api-football/types';
 
 const RESULT_POLLER_CRON = '*/5 * * * *';
@@ -18,6 +19,7 @@ const REFRESH_RETRY_DELAYS_MS = [20_000, 40_000, 60_000];
 interface ScheduledEnv {
 	DB: D1Database;
 	API_FOOTBALL_KEY: string;
+	POOL_FROZEN?: string;
 	__testFetchFixtures?: (opts: { apiKey: string }) => Promise<DomainFixture[]>;
 	__testSleep?: (ms: number) => Promise<void>;
 }
@@ -47,6 +49,13 @@ async function fetchFixturesWithRetry(
 }
 
 export async function handleScheduled(event: ScheduledEvent, env: ScheduledEnv): Promise<void> {
+	// A frozen pool's fixtures and results are final: neither job may touch the
+	// database (nor burn api-football quota) again.
+	if (isPoolFrozen(env.POOL_FROZEN)) {
+		console.log('Pool is frozen: skipping scheduled job');
+		return;
+	}
+
 	// The result poller has a fixed, frequent schedule; everything else is the
 	// daily fixture refresher. We deliberately match on "is this the poller?"
 	// rather than an exact refresher cron string so each deployment can stagger

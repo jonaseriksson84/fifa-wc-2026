@@ -26,6 +26,12 @@
 	{:else}
 		<p class="login-prompt">Sign in to {layoutData.poolName}</p>
 
+		{#if data.frozen}
+			<p class="login-frozen">
+				Sign-ups are closed — the tournament is over. Existing members can still sign in.
+			</p>
+		{/if}
+
 		{#if form?.error || data.oauthError}
 			<p class="login-error">{form?.error ?? data.oauthError}</p>
 		{/if}
@@ -203,6 +209,18 @@
 		height: 1px;
 		background: var(--ink);
 		opacity: 0.3;
+	}
+
+	.login-frozen {
+		font-family: var(--mono);
+		font-size: 13px;
+		line-height: 1.5;
+		color: var(--ink-mute);
+		border: 1px solid var(--ink);
+		background: var(--paper-card, #fdf6e3);
+		padding: 10px 12px;
+		margin: 0 0 14px;
+		text-align: left;
 	}
 
 	.login-error {

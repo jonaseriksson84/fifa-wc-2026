@@ -265,3 +265,57 @@ describe('refreshFixtures – rate-limit retry', () => {
 		expect(sleepSpy).not.toHaveBeenCalled();
 	});
 });
+
+describe('handleScheduled – frozen pool', () => {
+	let db: D1Database;
+	let mockFetchFixtures: ReturnType<typeof vi.fn>;
+
+	beforeEach(async () => {
+		db = await getDb();
+		await seedPlaceholders(db);
+		mockFetchFixtures = vi.fn();
+		vi.spyOn(console, 'log').mockImplementation(() => {});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+
+	it('skips the refresher without calling the API or touching the database', async () => {
+		await handleScheduled(fakeScheduledEvent(REFRESHER_CRON), {
+			DB: db,
+			API_FOOTBALL_KEY: 'test-key',
+			POOL_FROZEN: 'true',
+			__testFetchFixtures: mockFetchFixtures
+		});
+
+		expect(mockFetchFixtures).not.toHaveBeenCalled();
+		const row = await db
+			.prepare('SELECT * FROM fixture WHERE id = 73')
+			.first<Record<string, unknown>>();
+		expect(row!.home_team).toBe('Runner-up A');
+	});
+
+	it('skips the result poller', async () => {
+		await handleScheduled(fakeScheduledEvent('*/5 * * * *'), {
+			DB: db,
+			API_FOOTBALL_KEY: 'test-key',
+			POOL_FROZEN: 'true'
+		});
+
+		const row = await db
+			.prepare('SELECT * FROM fixture WHERE id = 73')
+			.first<Record<string, unknown>>();
+		expect(row!.result).toBeNull();
+	});
+
+	it('still runs when the pool is not frozen', async () => {
+		mockFetchFixtures.mockResolvedValue([]);
+
+		await handleScheduled(fakeScheduledEvent(REFRESHER_CRON), {
+			DB: db,
+			API_FOOTBALL_KEY: 'test-key',
+			POOL_FROZEN: 'false',
+			__testFetchFixtures: mockFetchFixtures
+		});
+
+		expect(mockFetchFixtures).toHaveBeenCalledTimes(1);
+	});
+});

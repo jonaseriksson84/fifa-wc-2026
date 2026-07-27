@@ -29,6 +29,7 @@ declare global {
 				POOL_NAME: string;
 				POOL_ACCENT_HEX: string;
 				ALLOWED_EMAIL_DOMAINS?: string;
+				POOL_FROZEN?: string;
 				GOOGLE_CLIENT_ID?: string;
 				GOOGLE_CLIENT_SECRET?: string;
 				E2E_TEST?: string;

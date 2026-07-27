@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 import { createDb } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
+import { isPoolFrozen, POOL_FROZEN_MESSAGE } from '$lib/server/pool-frozen';
 
 export const load: PageServerLoad = async ({ locals, platform }) => {
 	if (!locals.user) throw redirect(302, '/login');
@@ -18,13 +19,18 @@ export const load: PageServerLoad = async ({ locals, platform }) => {
 			email: locals.user.email,
 			name: locals.user.name,
 			displayName: row?.displayName ?? null
-		}
+		},
+		frozen: isPoolFrozen(platform!.env.POOL_FROZEN)
 	};
 };
 
 export const actions: Actions = {
 	updateDisplayName: async ({ request, locals, platform }) => {
 		if (!locals.user) throw redirect(302, '/login');
+
+		if (isPoolFrozen(platform!.env.POOL_FROZEN)) {
+			return fail(403, { error: POOL_FROZEN_MESSAGE });
+		}
 
 		const data = await request.formData();
 		const raw = data.get('displayName');

@@ -66,6 +66,16 @@ npx wrangler deploy --env work
 
 Custom domains auto-provision via Wrangler as long as the parent zone (`mynameisjonas.dev`) lives in the same Cloudflare account.
 
+### Freezing a pool
+
+Set `POOL_FROZEN = "true"` in `[env.<env>.vars]` and redeploy to close a pool once
+its tournament is over. A frozen pool accepts **no writes**: no new users (magic
+link or Google), no picks, no winner bets, no display-name edits, and the cron
+jobs skip both the result poller and the fixture refresher. Existing members can
+still sign in and read everything, including the Recap.
+
+Remove the var (or set it to `"false"`) and redeploy to thaw.
+
 ### Email domain restriction
 
 Set `ALLOWED_EMAIL_DOMAINS` (comma-separated, e.g. `embark-studios.com`) in `[env.<env>.vars]` to restrict sign-ups. Unset = anything goes.
