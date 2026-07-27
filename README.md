@@ -74,7 +74,13 @@ link or Google), no picks, no winner bets, no display-name edits, and the cron
 jobs skip both the result poller and the fixture refresher. Existing members can
 still sign in and read everything, including the Recap.
 
-Remove the var (or set it to `"false"`) and redeploy to thaw.
+The cron triggers are also commented out in [`wrangler.toml`](wrangler.toml) for
+frozen deployments, so the Workers are never invoked on a schedule and make no
+api-football calls at all. The `POOL_FROZEN` check in the scheduled handler stays
+as a backstop.
+
+To thaw: set `POOL_FROZEN = "false"` (or remove it), uncomment the env's
+`[triggers]` block, and redeploy.
 
 ### Email domain restriction
 

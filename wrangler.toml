@@ -8,8 +8,10 @@ assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 POOL_NAME = "WC 2026"
 POOL_ACCENT_HEX = "#2563eb"
 
-[triggers]
-crons = ["*/5 * * * *", "0 8 * * *"]
+# Crons removed: the pools are frozen and api-football is no longer called at
+# all. Restore ["*/5 * * * *", "0 8 * * *"] (poller, refresher) when thawing.
+# [triggers]
+# crons = ["*/5 * * * *", "0 8 * * *"]
 
 [observability.logs]
 enabled = true
@@ -34,8 +36,9 @@ BETTER_AUTH_URL = "https://wc26.mynameisjonas.dev"
 pattern = "wc26.mynameisjonas.dev"
 custom_domain = true
 
-[env.friends.triggers]
-crons = ["*/5 * * * *", "0 8 * * *"]
+# Frozen — no scheduled invocations, so no api-football calls.
+# [env.friends.triggers]
+# crons = ["*/5 * * * *", "0 8 * * *"]
 
 [env.friends.observability.logs]
 enabled = true
@@ -67,10 +70,11 @@ BETTER_AUTH_URL = "https://wc26-embark.mynameisjonas.dev"
 pattern = "wc26-embark.mynameisjonas.dev"
 custom_domain = true
 
-# Refresher staggered 30m after friends to avoid rate-limit collisions on the
-# shared api-football subscription (both run */5 result polling on the hour).
-[env.work.triggers]
-crons = ["*/5 * * * *", "30 8 * * *"]
+# Frozen — no scheduled invocations, so no api-football calls. The refresher was
+# staggered 30m after friends to avoid rate-limit collisions on the shared
+# api-football subscription; keep that stagger if these are ever restored.
+# [env.work.triggers]
+# crons = ["*/5 * * * *", "30 8 * * *"]
 
 [env.work.observability.logs]
 enabled = true
